@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  name          String?
+  superAdmin    Boolean
+  organizations Organization[]
+  winnings      Copy[]
+  CheckOut      CheckOut[]
+}
+
+model UserOrganizationPermissions {
+  id             Int          @id @default(autoincrement())
+  organization   Organization @relation(fields: organizationId, references: [id])
+  organizationId Int
+  admin          Boolean
+  geekGuide      Boolean
+  readOnly       Boolean
+}
+
+model UserConventionPermissions {
+  id           Int        @id @default(autoincrement())
+  convention   Convention @relation(fields: conventionId, references: [id])
+  conventionId Int
+  admin        Boolean
+  geekGuide    Boolean
+  attendee     Boolean
+}
+
+model Organization {
+  id          Int                           @id @default(autoincrement())
+  name        String
+  owner       User?                         @relation(fields: ownerId, references: [id])
+  ownerId     Int?
+  users       UserOrganizationPermissions[]
+  collections Collection[]
+  Convention  Convention[]
+}
+
+model ConventionType {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String
+  logo        Bytes
+  logoSquare  Bytes
+  icon        String
+  content     String
+  Convention  Convention[]
+}
+
+model RegistrationDate {
+  id           Int        @id @default(autoincrement())
+  convention   Convention @relation(fields: conventionId, references: [id])
+  conventionId Int
+  name         String
+  startDate    DateTime
+  endDate      DateTime
+}
+
+model Collection {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  organization         Organization @relation(fields: organizationId, references: [id])
+  organizationId       Int
+  copies               Copy[]
+  conventionDoorPrize  Convention?  @relation("DoorPrizes")
+  conventionPlayAndWin Convention?  @relation("PlayAndWins")
+}
+
+model Game {
+  id         Int    @id @default(autoincrement())
+  name       String
+  minPlayers Int
+  maxPlayers Int
+  bggId      Int
+  copies     Copy[]
+}
+
+model Copy {
+  id          Int          @id @default(autoincrement())
+  game        Game         @relation(fields: gameId, references: [id])
+  gameId      Int
+  winnable    Boolean
+  winner      User         @relation(fields: winnerId, references: [id])
+  winnerId    Int
+  collections Collection[]
+  checkOuts   CheckOut[]
+}
+
+model CheckOut {
+  id       Int       @id @default(autoincrement())
+  user     User      @relation(fields: userId, references: [id])
+  userId   Int
+  checkOut DateTime?
+  checkIn  DateTime?
+  Copy     Copy?     @relation(fields: [copyId], references: [id])
+  copyId   Int?
+}
+
+model Convention {
+  id                     Int                         @id @default(autoincrement())
+  organization           Organization                @relation(fields: organizationId, references: [id])
+  organizationId         Int
+  name                   String
+  theme                  String
+  logo                   Bytes
+  logoSquare             Bytes
+  icon                   String
+  startDate              DateTime
+  endDate                DateTime
+  registrationUrl        String
+  type                   ConventionType?             @relation(fields: typeId, references: [id])
+  typeId                 Int?
+  annual                 String
+  size                   Int
+  registrationDates      RegistrationDate[]
+  cancelled              Boolean
+  playAndWinAnnounced    Boolean
+  playAndWinSelected     Boolean
+  doorPrizesAnnounced    Boolean
+  doorPrizes             Collection?                 @relation("DoorPrizes", fields: doorPrizeCollectionId, references: [id])
+  doorPrizeCollectionId  Int?                        @unique
+  playAndWins            Collection?                 @relation("PlayAndWins", fields: playAndWinCollectionId, references: [id])
+  playAndWinCollectionId Int?                        @unique
+  attendees              UserConventionPermissions[]
+}
