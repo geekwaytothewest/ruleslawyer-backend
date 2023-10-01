@@ -7,7 +7,7 @@ import { OrganizationService } from 'src/services/organization/organization.serv
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('gwJwt'))
   @Post()
   async createOrganization(
     @Body() organizationData: { name: string },

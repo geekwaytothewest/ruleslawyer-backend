@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RouterModule } from '@nestjs/core';
 import { UserModule } from './modules/user/user.module';
-import { OrganizationModule } from './modules/organization/organization.module';
+import { OrganizationModule } from './modules/organizations/organizations.module';
 import { AuthzModule } from './modules/authz/authz.module';
 
 const routes = [
