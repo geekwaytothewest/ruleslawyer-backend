@@ -10,14 +10,6 @@ export class OrganizationService {
     name: string,
     ownerId: number,
   ): Promise<Organization> {
-    await this.prisma.user.findFirstOrThrow({
-      where: {
-        id: {
-          equals: ownerId,
-        },
-      },
-    });
-
     return this.prisma.organization.create({
       data: {
         name: name,

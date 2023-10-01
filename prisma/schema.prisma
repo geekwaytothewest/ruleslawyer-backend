@@ -14,7 +14,7 @@ model User {
   id            Int            @id @default(autoincrement())
   email         String         @unique
   name          String?
-  username      String? @unique
+  username      String?        @unique
   superAdmin    Boolean        @default(false)
   organizations Organization[]
   winnings      Copy[]
@@ -41,8 +41,8 @@ model UserConventionPermissions {
 
 model Organization {
   id          Int                           @id @default(autoincrement())
-  name        String
-  owner       User                         @relation(fields: ownerId, references: [id])
+  name        String                        @unique
+  owner       User                          @relation(fields: ownerId, references: [id])
   ownerId     Int
   users       UserOrganizationPermissions[]
   collections Collection[]

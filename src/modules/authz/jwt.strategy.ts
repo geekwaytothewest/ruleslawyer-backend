@@ -43,6 +43,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
       });
     }
 
+    payload.user = user;
+
     return payload;
   }
 }
