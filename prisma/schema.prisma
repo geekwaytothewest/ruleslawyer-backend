@@ -42,8 +42,8 @@ model UserConventionPermissions {
 model Organization {
   id          Int                           @id @default(autoincrement())
   name        String
-  owner       User?                         @relation(fields: ownerId, references: [id])
-  ownerId     Int?
+  owner       User                         @relation(fields: ownerId, references: [id])
+  ownerId     Int
   users       UserOrganizationPermissions[]
   collections Collection[]
   Convention  Convention[]
