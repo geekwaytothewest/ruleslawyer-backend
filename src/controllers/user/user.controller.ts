@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { User as UserModel } from '@prisma/client';
-import { AuthGuard } from '../../guards/auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller()
 export class UserController {
@@ -28,7 +28,7 @@ export class UserController {
     return true;
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
     const idAsInt = Number(id);
@@ -50,7 +50,7 @@ export class UserController {
     };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Get('byEmail:email')
   async getUserByEmail(@Param('email') email: string): Promise<UserModel> {
     const usersMatch = await this.userService.users({

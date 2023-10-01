@@ -1,13 +1,13 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { Organization } from '@prisma/client';
-import { AuthGuard } from 'src/guards/auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { OrganizationService } from 'src/services/organization/organization.service';
 
 @Controller()
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   async createOrganization(
     @Body() organizationData: { name: string },

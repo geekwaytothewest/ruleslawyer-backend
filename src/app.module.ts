@@ -3,8 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RouterModule } from '@nestjs/core';
 import { UserModule } from './modules/user/user.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { OrganizationModule } from './modules/organization/organization.module';
+import { AuthzModule } from './modules/authz/authz.module';
 
 const routes = [
   {
@@ -12,12 +12,8 @@ const routes = [
     module: UserModule,
   },
   {
-    path: 'auth',
-    module: AuthModule,
-  },
-  {
     path: 'org',
-    module: OrganizationsModule,
+    module: OrganizationModule,
   },
 ];
 
@@ -25,8 +21,8 @@ const routes = [
   imports: [
     RouterModule.register(routes),
     UserModule,
-    AuthModule,
-    OrganizationsModule,
+    OrganizationModule,
+    AuthzModule,
   ],
   controllers: [AppController],
   providers: [AppService],
