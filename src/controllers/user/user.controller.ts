@@ -5,9 +5,6 @@ import {
   Get,
   Param,
   UseGuards,
-  UseInterceptors,
-  HttpException,
-  HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
