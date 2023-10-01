@@ -11,18 +11,22 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  name          String?
-  username      String?        @unique
-  superAdmin    Boolean        @default(false)
-  organizations Organization[]
-  winnings      Copy[]
-  CheckOut      CheckOut[]
+  id                          Int                           @id @default(autoincrement())
+  email                       String                        @unique
+  name                        String?
+  username                    String?                       @unique
+  superAdmin                  Boolean                       @default(false)
+  organizations               Organization[]
+  winnings                    Copy[]
+  CheckOut                    CheckOut[]
+  UserOrganizationPermissions UserOrganizationPermissions[]
+  UserConventionPermissions   UserConventionPermissions[]
 }
 
 model UserOrganizationPermissions {
   id             Int          @id @default(autoincrement())
+  user           User         @relation(fields: userId, references: [id])
+  userId         Int
   organization   Organization @relation(fields: organizationId, references: [id])
   organizationId Int
   admin          Boolean
@@ -32,6 +36,8 @@ model UserOrganizationPermissions {
 
 model UserConventionPermissions {
   id           Int        @id @default(autoincrement())
+  user         User       @relation(fields: userId, references: [id])
+  userId       Int
   convention   Convention @relation(fields: conventionId, references: [id])
   conventionId Int
   admin        Boolean
