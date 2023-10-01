@@ -5,6 +5,7 @@ import { RouterModule } from '@nestjs/core';
 import { UserModule } from './modules/user/user.module';
 import { OrganizationModule } from './modules/organizations/organizations.module';
 import { AuthzModule } from './modules/authz/authz.module';
+import { ConventionModule } from './modules/convention/convention.module';
 
 const routes = [
   {
@@ -15,6 +16,10 @@ const routes = [
     path: 'org',
     module: OrganizationModule,
   },
+  {
+    path: 'con',
+    module: ConventionModule,
+  },
 ];
 
 @Module({
@@ -23,6 +28,7 @@ const routes = [
     UserModule,
     OrganizationModule,
     AuthzModule,
+    ConventionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
