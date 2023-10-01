@@ -1,4 +1,15 @@
-import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  UseGuards,
+  UseInterceptors,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { User as UserModel } from '@prisma/client';
 import { AuthGuard } from '../../guards/auth.guard';
@@ -24,21 +35,21 @@ export class UserController {
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
     const idAsInt = Number(id);
-    const usersMatch: UserModel[] = await this.userService.users({
-      where: {
-        id: {
-          equals: idAsInt,
-        },
-      },
+    const user: UserModel = await this.userService.user({
+      id: idAsInt,
     });
 
+    if (!user) {
+      throw new NotFoundException();
+    }
+
     return {
-      id: usersMatch[0].id,
-      email: usersMatch[0].email,
-      name: usersMatch[0].name,
-      username: usersMatch[0].username,
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      username: user.username,
       passwordHash: "wouldn't you like to know",
-      superAdmin: usersMatch[0].superAdmin,
+      superAdmin: user.superAdmin,
     };
   }
 
