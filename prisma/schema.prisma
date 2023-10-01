@@ -13,8 +13,10 @@ datasource db {
 model User {
   id            Int            @id @default(autoincrement())
   email         String         @unique
+  passwordHash  String?
   name          String?
-  superAdmin    Boolean
+  username      String?
+  superAdmin    Boolean        @default(false)
   organizations Organization[]
   winnings      Copy[]
   CheckOut      CheckOut[]
