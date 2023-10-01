@@ -31,10 +31,17 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
-    const idAsInt = Number(id);
-    const user: UserModel = await this.userService.user({
-      id: idAsInt,
-    });
+    let user: UserModel;
+
+    if (!isNaN(Number(id))) {
+      user = await this.userService.user({
+        id: Number(id),
+      });
+    } else {
+      user = await this.userService.user({
+        email: id,
+      });
+    }
 
     if (!user) {
       throw new NotFoundException();
@@ -47,19 +54,5 @@ export class UserController {
       username: user.username,
       superAdmin: user.superAdmin,
     };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('byEmail:email')
-  async getUserByEmail(@Param('email') email: string): Promise<UserModel> {
-    const user: UserModel = await this.userService.user({
-      email: email,
-    });
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    return user;
   }
 }
