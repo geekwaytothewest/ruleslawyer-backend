@@ -1,16 +1,17 @@
 // src/authz/jwt.strategy.ts
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
 import * as dotenv from 'dotenv';
+import { UserService } from 'src/services/user/user.service';
 
 dotenv.config();
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
-  constructor() {
+  constructor(private readonly userService: UserService) {
     super({
       secretOrKeyProvider: passportJwtSecret({
         cache: true,
@@ -26,7 +27,22 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
     });
   }
 
-  validate(payload: unknown): unknown {
+  async validate(payload: any) {
+    if (!payload.user_email) {
+      throw new UnauthorizedException();
+    }
+
+    const user = await this.userService.user({
+      email: payload.user_email,
+    });
+
+    if (!user) {
+      this.userService.createUser({
+        email: payload.user_email,
+        name: payload.user_name,
+      });
+    }
+
     return payload;
   }
 }

@@ -45,7 +45,6 @@ export class UserController {
       email: user.email,
       name: user.name,
       username: user.username,
-      passwordHash: "wouldn't you like to know",
       superAdmin: user.superAdmin,
     };
   }
@@ -53,21 +52,14 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('byEmail:email')
   async getUserByEmail(@Param('email') email: string): Promise<UserModel> {
-    const usersMatch = await this.userService.users({
-      where: {
-        email: {
-          equals: email,
-        },
-      },
+    const user: UserModel = await this.userService.user({
+      email: email,
     });
 
-    return {
-      id: usersMatch[0].id,
-      email: usersMatch[0].email,
-      name: usersMatch[0].name,
-      username: usersMatch[0].username,
-      passwordHash: "wouldn't you like to know",
-      superAdmin: usersMatch[0].superAdmin,
-    };
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 }
