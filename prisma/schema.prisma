@@ -49,7 +49,7 @@ model Attendee {
 
 model BadgeType {
   id       Int        @id @default(autoincrement())
-  name     String
+  name     String     @unique
   Attendee Attendee[]
 }
 
@@ -89,7 +89,7 @@ model Organization {
   ownerId     Int
   users       UserOrganizationPermissions[]
   collections Collection[]
-  convention  Convention[]
+  conventions Convention[]
 }
 
 model ConventionType {
@@ -191,4 +191,5 @@ model Convention {
   playAndWinCollectionId     Int?                        @unique
   users                      UserConventionPermissions[]
   attendees                  Attendee[]
+  tteConventionId            String?
 }

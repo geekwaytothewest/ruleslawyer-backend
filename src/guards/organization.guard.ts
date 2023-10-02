@@ -9,7 +9,15 @@ export class OrganizationGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user.user;
-    const orgId = context.getArgByIndex(0).params.id;
+    let orgId = context.getArgByIndex(0).params.id;
+
+    if (!orgId) {
+      orgId = context.getArgByIndex(0).body.organizationId;
+    }
+
+    if (!orgId) {
+      return false;
+    }
 
     const orgWithUsers = Prisma.validator<Prisma.OrganizationDefaultArgs>()({
       include: { users: true },
@@ -27,7 +35,9 @@ export class OrganizationGuard implements CanActivate {
     }
 
     if (org.users?.filter((u) => u.id === user.id && u.admin).length > 0) {
-      return false;
+      return true;
     }
+
+    return false;
   }
 }

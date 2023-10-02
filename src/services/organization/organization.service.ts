@@ -21,6 +21,7 @@ export class OrganizationService {
       where: organizationWhereUniqueInput,
       include: {
         users: true,
+        owner: true,
       },
     });
   }

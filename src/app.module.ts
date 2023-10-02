@@ -6,6 +6,8 @@ import { UserModule } from './modules/user/user.module';
 import { OrganizationModule } from './modules/organizations/organizations.module';
 import { AuthzModule } from './modules/authz/authz.module';
 import { ConventionModule } from './modules/convention/convention.module';
+import { HttpModule } from '@nestjs/axios';
+import { UserOrganizationPermissionsModule } from './modules/user-organization-permissions/user-organization-permissions.module';
 
 const routes = [
   {
@@ -20,15 +22,21 @@ const routes = [
     path: 'con',
     module: ConventionModule,
   },
+  {
+    path: 'userOrgPerm',
+    module: UserOrganizationPermissionsModule,
+  },
 ];
 
 @Module({
   imports: [
     RouterModule.register(routes),
+    AuthzModule,
+    HttpModule,
+    UserOrganizationPermissionsModule,
+    ConventionModule,
     UserModule,
     OrganizationModule,
-    AuthzModule,
-    ConventionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

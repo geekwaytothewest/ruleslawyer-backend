@@ -1,7 +1,6 @@
 import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { Convention, Organization } from '@prisma/client';
+import { Convention, Organization, Prisma } from '@prisma/client';
 import { OrganizationService } from 'src/services/organization/organization.service';
-import { UserService } from 'src/services/user/user.service';
 import { ConventionService } from 'src/services/convention/convention.service';
 import { JwtAuthGuard } from 'src/guards/auth.guard';
 import { OrganizationGuard } from 'src/guards/organization.guard';
@@ -11,7 +10,6 @@ export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly conventionService: ConventionService,
-    private readonly userService: UserService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -30,11 +28,16 @@ export class OrganizationController {
   @UseGuards(JwtAuthGuard, OrganizationGuard)
   @Post(':id/con')
   async createConvention(
-    @Body() conventionData: Convention,
+    @Body() conventionData: Prisma.ConventionCreateInput,
     @Req() request: Request,
     @Param('id') id: number,
   ): Promise<Convention> {
-    conventionData.organizationId = Number(id);
+    conventionData.organization = {
+      connect: {
+        id: Number(id),
+      },
+    };
+
     return this.conventionService.createConvention(conventionData);
   }
 }

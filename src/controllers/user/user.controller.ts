@@ -53,6 +53,7 @@ export class UserController {
       name: user.name,
       username: user.username,
       superAdmin: user.superAdmin,
+      pronounsId: user.pronounsId,
     };
   }
 }

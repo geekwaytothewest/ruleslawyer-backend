@@ -3,6 +3,7 @@ import { OrganizationController } from 'src/controllers/organization/organizatio
 import { ConventionService } from 'src/services/convention/convention.service';
 import { OrganizationService } from 'src/services/organization/organization.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
+import { UserConventionPermissionsService } from 'src/services/user-convention-permissions/user-convention-permissions.service';
 import { UserService } from 'src/services/user/user.service';
 
 @Module({
@@ -12,6 +13,7 @@ import { UserService } from 'src/services/user/user.service';
     UserService,
     ConventionService,
     PrismaService,
+    UserConventionPermissionsService,
   ],
   exports: [OrganizationService],
 })
