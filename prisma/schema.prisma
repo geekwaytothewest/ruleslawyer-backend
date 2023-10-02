@@ -16,11 +16,48 @@ model User {
   name                        String?
   username                    String?                       @unique
   superAdmin                  Boolean                       @default(false)
+  pronouns                    Pronouns?                     @relation(fields: pronounsId, references: [id])
+  pronounsId                  Int?
   organizations               Organization[]
   winnings                    Copy[]
-  CheckOut                    CheckOut[]
   UserOrganizationPermissions UserOrganizationPermissions[]
   UserConventionPermissions   UserConventionPermissions[]
+  Attendee                    Attendee[]
+}
+
+model Attendee {
+  id               Int        @id @default(autoincrement())
+  convention       Convention @relation(fields: conventionId, references: [id])
+  conventionId     Int
+  name             String
+  user             User?      @relation(fields: userId, references: [id])
+  userId           Int?
+  badgeNumber      String?
+  badgeType        BadgeType? @relation(fields: badgeTypeId, references: [id])
+  badgeTypeId      Int?
+  tteBadgeNumber   Int?
+  email            String?
+  pronouns         Pronouns?  @relation(fields: pronounsId, references: [id])
+  pronounsId       Int?
+  checkedIn        Boolean    @default(false)
+  printed          Boolean    @default(false)
+  registrationCode String?
+  Copy             Copy[]
+  CheckOut         CheckOut[]
+  Player           Player[]
+}
+
+model BadgeType {
+  id       Int        @id @default(autoincrement())
+  name     String
+  Attendee Attendee[]
+}
+
+model Pronouns {
+  id       Int        @id @default(autoincrement())
+  pronouns String
+  Attendee Attendee[]
+  User     User[]
 }
 
 model UserOrganizationPermissions {
@@ -98,21 +135,32 @@ model Copy {
   id          Int          @id @default(autoincrement())
   game        Game         @relation(fields: gameId, references: [id])
   gameId      Int
-  winnable    Boolean
-  winner      User         @relation(fields: winnerId, references: [id])
-  winnerId    Int
+  winnable    Boolean      @default(true)
+  winner      Attendee?    @relation(fields: winnerId, references: [id])
+  winnerId    Int?
   collections Collection[]
   checkOuts   CheckOut[]
+  User        User?        @relation(fields: [userId], references: [id])
+  userId      Int?
 }
 
 model CheckOut {
-  id       Int       @id @default(autoincrement())
-  user     User      @relation(fields: userId, references: [id])
-  userId   Int
-  checkOut DateTime?
-  checkIn  DateTime?
-  Copy     Copy?     @relation(fields: [copyId], references: [id])
-  copyId   Int?
+  id         Int       @id @default(autoincrement())
+  attendee   Attendee  @relation(fields: attendeeId, references: [id])
+  attendeeId Int
+  checkOut   DateTime?
+  checkIn    DateTime?
+  Copy       Copy?     @relation(fields: copyId, references: [id])
+  copyId     Int?
+  players    Player[]
+}
+
+model Player {
+  id         Int      @id @default(autoincrement())
+  checkout   CheckOut @relation(fields: checkoutId, references: [id])
+  checkoutId Int
+  attendee   Attendee @relation(fields: attendeeId, references: [id])
+  attendeeId Int
 }
 
 model Convention {
@@ -141,5 +189,6 @@ model Convention {
   doorPrizeCollectionId      Int?                        @unique
   playAndWins                Collection?                 @relation("PlayAndWins", fields: playAndWinCollectionId, references: [id])
   playAndWinCollectionId     Int?                        @unique
-  attendees                  UserConventionPermissions[]
+  users                      UserConventionPermissions[]
+  attendees                  Attendee[]
 }
