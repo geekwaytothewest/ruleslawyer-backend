@@ -11,4 +11,12 @@ export class AttendeeService {
 
     return true;
   }
+
+  async truncate(conventionId: number) {
+    await this.prisma.attendee.deleteMany({
+      where: {
+        conventionId: Number(conventionId),
+      },
+    });
+  }
 }

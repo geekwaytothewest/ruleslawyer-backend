@@ -2,12 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrganizationService } from '../organization/organization.service';
+import { AttendeeService } from '../attendee/attendee.service';
+import { TabletopeventsService } from '../tabletopevents/tabletopevents.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ConventionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly organizationService: OrganizationService,
+    private readonly attendeeService: AttendeeService,
+    private readonly tteService: TabletopeventsService,
   ) {}
 
   async createConvention(
@@ -62,5 +67,77 @@ export class ConventionService {
         users: true,
       },
     });
+  }
+
+  async importAttendees(userData, conventionId) {
+    await this.attendeeService.truncate(conventionId);
+
+    const convention = await this.convention({
+      id: Number(conventionId),
+    });
+
+    if (!convention.tteConventionId) {
+      throw 'Convention missing tteConventionId.';
+    }
+
+    const session = await this.tteService.getSession(
+      userData.userName,
+      userData.password,
+      userData.apiKey,
+    );
+
+    if (!session) {
+      throw 'invalid tte session';
+    }
+
+    const tteBadgeTypes = await this.tteService.getBadgeTypes(
+      convention.tteConventionId,
+      session,
+    );
+
+    if (!tteBadgeTypes) {
+      throw 'badge type query failed';
+    }
+
+    const tteBadges = await this.tteService.getBadges(
+      convention.tteConventionId,
+      session,
+    );
+
+    if (!tteBadges) {
+      throw 'badge query failed';
+    }
+
+    const attendees = tteBadges.map((b) => {
+      return <Prisma.AttendeeCreateInput>{
+        convention: {
+          connect: {
+            id: Number(conventionId),
+          },
+        },
+        name: b.name,
+        badgeType: {
+          connectOrCreate: {
+            create: {
+              name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
+                .name,
+            },
+            where: {
+              name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
+                .name,
+            },
+          },
+        },
+        registrationCode: crypto.randomUUID(),
+        email: b.email,
+        badgeNumber: b.badge_number.toString(),
+      };
+    });
+
+    for (const a of attendees) {
+      await this.attendeeService.createAttendee(a);
+    }
+
+    return true;
   }
 }
