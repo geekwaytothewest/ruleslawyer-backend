@@ -1,0 +1,294 @@
+{
+	"info": {
+		"_postman_id": "4d4bb5af-1684-4ed2-9336-9ff1f6ec6129",
+		"name": "ruleslawyer-backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14968033",
+		"_collection_link": "https://frozenpeach.postman.co/workspace/Geekway~7583c10e-603d-4da7-8428-10da4a807950/collection/14968033-4d4bb5af-1684-4ed2-9336-9ff1f6ec6129?action=share&source=collection_link&creator=14968033"
+	},
+	"item": [
+		{
+			"name": "Get Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/status",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/user/:id",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"user",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Organization",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Geekway to the West\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/org",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"org"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Organization -> Create Convention",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Geekway Special October 2023\",\n    \"tteConventionId\": \"31C4B722-4451-11EE-B083-BCD96783F7D6\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/org/:id/con",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"org",
+						":id",
+						"con"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SuperAdmin -> Create Convention",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Geekway Mini 2024\",\n    \"organizationId\": 3\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/con",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"con"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Import Attendees",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"\",\n    \"password\": \"\",\n    \"apiKey\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/con/:id/importAttendees",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"con",
+						":id",
+						"importAttendees"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User Organization Permission",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": 2,\n    \"organizationId\": 2,\n    \"admin\": true,\n    \"geekGuide\": false,\n    \"readOnly\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/userOrgPerm",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"userOrgPerm"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "authUrl",
+				"value": "https://geekwaytothewest.us.auth0.com/authorize?audience=https://api.ruleslawyer.geekway.com",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "Auth0",
+				"type": "string"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "http://geekway.com",
+				"type": "string"
+			},
+			{
+				"key": "useBrowser",
+				"value": false,
+				"type": "boolean"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "https://geekwaytothewest.us.auth0.com/oauth/token",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{secret}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{clientId}}",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "clientId",
+			"value": "KPdlZYrELoETj803QD0w2b0tqDtrYnWH",
+			"type": "string"
+		},
+		{
+			"key": "secret",
+			"value": "WVztOzJV-O4ts4jyx-9UWwWKsxvrIv_ksUcg9zsy0IJjVulBNO6E0wLMAWDouqtQ",
+			"type": "string"
+		}
+	]
+}
