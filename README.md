@@ -4,13 +4,17 @@
 Geekawy to the West Rules Lawyer is the premier play and win convention backend.
 
 Requirements:
+
   Node v18.18.0
+
   PostgreSQL 14.9
 
 ## Installation
 
 Setup PostgreSQL
+
 Git clone repository
+
 Create .env file with the following contents:
 
 ```
@@ -20,6 +24,7 @@ AUTH0_AUDIENCE=
 ```
 
 Set the Database URL based on your PostgreSQL connection string
+
 Set your Auth0 API data in Issuer URL and Audience
 
 ```bash
@@ -28,7 +33,9 @@ $ npx prisma migrate dev
 ```
 
 Import the Postman collection
+
 Set auth variables in ruleslawyer-backend
+
 Set TTE login in Import Attendees
 
 ## Running the app
@@ -48,11 +55,17 @@ $ npm run start:prod
 ```
 
 Postman:
+
 Authenticate using ruleslawyer-backend Authorization tab
+
 Get Status
+
 Get User
+
 Create Organization
+
 Import Attendees
+
 Import Collections
 
 ???
