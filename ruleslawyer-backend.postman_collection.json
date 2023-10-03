@@ -282,12 +282,12 @@
 	"variable": [
 		{
 			"key": "clientId",
-			"value": "KPdlZYrELoETj803QD0w2b0tqDtrYnWH",
+			"value": "",
 			"type": "string"
 		},
 		{
 			"key": "secret",
-			"value": "WVztOzJV-O4ts4jyx-9UWwWKsxvrIv_ksUcg9zsy0IJjVulBNO6E0wLMAWDouqtQ",
+			"value": "",
 			"type": "string"
 		}
 	]
