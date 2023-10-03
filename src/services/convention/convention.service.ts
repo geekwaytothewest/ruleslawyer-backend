@@ -138,6 +138,6 @@ export class ConventionService {
       await this.attendeeService.createAttendee(a);
     }
 
-    return true;
+    return attendees.length;
   }
 }
