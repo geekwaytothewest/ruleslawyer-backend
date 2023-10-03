@@ -69,6 +69,18 @@ export class ConventionService {
     });
   }
 
+  async updateConvention(
+    id: number,
+    conventionUpdateInput: Prisma.ConventionUpdateInput,
+  ): Promise<any> {
+    return this.prisma.convention.update({
+      where: {
+        id: id,
+      },
+      data: conventionUpdateInput,
+    });
+  }
+
   async importAttendees(userData, conventionId) {
     await this.attendeeService.truncate(conventionId);
 

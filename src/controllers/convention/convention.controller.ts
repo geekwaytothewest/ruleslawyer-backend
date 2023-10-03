@@ -1,4 +1,13 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Get,
+  Post,
+  UseGuards,
+  NotFoundException,
+  Put,
+} from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { ConventionService } from 'src/services/convention/convention.service';
 import { JwtAuthGuard } from 'src/guards/auth.guard';
@@ -24,6 +33,30 @@ export class ConventionController {
     conventionData: Prisma.ConventionCreateInput,
   ): Promise<Convention> {
     return this.conventionService.createConvention(conventionData);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async getConvention(@Param('id') id: number) {
+    const con = await this.conventionService.convention({
+      id: Number(id),
+    });
+
+    if (!con) {
+      throw new NotFoundException();
+    }
+
+    return con;
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Put(':id')
+  async updateConvention(
+    @Param('id') id: number,
+    @Body()
+    conventionData: Prisma.ConventionUpdateInput,
+  ) {
+    return this.conventionService.updateConvention(Number(id), conventionData);
   }
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
