@@ -13,7 +13,7 @@ Requirements:
 
 Setup PostgreSQL
 
-Git clone repository
+Git clone/pull repository
 
 Create .env file with the following contents:
 
@@ -63,6 +63,8 @@ Get Status
 Get User
 
 Create Organization
+
+Create Convention
 
 Import Attendees
 
