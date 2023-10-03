@@ -9,6 +9,8 @@ Requirements:
 
   PostgreSQL 14.9
 
+  Auth0
+
 ## Installation
 
 Setup PostgreSQL
