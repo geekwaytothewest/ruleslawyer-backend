@@ -32,12 +32,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
       throw new UnauthorizedException();
     }
 
-    const user = await this.userService.user({
+    let user = await this.userService.user({
       email: payload.user_email,
     });
 
     if (!user) {
-      this.userService.createUser({
+      user = await this.userService.createUser({
         email: payload.user_email,
         name: payload.user_name,
       });
