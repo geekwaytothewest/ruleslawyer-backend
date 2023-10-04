@@ -10,6 +10,7 @@ import {
 import { UserService } from '../../services/user/user.service';
 import { User as UserModel } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guards/auth.guard';
+import { UserGuard } from 'src/guards/user.guard';
 
 @Controller()
 export class UserController {
@@ -28,7 +29,7 @@ export class UserController {
     return true;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
     let user: UserModel;
