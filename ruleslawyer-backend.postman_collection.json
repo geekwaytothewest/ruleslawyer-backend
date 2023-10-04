@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "4d4bb5af-1684-4ed2-9336-9ff1f6ec6129",
-		"name": "ruleslawyer-backend",
+		"_postman_id": "b1f5aabb-435d-46b3-92e8-c7e79306939b",
+		"name": "Backend",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "14968033",
-		"_collection_link": "https://frozenpeach.postman.co/workspace/Geekway~7583c10e-603d-4da7-8428-10da4a807950/collection/14968033-4d4bb5af-1684-4ed2-9336-9ff1f6ec6129?action=share&source=collection_link&creator=14968033"
+		"_exporter_id": "30188067",
+		"_collection_link": "https://geekwaytothewest.postman.co/workspace/Rules-Lawyer~35d0c9cf-7947-4692-ae2c-645ab14a5743/collection/30188067-b1f5aabb-435d-46b3-92e8-c7e79306939b?action=share&source=collection_link&creator=30188067"
 	},
 	"item": [
 		{
@@ -208,6 +208,40 @@
 					"port": "3000",
 					"path": [
 						"userOrgPerm"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Convention",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"theme\": \"Halloween\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/con/:id",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"con",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
 					]
 				}
 			},
