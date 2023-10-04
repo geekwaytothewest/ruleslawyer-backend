@@ -125,21 +125,21 @@ model Collection {
 
 model Game {
   id               Int      @id @default(autoincrement())
-  bggId            Int
-  lastBGGSync      DateTime
+  bggId            Int?
+  lastBGGSync      DateTime?
   name             String
-  shortDescription String
-  designer         String
-  artist           String
-  publisher        String
-  longDescription  String
-  minPlayers       Int
-  maxPlayers       Int
-  minTime          Int
-  maxTime          Int
-  minAge           Int
-  Weight           Decimal
-  coverArt         Bytes
+  shortDescription String?
+  designer         String?
+  artist           String?
+  publisher        String?
+  longDescription  String?
+  minPlayers       Int?
+  maxPlayers       Int?
+  minTime          Int?
+  maxTime          Int?
+  minAge           Int?
+  Weight           Decimal?
+  coverArt         Bytes?
   copies           Copy[]
 }
 
