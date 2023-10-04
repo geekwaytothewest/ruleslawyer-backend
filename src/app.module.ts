@@ -8,6 +8,7 @@ import { AuthzModule } from './modules/authz/authz.module';
 import { ConventionModule } from './modules/convention/convention.module';
 import { HttpModule } from '@nestjs/axios';
 import { UserOrganizationPermissionsModule } from './modules/user-organization-permissions/user-organization-permissions.module';
+import { UserConventionPermissionsModule } from './modules/user-convention-permissions/user-convention-permissions.module';
 
 const routes = [
   {
@@ -26,6 +27,10 @@ const routes = [
     path: 'userOrgPerm',
     module: UserOrganizationPermissionsModule,
   },
+  {
+    path: 'userConPerm',
+    module: UserConventionPermissionsModule,
+  },
 ];
 
 @Module({
@@ -37,6 +42,7 @@ const routes = [
     ConventionModule,
     UserModule,
     OrganizationModule,
+    UserConventionPermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
