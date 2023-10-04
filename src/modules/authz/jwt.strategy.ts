@@ -41,6 +41,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
         email: payload.user_email,
         name: payload.user_name,
       });
+
+      if (user.id === 1) {
+        await this.userService.updateUser({
+          where: {
+            id: user.id,
+          },
+          data: {
+            superAdmin: true,
+          },
+        });
+      }
     }
 
     payload.user = user;
