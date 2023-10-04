@@ -4,7 +4,7 @@ import { JwtAuthGuard } from 'src/guards/auth.guard';
 import { ConventionGuard } from 'src/guards/convention.guard';
 import { UserConventionPermissionsService } from 'src/services/user-convention-permissions/user-convention-permissions.service';
 
-@Controller('user-convention-permissions')
+@Controller()
 export class UserConventionPermissionsController {
   constructor(
     private readonly userConventionPermissionsService: UserConventionPermissionsService,
