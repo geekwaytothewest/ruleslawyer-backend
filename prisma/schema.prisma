@@ -120,28 +120,43 @@ model Collection {
   copies               Copy[]
   conventionDoorPrize  Convention?  @relation("DoorPrizes")
   conventionPlayAndWin Convention?  @relation("PlayAndWins")
+  public               Boolean      @default(false)
 }
 
 model Game {
-  id         Int    @id @default(autoincrement())
-  name       String
-  minPlayers Int
-  maxPlayers Int
-  bggId      Int
-  copies     Copy[]
+  id               Int      @id @default(autoincrement())
+  bggId            Int
+  lastBGGSync      DateTime
+  name             String
+  shortDescription String
+  designer         String
+  artist           String
+  publisher        String
+  longDescription  String
+  minPlayers       Int
+  maxPlayers       Int
+  minTime          Int
+  maxTime          Int
+  minAge           Int
+  Weight           Decimal
+  coverArt         Bytes
+  copies           Copy[]
 }
 
 model Copy {
-  id          Int          @id @default(autoincrement())
-  game        Game         @relation(fields: gameId, references: [id])
-  gameId      Int
-  winnable    Boolean      @default(true)
-  winner      Attendee?    @relation(fields: winnerId, references: [id])
-  winnerId    Int?
-  collections Collection[]
-  checkOuts   CheckOut[]
-  User        User?        @relation(fields: [userId], references: [id])
-  userId      Int?
+  id               Int          @id @default(autoincrement())
+  game             Game         @relation(fields: gameId, references: [id])
+  gameId           Int
+  dateAdded        DateTime
+  dateRetired      DateTime
+  winnable         Boolean      @default(true)
+  winner           Attendee?    @relation(fields: winnerId, references: [id])
+  winnerId         Int?
+  coverArtOverride Bytes
+  collections      Collection[]
+  checkOuts        CheckOut[]
+  User             User?        @relation(fields: [userId], references: [id])
+  userId           Int?
 }
 
 model CheckOut {
