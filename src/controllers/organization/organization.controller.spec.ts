@@ -6,55 +6,34 @@ import { ConventionService } from '../../services/convention/convention.service'
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { HttpModule } from '@nestjs/axios';
-import { Organization } from '@prisma/client';
+import {
+  Context,
+  MockContext,
+  createMockContext,
+} from '../../services/prisma/context';
 
 describe('OrganizationController', () => {
   let controller: OrganizationController;
+  let mockCtx: MockContext;
+  let ctx: Context;
 
   beforeEach(async () => {
+    mockCtx = createMockContext();
+    ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       controllers: [OrganizationController],
       providers: [
         PrismaService,
-        {
-          provide: OrganizationService,
-          useValue: {
-            createConvention: jest.fn().mockImplementation(() => {
-              name: 'Geekway to the Testing';
-            }),
-            createOrganization: jest.fn().mockImplementation(
-              () =>
-                <Organization>{
-                  name: 'Geekway to the Testing',
-                },
-            ),
-            organizationWithUsers: jest.fn().mockImplementation(
-              () =>
-                <unknown>{
-                  name: 'Geekway to the Testing',
-                  users: [],
-                },
-            ),
-          },
-        },
-        {
-          provide: ConventionService,
-          useValue: {
-            createConvention: jest.fn().mockImplementation(
-              () =>
-                <unknown>{
-                  name: 'Geekway to the Testing',
-                },
-            ),
-          },
-        },
+        OrganizationService,
+        ConventionService,
         TabletopeventsService,
         AttendeeService,
       ],
     }).compile();
 
     controller = module.get<OrganizationController>(OrganizationController);
+    controller.ctx = ctx;
   });
 
   it('should be defined', () => {
@@ -62,7 +41,23 @@ describe('OrganizationController', () => {
   });
 
   describe('createOrganization', () => {
-    it('should return a organization object', async () => {
+    it('should create a organization object', async () => {
+      const organization = {
+        id: 1,
+        name: 'Geekway to the Testing',
+        ownerId: 1,
+        users: [
+          {
+            id: 1,
+            organizationId: 1,
+            admin: true,
+            geekGuide: false,
+            readOnly: false,
+            userId: 1,
+          },
+        ],
+      };
+
       const mockRequest = (<unknown>{
         user: {
           user: {
@@ -70,6 +65,8 @@ describe('OrganizationController', () => {
           },
         },
       }) as Request;
+
+      mockCtx.prisma.organization.create.mockResolvedValue(organization);
 
       const org = await controller.createOrganization(
         {
@@ -84,6 +81,53 @@ describe('OrganizationController', () => {
 
   describe('createConvention', () => {
     it('should return a convention object', async () => {
+      const convention = {
+        id: 1,
+        organizationId: 1,
+        name: 'Geekway to the Testing',
+        theme: 'Theme to the Testing',
+        logo: <Buffer>{},
+        logoSquare: <Buffer>{},
+        icon: '',
+        startDate: null,
+        endDate: null,
+        registrationUrl: '',
+        typeId: 1,
+        annual: '',
+        size: 3000,
+        cancelled: false,
+        playAndWinAnnounced: false,
+        doorPrizesAnnounced: false,
+        playAndWinCollectionId: 1,
+        doorPrizeCollectionId: 1,
+        playAndWinWinnersAnnounced: false,
+        playAndWinWinnersSelected: false,
+        tteConventionId: '',
+      };
+
+      const organization = {
+        id: 1,
+        name: 'Geekeway to the Testing',
+        ownerId: 1,
+        users: [
+          {
+            id: 1,
+            organizationId: 1,
+            admin: true,
+            geekGuide: false,
+            readyOnly: false,
+            userId: 1,
+          },
+        ],
+        owner: {
+          id: 1,
+          name: 'Test User',
+        },
+      };
+
+      mockCtx.prisma.convention.create.mockResolvedValue(convention);
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(organization);
+
       const con = await controller.createConvention(
         {
           name: 'Geekway to the Testing',

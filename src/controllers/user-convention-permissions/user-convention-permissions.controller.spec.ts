@@ -7,11 +7,20 @@ import { TabletopeventsService } from '../../services/tabletopevents/tabletopeve
 import { HttpModule } from '@nestjs/axios';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
+import {
+  Context,
+  MockContext,
+  createMockContext,
+} from '../../services/prisma/context';
 
 describe('UserConventionPermissionsController', () => {
   let controller: UserConventionPermissionsController;
+  let mockCtx: MockContext;
+  let ctx: Context;
 
   beforeEach(async () => {
+    mockCtx = createMockContext();
+    ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       controllers: [UserConventionPermissionsController],
@@ -21,23 +30,14 @@ describe('UserConventionPermissionsController', () => {
         AttendeeService,
         TabletopeventsService,
         PrismaService,
-        {
-          provide: UserConventionPermissionsService,
-          useValue: {
-            createPermission: jest.fn().mockImplementation(
-              () =>
-                <unknown>{
-                  id: 1,
-                },
-            ),
-          },
-        },
+        UserConventionPermissionsService,
       ],
     }).compile();
 
     controller = module.get<UserConventionPermissionsController>(
       UserConventionPermissionsController,
     );
+    controller.ctx = ctx;
   });
 
   it('should be defined', () => {
@@ -46,7 +46,20 @@ describe('UserConventionPermissionsController', () => {
 
   describe('createPermission', () => {
     it('should create a permission', async () => {
-      const perm = await controller.createPermission({
+      const permission = {
+        id: 1,
+        userId: 1,
+        conventionId: 1,
+        admin: true,
+        geekGuide: false,
+        attendee: false,
+      };
+
+      mockCtx.prisma.userConventionPermissions.create.mockResolvedValue(
+        permission,
+      );
+
+      const p = await controller.createPermission({
         userId: 1,
         conventionId: 1,
         admin: true,
@@ -54,7 +67,7 @@ describe('UserConventionPermissionsController', () => {
         attendee: false,
       });
 
-      expect(perm.id).toBe(1);
+      expect(p.id).toBe(1);
     });
   });
 });
