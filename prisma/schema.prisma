@@ -55,7 +55,7 @@ model BadgeType {
 
 model Pronouns {
   id       Int        @id @default(autoincrement())
-  pronouns String
+  pronouns String     @unique
   Attendee Attendee[]
   User     User[]
 }
@@ -124,7 +124,7 @@ model Collection {
 }
 
 model Game {
-  id               Int      @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   bggId            Int?
   lastBGGSync      DateTime?
   name             String

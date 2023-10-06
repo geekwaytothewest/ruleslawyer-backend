@@ -143,6 +143,17 @@ export class ConventionService {
         registrationCode: crypto.randomUUID(),
         email: b.email,
         badgeNumber: b.badge_number.toString(),
+        tteBadgeNumber: b.badge_number.toString(),
+        pronouns: {
+          connectOrCreate: {
+            create: {
+              pronouns: b.custom_fields.PreferredPronouns,
+            },
+            where: {
+              pronouns: b.custom_fields.PreferredPronouns,
+            },
+          },
+        },
       };
     });
 
