@@ -1,7 +1,7 @@
 //jwt-auth.guard.ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ConventionService } from 'src/services/convention/convention.service';
+import { ConventionService } from '../services/convention/convention.service';
 
 @Injectable()
 export class ConventionGuard implements CanActivate {

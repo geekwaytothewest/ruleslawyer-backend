@@ -9,13 +9,13 @@ import {
   Put,
 } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
-import { ConventionService } from 'src/services/convention/convention.service';
-import { JwtAuthGuard } from 'src/guards/auth.guard';
-import { SuperAdminGuard } from 'src/guards/superAdmin.guard';
-import { TabletopeventsService } from 'src/services/tabletopevents/tabletopevents.service';
-import { ConventionGuard } from 'src/guards/convention.guard';
-import { OrganizationService } from 'src/services/organization/organization.service';
-import { AttendeeService } from 'src/services/attendee/attendee.service';
+import { ConventionService } from '../../services/convention/convention.service';
+import { JwtAuthGuard } from '../../guards/auth.guard';
+import { SuperAdminGuard } from '../../guards/superAdmin.guard';
+import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
+import { ConventionGuard } from '../../guards/convention.guard';
+import { OrganizationService } from '../../services/organization/organization.service';
+import { AttendeeService } from '../../services/attendee/attendee.service';
 
 @Controller()
 export class ConventionController {

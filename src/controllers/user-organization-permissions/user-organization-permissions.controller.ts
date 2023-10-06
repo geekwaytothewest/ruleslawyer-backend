@@ -1,8 +1,8 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { Prisma, UserOrganizationPermissions } from '@prisma/client';
-import { JwtAuthGuard } from 'src/guards/auth.guard';
-import { OrganizationGuard } from 'src/guards/organization.guard';
-import { UserOrganizationPermissionsService } from 'src/services/user-organization-permissions/user-organization-permissions.service';
+import { JwtAuthGuard } from '../../guards/auth.guard';
+import { OrganizationGuard } from '../../guards/organization.guard';
+import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
 
 @Controller()
 export class UserOrganizationPermissionsController {

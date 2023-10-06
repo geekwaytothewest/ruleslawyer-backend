@@ -1,6 +1,6 @@
 //jwt-auth.guard.ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { UserService } from 'src/services/user/user.service';
+import { UserService } from '../services/user/user.service';
 
 @Injectable()
 export class UserGuard implements CanActivate {

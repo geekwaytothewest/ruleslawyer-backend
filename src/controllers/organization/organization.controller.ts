@@ -1,9 +1,9 @@
 import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { Convention, Organization, Prisma } from '@prisma/client';
-import { OrganizationService } from 'src/services/organization/organization.service';
-import { ConventionService } from 'src/services/convention/convention.service';
-import { JwtAuthGuard } from 'src/guards/auth.guard';
-import { OrganizationGuard } from 'src/guards/organization.guard';
+import { OrganizationService } from '../../services/organization/organization.service';
+import { ConventionService } from '../../services/convention/convention.service';
+import { JwtAuthGuard } from '../../guards/auth.guard';
+import { OrganizationGuard } from '../../guards/organization.guard';
 
 @Controller()
 export class OrganizationController {

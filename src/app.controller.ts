@@ -7,12 +7,16 @@ export class AppController {
 
   @Get('status')
   async status() {
-    const userCount = await this.userService.getUserCount();
+    try {
+      const userCount = await this.userService.getUserCount();
 
-    if (userCount === 0) {
-      return 'initialized';
-    } else if (userCount > 0) {
+      if (userCount === 0) {
+        return 'initialized';
+      }
+
       return 'live';
+    } catch (error) {
+      return 'no database connection';
     }
   }
 }
