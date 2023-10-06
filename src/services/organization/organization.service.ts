@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Organization, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { Context } from '../prisma/context';
 
 @Injectable()
 export class OrganizationService {
@@ -8,16 +9,18 @@ export class OrganizationService {
 
   async organization(
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
+    ctx: Context,
   ): Promise<Organization | null> {
-    return this.prisma.organization.findUnique({
+    return ctx.prisma.organization.findUnique({
       where: organizationWhereUniqueInput,
     });
   }
 
   async organizationWithUsers(
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
+    ctx: Context,
   ): Promise<any> {
-    return this.prisma.organization.findUnique({
+    return ctx.prisma.organization.findUnique({
       where: organizationWhereUniqueInput,
       include: {
         users: true,
@@ -29,8 +32,9 @@ export class OrganizationService {
   async createOrganization(
     name: string,
     ownerId: number,
+    ctx: Context,
   ): Promise<Organization> {
-    return this.prisma.organization.create({
+    return ctx.prisma.organization.create({
       data: {
         name: name,
         ownerId: ownerId,

@@ -12,19 +12,22 @@ import { Convention, Prisma } from '@prisma/client';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth.guard';
 import { SuperAdminGuard } from '../../guards/superAdmin.guard';
-import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { ConventionGuard } from '../../guards/convention.guard';
-import { OrganizationService } from '../../services/organization/organization.service';
-import { AttendeeService } from '../../services/attendee/attendee.service';
+import { PrismaService } from '../../services/prisma/prisma.service';
+import { Context } from '../../services/prisma/context';
 
 @Controller()
 export class ConventionController {
+  ctx: Context;
+
   constructor(
     private readonly conventionService: ConventionService,
-    private readonly tteService: TabletopeventsService,
-    private readonly organizationService: OrganizationService,
-    private readonly attendeeService: AttendeeService,
-  ) {}
+    private readonly prismaService: PrismaService,
+  ) {
+    this.ctx = {
+      prisma: prismaService,
+    };
+  }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post()
@@ -32,15 +35,18 @@ export class ConventionController {
     @Body()
     conventionData: Prisma.ConventionCreateInput,
   ): Promise<Convention> {
-    return this.conventionService.createConvention(conventionData);
+    return this.conventionService.createConvention(conventionData, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getConvention(@Param('id') id: number) {
-    const con = await this.conventionService.convention({
-      id: Number(id),
-    });
+    const con = await this.conventionService.convention(
+      {
+        id: Number(id),
+      },
+      this.ctx,
+    );
 
     if (!con) {
       throw new NotFoundException();
@@ -56,7 +62,11 @@ export class ConventionController {
     @Body()
     conventionData: Prisma.ConventionUpdateInput,
   ) {
-    return this.conventionService.updateConvention(Number(id), conventionData);
+    return this.conventionService.updateConvention(
+      Number(id),
+      conventionData,
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
@@ -70,6 +80,6 @@ export class ConventionController {
       apiKey: string;
     },
   ) {
-    return this.conventionService.importAttendees(userData, id);
+    return this.conventionService.importAttendees(userData, id, this.ctx);
   }
 }

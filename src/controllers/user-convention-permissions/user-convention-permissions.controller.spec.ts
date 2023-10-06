@@ -21,7 +21,17 @@ describe('UserConventionPermissionsController', () => {
         AttendeeService,
         TabletopeventsService,
         PrismaService,
-        UserConventionPermissionsService
+        {
+          provide: UserConventionPermissionsService,
+          useValue: {
+            createPermission: jest.fn().mockImplementation(
+              () =>
+                <unknown>{
+                  id: 1,
+                },
+            ),
+          },
+        },
       ],
     }).compile();
 
@@ -32,5 +42,19 @@ describe('UserConventionPermissionsController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('createPermission', () => {
+    it('should create a permission', async () => {
+      const perm = await controller.createPermission({
+        userId: 1,
+        conventionId: 1,
+        admin: true,
+        geekGuide: false,
+        attendee: false,
+      });
+
+      expect(perm.id).toBe(1);
+    });
   });
 });

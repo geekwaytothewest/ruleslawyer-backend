@@ -6,12 +6,19 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
 import * as dotenv from 'dotenv';
 import { UserService } from 'src/services/user/user.service';
+import { PrismaService } from 'src/services/prisma/prisma.service';
+import { Context } from 'src/services/prisma/context';
 
 dotenv.config();
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
-  constructor(private readonly userService: UserService) {
+  ctx: Context;
+
+  constructor(
+    private readonly userService: UserService,
+    private readonly prismaService: PrismaService,
+  ) {
     super({
       secretOrKeyProvider: passportJwtSecret({
         cache: true,
@@ -25,6 +32,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
       issuer: `${process.env.AUTH0_ISSUER_URL}`,
       algorithms: ['RS256'],
     });
+
+    this.ctx = {
+      prisma: prismaService,
+    };
   }
 
   async validate(payload: any) {
@@ -32,25 +43,34 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
       throw new UnauthorizedException();
     }
 
-    let user = await this.userService.user({
-      email: payload.user_email,
-    });
+    let user = await this.userService.user(
+      {
+        email: payload.user_email,
+      },
+      this.ctx,
+    );
 
     if (!user) {
-      user = await this.userService.createUser({
-        email: payload.user_email,
-        name: payload.user_name,
-      });
+      user = await this.userService.createUser(
+        {
+          email: payload.user_email,
+          name: payload.user_name,
+        },
+        this.ctx,
+      );
 
       if (user.id === 1) {
-        await this.userService.updateUser({
-          where: {
-            id: user.id,
+        await this.userService.updateUser(
+          {
+            where: {
+              id: user.id,
+            },
+            data: {
+              superAdmin: true,
+            },
           },
-          data: {
-            superAdmin: true,
-          },
-        });
+          this.ctx,
+        );
       }
     }
 

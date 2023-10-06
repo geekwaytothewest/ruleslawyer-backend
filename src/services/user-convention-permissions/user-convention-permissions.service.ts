@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, UserConventionPermissions } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { Context } from '../prisma/context';
 
 @Injectable()
 export class UserConventionPermissionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor() {}
 
-  async createPermissions(
+  async createPermission(
     data: Prisma.UserConventionPermissionsCreateInput,
+    ctx: Context,
   ): Promise<UserConventionPermissions> {
-    return this.prisma.userConventionPermissions.create({
+    return ctx.prisma.userConventionPermissions.create({
       data,
     });
   }

@@ -9,12 +9,23 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { User as UserModel } from '@prisma/client';
-import { JwtAuthGuard } from 'src/guards/auth.guard';
-import { UserGuard } from 'src/guards/user.guard';
+import { JwtAuthGuard } from '../../guards/auth.guard';
+import { UserGuard } from '../../guards/user.guard';
+import { Context } from '../../services/prisma/context';
+import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Controller()
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  ctx: Context;
+
+  constructor(
+    private readonly userService: UserService,
+    private readonly prismaService: PrismaService,
+  ) {
+    this.ctx = {
+      prisma: prismaService,
+    };
+  }
 
   @Post()
   async signupUser(
@@ -25,23 +36,29 @@ export class UserController {
       email: string;
     },
   ): Promise<boolean> {
-    await this.userService.createUser(userData);
+    await this.userService.createUser(userData, this.ctx);
     return true;
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
-    let user: UserModel;
+    let user: UserModel | null;
 
     if (!isNaN(Number(id))) {
-      user = await this.userService.user({
-        id: Number(id),
-      });
+      user = await this.userService.user(
+        {
+          id: Number(id),
+        },
+        this.ctx,
+      );
     } else {
-      user = await this.userService.user({
-        email: id,
-      });
+      user = await this.userService.user(
+        {
+          email: id,
+        },
+        this.ctx,
+      );
     }
 
     if (!user) {

@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
 import { OrganizationService } from '../organization/organization.service';
 import { AttendeeService } from '../attendee/attendee.service';
 import { TabletopeventsService } from '../tabletopevents/tabletopevents.service';
 import * as crypto from 'crypto';
+import { Context } from '../prisma/context';
 
 @Injectable()
 export class ConventionService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly organizationService: OrganizationService,
     private readonly attendeeService: AttendeeService,
     private readonly tteService: TabletopeventsService,
@@ -17,10 +16,14 @@ export class ConventionService {
 
   async createConvention(
     data: Prisma.ConventionCreateInput,
+    ctx: Context,
   ): Promise<Convention> {
-    const org = await this.organizationService.organizationWithUsers({
-      id: data.organization.connect.id,
-    });
+    const org = await this.organizationService.organizationWithUsers(
+      {
+        id: data.organization.connect?.id,
+      },
+      ctx,
+    );
 
     const userPermissions = org.users.map((u) => {
       return {
@@ -43,7 +46,7 @@ export class ConventionService {
       ],
     };
 
-    const con = await this.prisma.convention.create({
+    const con = await ctx.prisma.convention.create({
       data,
     });
 
@@ -52,16 +55,18 @@ export class ConventionService {
 
   async convention(
     conventionWhereUniqueInput: Prisma.ConventionWhereUniqueInput,
+    ctx: Context,
   ): Promise<Convention | null> {
-    return this.prisma.convention.findUnique({
+    return ctx.prisma.convention.findUnique({
       where: conventionWhereUniqueInput,
     });
   }
 
   async conventionWithUsers(
     conventionWhereUniqueInput: Prisma.ConventionWhereUniqueInput,
+    ctx: Context,
   ): Promise<any> {
-    return this.prisma.convention.findUnique({
+    return ctx.prisma.convention.findUnique({
       where: conventionWhereUniqueInput,
       include: {
         users: true,
@@ -72,8 +77,9 @@ export class ConventionService {
   async updateConvention(
     id: number,
     conventionUpdateInput: Prisma.ConventionUpdateInput,
+    ctx: Context,
   ): Promise<any> {
-    return this.prisma.convention.update({
+    return ctx.prisma.convention.update({
       where: {
         id: id,
       },
@@ -81,14 +87,17 @@ export class ConventionService {
     });
   }
 
-  async importAttendees(userData, conventionId) {
-    await this.attendeeService.truncate(conventionId);
+  async importAttendees(userData, conventionId, ctx) {
+    await this.attendeeService.truncate(conventionId, ctx);
 
-    const convention = await this.convention({
-      id: Number(conventionId),
-    });
+    const convention = await this.convention(
+      {
+        id: Number(conventionId),
+      },
+      ctx,
+    );
 
-    if (!convention.tteConventionId) {
+    if (!convention?.tteConventionId) {
       throw 'Convention missing tteConventionId.';
     }
 
@@ -102,7 +111,7 @@ export class ConventionService {
       throw 'invalid tte session';
     }
 
-    const tteBadgeTypes = await this.tteService.getBadgeTypes(
+    const tteBadgeTypes: any[] = await this.tteService.getBadgeTypes(
       convention.tteConventionId,
       session,
     );
@@ -158,7 +167,7 @@ export class ConventionService {
     });
 
     for (const a of attendees) {
-      await this.attendeeService.createAttendee(a);
+      await this.attendeeService.createAttendee(a, ctx);
     }
 
     return attendees.length;

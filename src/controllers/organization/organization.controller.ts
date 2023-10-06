@@ -4,13 +4,22 @@ import { OrganizationService } from '../../services/organization/organization.se
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth.guard';
 import { OrganizationGuard } from '../../guards/organization.guard';
+import { Context } from '../../services/prisma/context';
+import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Controller()
 export class OrganizationController {
+  ctx: Context;
+
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly conventionService: ConventionService,
-  ) {}
+    private readonly prismaService: PrismaService,
+  ) {
+    this.ctx = {
+      prisma: prismaService,
+    };
+  }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -22,6 +31,7 @@ export class OrganizationController {
     return this.organizationService.createOrganization(
       organizationData.name,
       ownerId,
+      this.ctx,
     );
   }
 
@@ -29,7 +39,6 @@ export class OrganizationController {
   @Post(':id/con')
   async createConvention(
     @Body() conventionData: Prisma.ConventionCreateInput,
-    @Req() request: Request,
     @Param('id') id: number,
   ): Promise<Convention> {
     conventionData.organization = {
@@ -38,6 +47,6 @@ export class OrganizationController {
       },
     };
 
-    return this.conventionService.createConvention(conventionData);
+    return this.conventionService.createConvention(conventionData, this.ctx);
   }
 }

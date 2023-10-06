@@ -10,15 +10,24 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService, UserService, PrismaService],
+      providers: [
+        AppService,
+        {
+          provide: UserService,
+          useValue: {
+            getUserCount: jest.fn().mockImplementation(() => 0),
+          },
+        },
+        PrismaService,
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
   });
 
   describe('status', () => {
-    it('should return "live"', async () => {
-      expect(await appController.status()).toBe('live');
+    it('should return "initialized"', async () => {
+      expect(await appController.status()).toBe('initialized');
     });
   });
 });

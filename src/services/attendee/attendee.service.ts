@@ -1,19 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { Context } from '../prisma/context';
 
 @Injectable()
 export class AttendeeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor() {}
 
-  async createAttendee(data: Prisma.AttendeeCreateInput): Promise<boolean> {
-    await this.prisma.attendee.create({ data });
+  async createAttendee(
+    data: Prisma.AttendeeCreateInput,
+    ctx: Context,
+  ): Promise<boolean> {
+    await ctx.prisma.attendee.create({ data });
 
     return true;
   }
 
-  async truncate(conventionId: number) {
-    await this.prisma.attendee.deleteMany({
+  async truncate(conventionId: number, ctx: Context) {
+    await ctx.prisma.attendee.deleteMany({
       where: {
         conventionId: Number(conventionId),
       },

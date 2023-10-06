@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserOrganizationPermissions } from '@prisma/client';
+import { Context } from '../prisma/context';
 
 @Injectable()
 export class UserOrganizationPermissionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor() {}
 
-  async createPermissions(
+  async createPermission(
     data: Prisma.UserOrganizationPermissionsCreateInput,
+    ctx: Context,
   ): Promise<UserOrganizationPermissions> {
-    return this.prisma.userOrganizationPermissions.create({
+    return ctx.prisma.userOrganizationPermissions.create({
       data,
     });
   }

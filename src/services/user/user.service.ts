@@ -1,60 +1,50 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
+import { Context } from '../prisma/context';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor() {}
 
   async user(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+    ctx: Context,
   ): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return ctx.prisma.user.findUnique({
       where: userWhereUniqueInput,
     });
   }
 
-  async users(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.UserWhereUniqueInput;
-    where?: Prisma.UserWhereInput;
-    orderBy?: Prisma.UserOrderByWithRelationInput;
-  }): Promise<User[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.user.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
-  }
-
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
+  async createUser(data: Prisma.UserCreateInput, ctx: Context): Promise<User> {
+    return ctx.prisma.user.create({
       data,
     });
   }
 
-  async updateUser(params: {
-    where: Prisma.UserWhereUniqueInput;
-    data: Prisma.UserUpdateInput;
-  }): Promise<User> {
+  async updateUser(
+    params: {
+      where: Prisma.UserWhereUniqueInput;
+      data: Prisma.UserUpdateInput;
+    },
+    ctx: Context,
+  ): Promise<User> {
     const { where, data } = params;
-    return this.prisma.user.update({
+    return ctx.prisma.user.update({
       data,
       where,
     });
   }
 
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return this.prisma.user.delete({
+  async deleteUser(
+    where: Prisma.UserWhereUniqueInput,
+    ctx: Context,
+  ): Promise<User> {
+    return ctx.prisma.user.delete({
       where,
     });
   }
 
-  async getUserCount() {
-    return this.prisma.user.count();
+  async getUserCount(ctx: Context) {
+    return ctx.prisma.user.count();
   }
 }

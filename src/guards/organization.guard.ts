@@ -2,10 +2,21 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { OrganizationService } from '../services/organization/organization.service';
+import { Context } from '../services/prisma/context';
+import { PrismaService } from '../services/prisma/prisma.service';
 
 @Injectable()
 export class OrganizationGuard implements CanActivate {
-  constructor(private readonly organizationService: OrganizationService) {}
+  ctx: Context;
+
+  constructor(
+    private readonly organizationService: OrganizationService,
+    private readonly prismaService: PrismaService,
+  ) {
+    this.ctx = {
+      prisma: prismaService,
+    };
+  }
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user.user;
@@ -26,9 +37,12 @@ export class OrganizationGuard implements CanActivate {
     type OrgWithUsers = Prisma.OrganizationGetPayload<typeof orgWithUsers>;
 
     const org: OrgWithUsers =
-      await this.organizationService.organizationWithUsers({
-        id: Number(orgId),
-      });
+      await this.organizationService.organizationWithUsers(
+        {
+          id: Number(orgId),
+        },
+        this.ctx,
+      );
 
     if (org?.ownerId == user.id) {
       return true;

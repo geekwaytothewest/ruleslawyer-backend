@@ -26,7 +26,7 @@ export class TabletopeventsService {
   }
 
   async getBadges(tteConventionId: string, session: any) {
-    const badges = [];
+    const badges: any[] = [];
 
     let badgePage = await lastValueFrom(
       this.httpService
@@ -56,7 +56,7 @@ export class TabletopeventsService {
   }
 
   async getBadgeTypes(tteConventionId: string, session: any) {
-    const badgeTypes = [];
+    const badgeTypes: any[] = [];
 
     let badgeTypePage = await lastValueFrom(
       this.httpService

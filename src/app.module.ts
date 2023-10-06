@@ -9,6 +9,9 @@ import { ConventionModule } from './modules/convention/convention.module';
 import { HttpModule } from '@nestjs/axios';
 import { UserOrganizationPermissionsModule } from './modules/user-organization-permissions/user-organization-permissions.module';
 import { UserConventionPermissionsModule } from './modules/user-convention-permissions/user-convention-permissions.module';
+import { UserController } from './controllers/user/user.controller';
+import { UserService } from './services/user/user.service';
+import { PrismaService } from './services/prisma/prisma.service';
 
 const routes = [
   {
@@ -44,7 +47,7 @@ const routes = [
     OrganizationModule,
     UserConventionPermissionsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, UserController],
+  providers: [AppService, UserService, PrismaService],
 })
 export class AppModule {}
