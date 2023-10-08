@@ -143,4 +143,25 @@ describe('OrganizationController', () => {
   });
 
   //To do: figure out how to mock a request so i can call controller.importCollection()
+
+  describe('deleteCollection', () => {
+    it('should delete a collection', async () => {
+      mockCtx.prisma.collection.delete.mockResolvedValue({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+      });
+
+      expect(await controller.deleteCollection(1, 1)).toBe('deleted');
+    });
+
+    it('should error', async () => {
+      mockCtx.prisma.convention.count.mockResolvedValue(1);
+
+      expect(await controller.deleteCollection(1, 1)).toBe(
+        'cannot delete a collection tied to a convention',
+      );
+    });
+  });
 });

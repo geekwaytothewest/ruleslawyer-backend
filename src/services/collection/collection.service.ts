@@ -158,15 +158,17 @@ export class CollectionService {
       },
     });
 
-    for (const c of copies) {
-      const count = c.collections.filter((c) => c.id !== Number(id)).length;
+    if (copies) {
+      for (const c of copies) {
+        const count = c.collections.filter((c) => c.id !== Number(id)).length;
 
-      if (!count) {
-        await ctx.prisma.copy.delete({
-          where: {
-            id: c.id,
-          },
-        });
+        if (!count) {
+          await ctx.prisma.copy.delete({
+            where: {
+              id: c.id,
+            },
+          });
+        }
       }
     }
 

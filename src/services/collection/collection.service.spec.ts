@@ -78,12 +78,125 @@ describe('CollectionService', () => {
 
       const result = await service.importCollection(
         1,
-        'Test Collection',
+        {
+          name: {
+            value: 'Test Collection',
+          },
+        },
         Buffer.from('test title,1'),
         ctx,
       );
 
-      expect(result).toBe(1);
+      expect(result).toMatchObject({
+        collectionId: 1,
+        importCount: 1,
+      });
+    });
+
+    it('should create a play and win', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+      });
+
+      const result = await service.importCollection(
+        1,
+        {
+          name: {
+            value: 'Test Collection',
+          },
+          type: {
+            value: 'Play and Win',
+          },
+          conventionId: {
+            value: 1,
+          },
+        },
+        Buffer.from('test title,1'),
+        ctx,
+      );
+
+      expect(result).toMatchObject({
+        collectionId: 1,
+        importCount: 1,
+      });
+    });
+
+    it('should create door prizes', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+      });
+
+      const result = await service.importCollection(
+        1,
+        {
+          name: {
+            value: 'Test Collection',
+          },
+          type: {
+            value: 'Door Prizes',
+          },
+          conventionId: {
+            value: 1,
+          },
+        },
+        Buffer.from('test title,1'),
+        ctx,
+      );
+
+      expect(result).toMatchObject({
+        collectionId: 1,
+        importCount: 1,
+      });
+    });
+
+    it('should error with missing name', async () => {
+      const result = service.importCollection(
+        1,
+        {},
+        Buffer.from('test title,1'),
+        ctx,
+      );
+      expect(result).rejects.toBe('missing name');
+    });
+
+    it('should error with invalid type', async () => {
+      const result = service.importCollection(
+        1,
+        {
+          name: {
+            value: 'test name',
+          },
+          type: {
+            value: 'bad',
+          },
+        },
+        Buffer.from('test title,1'),
+        ctx,
+      );
+      expect(result).rejects.toBe('invalid type');
+    });
+
+    it('should error with missing convention id', async () => {
+      const result = service.importCollection(
+        1,
+        {
+          name: {
+            value: 'test name',
+          },
+          type: {
+            value: 'Play and Win',
+          },
+        },
+        Buffer.from('test title,1'),
+        ctx,
+      );
+      expect(result).rejects.toBe('missing convention id');
     });
   });
 
