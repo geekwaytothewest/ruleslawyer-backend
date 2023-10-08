@@ -95,4 +95,90 @@ describe('ConventionService', () => {
       expect(con.id).toBe(1);
     });
   });
+
+  describe('convention', () => {
+    it('should return a convention', async () => {
+      mockCtx.prisma.convention.findUnique.mockResolvedValue({
+        id: 1,
+        organizationId: 1,
+        name: 'Test Convention',
+        theme: 'Test theme',
+        logo: Buffer.from(''),
+        logoSquare: Buffer.from(''),
+        icon: '',
+        startDate: new Date(),
+        endDate: null,
+        registrationUrl: '',
+        typeId: null,
+        annual: '',
+        size: null,
+        cancelled: false,
+        playAndWinAnnounced: false,
+        playAndWinWinnersSelected: false,
+        playAndWinWinnersAnnounced: false,
+        doorPrizesAnnounced: false,
+        playAndWinCollectionId: null,
+        doorPrizeCollectionId: null,
+        tteConventionId: '',
+      });
+
+      const convention = await service.convention(
+        {
+          id: 1,
+        },
+        ctx,
+      );
+
+      expect(convention?.id).toBe(1);
+    });
+  });
+
+  describe('conventionWithUsers', () => {
+    it('should return a convention', async () => {
+      const query = {
+        id: 1,
+        organizationId: 1,
+        name: 'Test Convention',
+        theme: 'Test theme',
+        logo: Buffer.from(''),
+        logoSquare: Buffer.from(''),
+        icon: '',
+        startDate: new Date(),
+        endDate: null,
+        registrationUrl: '',
+        typeId: null,
+        annual: '',
+        size: null,
+        cancelled: false,
+        playAndWinAnnounced: false,
+        playAndWinWinnersSelected: false,
+        playAndWinWinnersAnnounced: false,
+        doorPrizesAnnounced: false,
+        playAndWinCollectionId: null,
+        doorPrizeCollectionId: null,
+        tteConventionId: '',
+        users: [
+          {
+            id: 1,
+            conventionId: 1,
+            admin: true,
+            geekGuide: false,
+            attendee: false,
+            userId: 1,
+          },
+        ],
+      };
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue(query);
+
+      const convention = await service.convention(
+        {
+          id: 1,
+        },
+        ctx,
+      );
+
+      expect(convention?.id).toBe(1);
+    });
+  });
 });

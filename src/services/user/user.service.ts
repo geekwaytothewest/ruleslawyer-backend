@@ -35,15 +35,6 @@ export class UserService {
     });
   }
 
-  async deleteUser(
-    where: Prisma.UserWhereUniqueInput,
-    ctx: Context,
-  ): Promise<User> {
-    return ctx.prisma.user.delete({
-      where,
-    });
-  }
-
   async getUserCount(ctx: Context) {
     return ctx.prisma.user.count();
   }
