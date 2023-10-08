@@ -125,9 +125,9 @@ model Collection {
 
 model Game {
   id               Int       @id @default(autoincrement())
-  bggId            Int?
+  bggId            Int?      @unique
   lastBGGSync      DateTime?
-  name             String
+  name             String    @unique
   shortDescription String?
   designer         String?
   artist           String?
@@ -148,11 +148,11 @@ model Copy {
   game             Game         @relation(fields: gameId, references: [id])
   gameId           Int
   dateAdded        DateTime
-  dateRetired      DateTime
+  dateRetired      DateTime?
   winnable         Boolean      @default(true)
   winner           Attendee?    @relation(fields: winnerId, references: [id])
   winnerId         Int?
-  coverArtOverride Bytes
+  coverArtOverride Bytes?
   collections      Collection[]
   checkOuts        CheckOut[]
   User             User?        @relation(fields: [userId], references: [id])

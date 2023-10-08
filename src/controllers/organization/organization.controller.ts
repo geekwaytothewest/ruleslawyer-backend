@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Convention, Organization, Prisma } from '@prisma/client';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { ConventionService } from '../../services/convention/convention.service';
@@ -6,6 +14,9 @@ import { JwtAuthGuard } from '../../guards/auth.guard';
 import { OrganizationGuard } from '../../guards/organization.guard';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
+import fastify = require('fastify');
+import { UploadGuard } from 'src/guards/upload.guard';
+import { CollectionService } from 'src/services/collection/collection.service';
 
 @Controller()
 export class OrganizationController {
@@ -15,6 +26,7 @@ export class OrganizationController {
     private readonly organizationService: OrganizationService,
     private readonly conventionService: ConventionService,
     private readonly prismaService: PrismaService,
+    private readonly collectionService: CollectionService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -48,5 +60,28 @@ export class OrganizationController {
     };
 
     return this.conventionService.createConvention(conventionData, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard, UploadGuard)
+  @Post(':id/col')
+  async importCollection(
+    @Req() request: fastify.FastifyRequest,
+    @Param('id') id: number,
+  ) {
+    const file = await request.file();
+    const buffer = await file?.toBuffer();
+
+    if (buffer === undefined) {
+      throw new BadRequestException();
+    }
+
+    const fields = file?.fields as any;
+
+    return await this.collectionService.importCollection(
+      id,
+      fields.name.value,
+      buffer,
+      this.ctx,
+    );
   }
 }

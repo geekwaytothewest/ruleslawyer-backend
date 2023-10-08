@@ -12,6 +12,7 @@ import { UserConventionPermissionsModule } from './modules/user-convention-permi
 import { UserController } from './controllers/user/user.controller';
 import { UserService } from './services/user/user.service';
 import { PrismaService } from './services/prisma/prisma.service';
+import { CollectionService } from './services/collection/collection.service';
 
 const routes = [
   {
@@ -48,6 +49,6 @@ const routes = [
     UserConventionPermissionsModule,
   ],
   controllers: [AppController, UserController],
-  providers: [AppService, UserService, PrismaService],
+  providers: [AppService, UserService, PrismaService, CollectionService],
 })
 export class AppModule {}

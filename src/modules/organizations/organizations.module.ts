@@ -2,6 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { OrganizationController } from 'src/controllers/organization/organization.controller';
 import { AttendeeService } from 'src/services/attendee/attendee.service';
+import { CollectionService } from 'src/services/collection/collection.service';
 import { ConventionService } from 'src/services/convention/convention.service';
 import { OrganizationService } from 'src/services/organization/organization.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
@@ -20,6 +21,7 @@ import { UserService } from 'src/services/user/user.service';
     UserConventionPermissionsService,
     AttendeeService,
     TabletopeventsService,
+    CollectionService,
   ],
   exports: [OrganizationService],
 })
