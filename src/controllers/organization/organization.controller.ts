@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Param,
   Post,
   Req,
@@ -15,8 +16,9 @@ import { OrganizationGuard } from '../../guards/organization.guard';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import fastify = require('fastify');
-import { UploadGuard } from 'src/guards/upload.guard';
-import { CollectionService } from 'src/services/collection/collection.service';
+import { UploadGuard } from '../../guards/upload.guard';
+import { CollectionService } from '../../services/collection/collection.service';
+import { CollectionGuard } from '../../guards/collection.guard';
 
 @Controller()
 export class OrganizationController {
@@ -83,5 +85,14 @@ export class OrganizationController {
       buffer,
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard, CollectionGuard)
+  @Delete(':id/col/:colId')
+  async deleteCollection(
+    @Param('id') id: number,
+    @Param('colId') colId: number,
+  ) {
+    return await this.collectionService.deleteCollection(colId, this.ctx);
   }
 }

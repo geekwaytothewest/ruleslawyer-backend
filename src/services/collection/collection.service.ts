@@ -6,6 +6,12 @@ import { Context } from '../prisma/context';
 export class CollectionService {
   constructor() {}
 
+  async collection(id: number, ctx: Context) {
+    return await ctx.prisma.collection.findUnique({
+      where: { id: Number(id) },
+    });
+  }
+
   async importCollection(
     orgId: number,
     name: string,
@@ -20,6 +26,8 @@ export class CollectionService {
         },
       });
 
+      let importCount = 0;
+
       parse(csvData, { delimiter: ',' }, async (error, records) => {
         if (error) {
           return error;
@@ -28,6 +36,8 @@ export class CollectionService {
         for (const r of records) {
           await ctx.prisma.copy.create({
             data: {
+              barcodeNumber: Number(r[1]),
+              barcode: '*' + r[1].padStart(5, '0') + '*',
               game: {
                 connectOrCreate: {
                   create: {
@@ -47,12 +57,30 @@ export class CollectionService {
               },
             },
           });
+
+          importCount++;
         }
 
-        resolve('imported');
+        resolve(importCount);
       });
     });
 
     return promise;
+  }
+
+  async deleteCollection(id: number, ctx: Context) {
+    const conventions = await ctx.prisma.convention.count({
+      where: {
+        OR: [{ doorPrizeCollectionId: id }, { playAndWinCollectionId: id }],
+      },
+    });
+
+    if (conventions) {
+      return 'cannot delete a collection tied to a convention.';
+    }
+
+    await ctx.prisma.collection.delete({ where: { id: Number(id) } });
+
+    return 'deleted';
   }
 }

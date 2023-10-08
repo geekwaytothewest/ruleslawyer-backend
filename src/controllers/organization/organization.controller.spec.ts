@@ -11,6 +11,7 @@ import {
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
+import { CollectionService } from '../../services/collection/collection.service';
 
 describe('OrganizationController', () => {
   let controller: OrganizationController;
@@ -29,6 +30,7 @@ describe('OrganizationController', () => {
         ConventionService,
         TabletopeventsService,
         AttendeeService,
+        CollectionService,
       ],
     }).compile();
 
@@ -139,4 +141,6 @@ describe('OrganizationController', () => {
       expect(con.name).toBe('Geekway to the Testing');
     });
   });
+
+  //To do: figure out how to mock a request so i can call controller.importCollection()
 });
