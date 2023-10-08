@@ -31,23 +31,27 @@ export class UserOrganizationPermissionsController {
       readOnly: boolean;
     },
   ): Promise<UserOrganizationPermissions> {
-    return this.userOrganizationPermissionsService.createPermission(
-      {
-        user: {
-          connect: {
-            id: permissionData.userId,
+    return this.userOrganizationPermissionsService
+      .createPermission(
+        {
+          user: {
+            connect: {
+              id: permissionData.userId,
+            },
           },
-        },
-        organization: {
-          connect: {
-            id: permissionData.organizationId,
+          organization: {
+            connect: {
+              id: permissionData.organizationId,
+            },
           },
+          admin: permissionData.admin,
+          geekGuide: permissionData.geekGuide,
+          readOnly: permissionData.readOnly,
         },
-        admin: permissionData.admin,
-        geekGuide: permissionData.geekGuide,
-        readOnly: permissionData.readOnly,
-      },
-      this.ctx,
-    );
+        this.ctx,
+      )
+      .catch((error) => {
+        return error;
+      });
   }
 }

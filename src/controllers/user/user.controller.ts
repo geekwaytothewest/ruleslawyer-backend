@@ -46,19 +46,27 @@ export class UserController {
     let user: UserModel | null;
 
     if (!isNaN(Number(id))) {
-      user = await this.userService.user(
-        {
-          id: Number(id),
-        },
-        this.ctx,
-      );
+      user = await this.userService
+        .user(
+          {
+            id: Number(id),
+          },
+          this.ctx,
+        )
+        .catch((error) => {
+          return error;
+        });
     } else {
-      user = await this.userService.user(
-        {
-          email: id,
-        },
-        this.ctx,
-      );
+      user = await this.userService
+        .user(
+          {
+            email: id,
+          },
+          this.ctx,
+        )
+        .catch((error) => {
+          return error;
+        });
     }
 
     if (!user) {

@@ -41,12 +41,16 @@ export class ConventionController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getConvention(@Param('id') id: number) {
-    const con = await this.conventionService.convention(
-      {
-        id: Number(id),
-      },
-      this.ctx,
-    );
+    const con = await this.conventionService
+      .convention(
+        {
+          id: Number(id),
+        },
+        this.ctx,
+      )
+      .catch((error) => {
+        return error;
+      });
 
     if (!con) {
       throw new NotFoundException();
@@ -62,11 +66,11 @@ export class ConventionController {
     @Body()
     conventionData: Prisma.ConventionUpdateInput,
   ) {
-    return this.conventionService.updateConvention(
-      Number(id),
-      conventionData,
-      this.ctx,
-    );
+    return this.conventionService
+      .updateConvention(Number(id), conventionData, this.ctx)
+      .catch((error) => {
+        return error;
+      });
   }
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
@@ -80,6 +84,10 @@ export class ConventionController {
       apiKey: string;
     },
   ) {
-    return this.conventionService.importAttendees(userData, id, this.ctx);
+    return this.conventionService
+      .importAttendees(userData, id, this.ctx)
+      .catch((error) => {
+        return error;
+      });
   }
 }
