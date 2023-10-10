@@ -44,8 +44,33 @@ describe('CollectionGuard', () => {
   it('should return false with no org id', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
-        colId: 1,
+        params: { colId: 1 },
       }),
+    });
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('should return false with org id mismatch', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: {
+          user: { id: 1, superAdmin: true },
+        },
+        params: {
+          id: 1,
+          colId: 1,
+        },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 2,
+      name: 'Test Library',
+      public: false,
     });
 
     const authed = await guard.canActivate(context);
@@ -80,6 +105,44 @@ describe('CollectionGuard', () => {
       users: [
         {
           id: 1,
+          admin: true,
+        },
+      ],
+    };
+    mockCtx.prisma.organization.findUnique.mockResolvedValue(org);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+  });
+
+  it('should return true with auth on non org owner id', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: {
+          user: { id: 2, superAdmin: false },
+        },
+        params: {
+          id: 1,
+          colId: 1,
+        },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      name: 'Test Library',
+      public: false,
+    });
+
+    const org = {
+      id: 1,
+      ownerId: 1,
+      name: 'Geekway to the Test',
+      users: [
+        {
+          id: 2,
           admin: true,
         },
       ],
