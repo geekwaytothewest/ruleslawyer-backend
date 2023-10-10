@@ -1,9 +1,9 @@
 //jwt-auth.guard.ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { OrganizationService } from '../services/organization/organization.service';
-import { Context } from '../services/prisma/context';
-import { PrismaService } from '../services/prisma/prisma.service';
+import { OrganizationService } from '../../services/organization/organization.service';
+import { Context } from '../../services/prisma/context';
+import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Injectable()
 export class OrganizationGuard implements CanActivate {
@@ -19,11 +19,11 @@ export class OrganizationGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
-    const user = context.getArgByIndex(0).user.user;
-    let orgId = context.getArgByIndex(0).params.id;
+    const user = context.getArgByIndex(0).user?.user;
+    let orgId = context.getArgByIndex(0).params?.id;
 
     if (!orgId) {
-      orgId = context.getArgByIndex(0).body.organizationId;
+      orgId = context.getArgByIndex(0).body?.organizationId;
     }
 
     if (!orgId) {

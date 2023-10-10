@@ -5,9 +5,9 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
 import * as dotenv from 'dotenv';
-import { UserService } from 'src/services/user/user.service';
-import { PrismaService } from 'src/services/prisma/prisma.service';
-import { Context } from 'src/services/prisma/context';
+import { UserService } from '../../services/user/user.service';
+import { PrismaService } from '../../services/prisma/prisma.service';
+import { Context } from '../../services/prisma/context';
 
 dotenv.config();
 

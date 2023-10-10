@@ -209,6 +209,41 @@ describe('CollectionService', () => {
         public: false,
       });
 
+      const findManyResolved = [
+        {
+          id: 1,
+          gameId: 1,
+          winnable: false,
+          winnerId: null,
+          coverArtOverride: null,
+          dateAdded: new Date(),
+          dateRetired: null,
+          barcode: '*00001*',
+          barcodeNumber: 1,
+          collections: [
+            {
+              id: 1,
+              name: 'Test Collection',
+              organizationId: 1,
+              public: false,
+            },
+          ],
+        },
+      ];
+      mockCtx.prisma.copy.findMany.mockResolvedValue(findManyResolved);
+
+      mockCtx.prisma.copy.delete.mockResolvedValue({
+        id: 1,
+        gameId: 1,
+        winnable: false,
+        winnerId: null,
+        coverArtOverride: null,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcode: '*00001*',
+        barcodeNumber: 1,
+      });
+
       expect(await service.deleteCollection(1, ctx)).toBe('deleted');
     });
   });

@@ -1,9 +1,9 @@
 //jwt-auth.guard.ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ConventionService } from '../services/convention/convention.service';
-import { Context } from '../services/prisma/context';
-import { PrismaService } from '../services/prisma/prisma.service';
+import { ConventionService } from '../../services/convention/convention.service';
+import { Context } from '../../services/prisma/context';
+import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Injectable()
 export class ConventionGuard implements CanActivate {
@@ -19,8 +19,12 @@ export class ConventionGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
-    const user = context.getArgByIndex(0).user.user;
-    const conId = context.getArgByIndex(0).params.id;
+    const user = context.getArgByIndex(0).user?.user;
+    const conId = context.getArgByIndex(0).params?.id;
+
+    if (!conId) {
+      return false;
+    }
 
     const conWithUsers = Prisma.validator<Prisma.ConventionDefaultArgs>()({
       include: { users: true },
@@ -35,7 +39,7 @@ export class ConventionGuard implements CanActivate {
       this.ctx,
     );
 
-    if (con?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+    if (con?.users?.filter((u) => u.id === user.id && u.admin).length > 0) {
       return true;
     }
 

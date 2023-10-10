@@ -1,24 +1,28 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { UserConventionPermissionsController } from '../../controllers/user-convention-permissions/user-convention-permissions.controller';
+import { OrganizationController } from '../../controllers/organization/organization.controller';
 import { AttendeeService } from '../../services/attendee/attendee.service';
+import { CollectionService } from '../../services/collection/collection.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
+import { UserService } from '../../services/user/user.service';
 
 @Module({
   imports: [HttpModule],
-  controllers: [UserConventionPermissionsController],
+  controllers: [OrganizationController],
   providers: [
-    UserConventionPermissionsService,
-    PrismaService,
-    ConventionService,
     OrganizationService,
+    UserService,
+    ConventionService,
+    PrismaService,
+    UserConventionPermissionsService,
     AttendeeService,
     TabletopeventsService,
+    CollectionService,
   ],
-  exports: [UserConventionPermissionsService],
+  exports: [OrganizationService],
 })
-export class UserConventionPermissionsModule {}
+export class OrganizationModule {}

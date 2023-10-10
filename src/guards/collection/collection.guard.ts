@@ -1,10 +1,10 @@
 //jwt-auth.guard.ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { OrganizationService } from '../services/organization/organization.service';
-import { Context } from '../services/prisma/context';
-import { PrismaService } from '../services/prisma/prisma.service';
-import { CollectionService } from '../services/collection/collection.service';
+import { OrganizationService } from '../../services/organization/organization.service';
+import { Context } from '../../services/prisma/context';
+import { PrismaService } from '../../services/prisma/prisma.service';
+import { CollectionService } from '../../services/collection/collection.service';
 
 @Injectable()
 export class CollectionGuard implements CanActivate {
@@ -21,9 +21,9 @@ export class CollectionGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
-    const user = context.getArgByIndex(0).user.user;
-    const orgId = context.getArgByIndex(0).params.id;
-    const colId = context.getArgByIndex(0).params.colId;
+    const user = context.getArgByIndex(0).user?.user;
+    const orgId = context.getArgByIndex(0).params?.id;
+    const colId = context.getArgByIndex(0).params?.colId;
 
     if (!colId) {
       return false;

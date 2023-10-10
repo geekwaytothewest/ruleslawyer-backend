@@ -1,7 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { UserConventionPermissions } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth.guard';
-import { ConventionGuard } from '../../guards/convention.guard';
+import { ConventionGuard } from '../../guards/convention/convention.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
