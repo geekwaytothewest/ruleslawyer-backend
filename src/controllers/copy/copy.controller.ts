@@ -22,7 +22,7 @@ export class CopyController {
   @UseGuards(JwtAuthGuard, CopyGuard)
   @Get(':id')
   async getCopy(@Param('id') id: number) {
-    return await this.copyService.copy({ id: id }, this.ctx);
+    return await this.copyService.copy({ id: Number(id) }, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
@@ -31,10 +31,12 @@ export class CopyController {
     @Param('id') id: number,
     @Body() copy: Prisma.CopyUpdateInput,
   ) {
+    copy.collections = undefined; //Don't allow editing collections
+
     return await this.copyService.updateCopy(
       {
         where: {
-          id: id,
+          id: Number(id),
         },
         data: copy,
       },

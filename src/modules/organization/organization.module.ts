@@ -9,6 +9,7 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { UserService } from '../../services/user/user.service';
+import { CopyService } from '../../services/copy/copy.service';
 
 @Module({
   imports: [HttpModule],
@@ -22,6 +23,7 @@ import { UserService } from '../../services/user/user.service';
     AttendeeService,
     TabletopeventsService,
     CollectionService,
+    CopyService,
   ],
   exports: [OrganizationService],
 })

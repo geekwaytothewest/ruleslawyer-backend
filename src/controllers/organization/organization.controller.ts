@@ -18,6 +18,7 @@ import fastify = require('fastify');
 import { UploadGuard } from '../../guards/upload.guard';
 import { CollectionService } from '../../services/collection/collection.service';
 import { CollectionGuard } from '../../guards/collection/collection.guard';
+import { CopyService } from '../../services/copy/copy.service';
 
 @Controller()
 export class OrganizationController {
@@ -28,6 +29,7 @@ export class OrganizationController {
     private readonly conventionService: ConventionService,
     private readonly prismaService: PrismaService,
     private readonly collectionService: CollectionService,
+    private readonly copyService: CopyService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -93,5 +95,23 @@ export class OrganizationController {
     @Param('colId') colId: number,
   ) {
     return await this.collectionService.deleteCollection(colId, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard, CollectionGuard)
+  @Post(':id/col/:colId/copy')
+  async createCopy(
+    @Param('id') id: number,
+    @Param('colId') colId: number,
+    @Body() data: Prisma.CopyCreateInput,
+  ) {
+    data.collections = {
+      connect: {
+        id: Number(colId),
+      },
+    };
+
+    data.dateAdded = new Date();
+
+    return await this.copyService.createCopy(data, this.ctx);
   }
 }

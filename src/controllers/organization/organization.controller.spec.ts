@@ -12,6 +12,7 @@ import {
   createMockContext,
 } from '../../services/prisma/context';
 import { CollectionService } from '../../services/collection/collection.service';
+import { CopyService } from '../../services/copy/copy.service';
 
 describe('OrganizationController', () => {
   let controller: OrganizationController;
@@ -31,6 +32,7 @@ describe('OrganizationController', () => {
         TabletopeventsService,
         AttendeeService,
         CollectionService,
+        CopyService,
       ],
     }).compile();
 
@@ -162,6 +164,39 @@ describe('OrganizationController', () => {
       expect(await controller.deleteCollection(1, 1)).toBe(
         'cannot delete a collection tied to a convention',
       );
+    });
+  });
+
+  describe('createCopy', () => {
+    it('should create a copy', async () => {
+      mockCtx.prisma.copy.create.mockResolvedValue({
+        id: 1,
+        gameId: 1,
+        winnable: false,
+        winnerId: null,
+        coverArtOverride: null,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcode: '*00001*',
+        barcodeNumber: 1,
+      });
+
+      const copy = await controller.createCopy(1, 1, {
+        game: {
+          connect: {
+            id: 1,
+          },
+        },
+        winnable: false,
+        winner: undefined,
+        coverArtOverride: null,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcode: '*00001*',
+        barcodeNumber: 1,
+      });
+
+      expect(copy?.id).toBe(1);
     });
   });
 });

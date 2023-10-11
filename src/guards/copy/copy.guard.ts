@@ -23,7 +23,7 @@ export class CopyGuard implements CanActivate {
     const copyId = context.getArgByIndex(0).params?.id;
     const copy = await this.copyService.copyWithCollections(
       {
-        id: copyId,
+        id: Number(copyId),
       },
       this.ctx,
     );
