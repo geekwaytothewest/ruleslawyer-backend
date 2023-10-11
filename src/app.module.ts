@@ -13,6 +13,7 @@ import { UserController } from './controllers/user/user.controller';
 import { UserService } from './services/user/user.service';
 import { PrismaService } from './services/prisma/prisma.service';
 import { GameModule } from './modules/game/game.module';
+import { CopyModule } from './modules/copy/copy.module';
 
 const routes = [
   {
@@ -39,6 +40,10 @@ const routes = [
     path: 'game',
     module: GameModule,
   },
+  {
+    path: 'copy',
+    module: CopyModule,
+  },
 ];
 
 @Module({
@@ -52,6 +57,7 @@ const routes = [
     OrganizationModule,
     UserConventionPermissionsModule,
     GameModule,
+    CopyModule,
   ],
   controllers: [AppController, UserController],
   providers: [AppService, UserService, PrismaService],
