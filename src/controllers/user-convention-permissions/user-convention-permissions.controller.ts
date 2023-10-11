@@ -31,27 +31,23 @@ export class UserConventionPermissionsController {
       attendee: boolean;
     },
   ): Promise<UserConventionPermissions> {
-    return this.userConventionPermissionsService
-      .createPermission(
-        {
-          user: {
-            connect: {
-              id: permissionData.userId,
-            },
+    return this.userConventionPermissionsService.createPermission(
+      {
+        user: {
+          connect: {
+            id: permissionData.userId,
           },
-          convention: {
-            connect: {
-              id: permissionData.conventionId,
-            },
-          },
-          admin: permissionData.admin,
-          geekGuide: permissionData.geekGuide,
-          attendee: permissionData.attendee,
         },
-        this.ctx,
-      )
-      .catch((error) => {
-        return error;
-      });
+        convention: {
+          connect: {
+            id: permissionData.conventionId,
+          },
+        },
+        admin: permissionData.admin,
+        geekGuide: permissionData.geekGuide,
+        attendee: permissionData.attendee,
+      },
+      this.ctx,
+    );
   }
 }

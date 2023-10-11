@@ -191,4 +191,82 @@ describe('CollectionGuard', () => {
 
     expect(authed).toBeFalsy();
   });
+
+  it('should return true with org user auth', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: {
+          user: { id: 2, superAdmin: false },
+        },
+        params: {
+          id: 1,
+          orgId: 1,
+          colId: 1,
+        },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      name: 'Test Library',
+      public: false,
+    });
+
+    const org = {
+      id: 1,
+      ownerId: 1,
+      name: 'Geekway to the Test',
+      users: [
+        {
+          id: 2,
+          admin: true,
+        },
+      ],
+    };
+    mockCtx.prisma.organization.findUnique.mockResolvedValue(org);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+  });
+
+  it('should return false after everything else', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: {
+          user: { id: 2, superAdmin: false },
+        },
+        params: {
+          id: 1,
+          orgId: 1,
+          colId: 1,
+        },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      name: 'Test Library',
+      public: false,
+    });
+
+    const org = {
+      id: 1,
+      ownerId: 1,
+      name: 'Geekway to the Test',
+      users: [
+        {
+          id: 3,
+          admin: true,
+        },
+      ],
+    };
+    mockCtx.prisma.organization.findUnique.mockResolvedValue(org);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
 });

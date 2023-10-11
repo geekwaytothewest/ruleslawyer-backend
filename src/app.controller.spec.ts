@@ -8,6 +8,7 @@ import {
   MockContext,
   createMockContext,
 } from './services/prisma/context';
+import { GatewayTimeoutException } from '@nestjs/common';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -37,6 +38,14 @@ describe('AppController', () => {
       mockCtx.prisma.user.count.mockResolvedValueOnce(1);
 
       expect(await appController.status()).toBe('live');
+    });
+
+    it('should throw an error', async () => {
+      mockCtx.prisma.user.count.mockImplementation(() => {
+        throw new GatewayTimeoutException();
+      });
+
+      expect(await appController.status()).toBe('no database connection');
     });
   });
 });

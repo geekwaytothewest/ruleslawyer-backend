@@ -71,5 +71,11 @@ describe('UserController', () => {
 
       expect(u.id).toBe(1);
     });
+
+    it('should throw a not found error', async () => {
+      mockCtx.prisma.user.findUnique.mockResolvedValue(null);
+
+      expect(controller.getUserById('test@geekway.com')).rejects.toThrow();
+    });
   });
 });

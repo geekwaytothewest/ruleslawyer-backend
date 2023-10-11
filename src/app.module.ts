@@ -12,7 +12,8 @@ import { UserConventionPermissionsModule } from './modules/user-convention-permi
 import { UserController } from './controllers/user/user.controller';
 import { UserService } from './services/user/user.service';
 import { PrismaService } from './services/prisma/prisma.service';
-import { CollectionService } from './services/collection/collection.service';
+import { GameController } from './controllers/game/game.controller';
+import { GameModule } from './modules/game/game.module';
 
 const routes = [
   {
@@ -35,6 +36,10 @@ const routes = [
     path: 'userConPerm',
     module: UserConventionPermissionsModule,
   },
+  {
+    path: 'game',
+    module: GameModule,
+  },
 ];
 
 @Module({
@@ -47,8 +52,9 @@ const routes = [
     UserModule,
     OrganizationModule,
     UserConventionPermissionsModule,
+    GameModule,
   ],
-  controllers: [AppController, UserController],
-  providers: [AppService, UserService, PrismaService, CollectionService],
+  controllers: [AppController, UserController, GameController],
+  providers: [AppService, UserService, PrismaService],
 })
 export class AppModule {}

@@ -1,7 +1,5 @@
 import {
   Controller,
-  Post,
-  Body,
   Get,
   Param,
   UseGuards,
@@ -27,50 +25,29 @@ export class UserController {
     };
   }
 
-  @Post()
-  async signupUser(
-    @Body()
-    userData: {
-      name?: string;
-      username?: string;
-      email: string;
-    },
-  ): Promise<boolean> {
-    await this.userService.createUser(userData, this.ctx);
-    return true;
-  }
-
   @UseGuards(JwtAuthGuard, UserGuard)
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
     let user: UserModel | null;
 
     if (!isNaN(Number(id))) {
-      user = await this.userService
-        .user(
-          {
-            id: Number(id),
-          },
-          this.ctx,
-        )
-        .catch((error) => {
-          return error;
-        });
+      user = await this.userService.user(
+        {
+          id: Number(id),
+        },
+        this.ctx,
+      );
     } else {
-      user = await this.userService
-        .user(
-          {
-            email: id,
-          },
-          this.ctx,
-        )
-        .catch((error) => {
-          return error;
-        });
+      user = await this.userService.user(
+        {
+          email: id,
+        },
+        this.ctx,
+      );
     }
 
     if (!user) {
-      throw new NotFoundException();
+      return Promise.reject(new NotFoundException());
     }
 
     return {

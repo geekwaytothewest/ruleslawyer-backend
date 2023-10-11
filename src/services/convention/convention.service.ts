@@ -98,7 +98,7 @@ export class ConventionService {
     );
 
     if (!convention?.tteConventionId) {
-      throw 'Convention missing tteConventionId.';
+      throw new Error('Convention missing tteConventionId.');
     }
 
     const session = await this.tteService.getSession(
@@ -108,7 +108,7 @@ export class ConventionService {
     );
 
     if (!session) {
-      throw 'invalid tte session';
+      throw new Error('invalid tte session');
     }
 
     const tteBadgeTypes: any[] = await this.tteService.getBadgeTypes(
@@ -117,7 +117,7 @@ export class ConventionService {
     );
 
     if (!tteBadgeTypes) {
-      throw 'badge type query failed';
+      throw new Error('badge type query failed');
     }
 
     const tteBadges = await this.tteService.getBadges(
@@ -126,7 +126,7 @@ export class ConventionService {
     );
 
     if (!tteBadges) {
-      throw 'badge query failed';
+      throw new Error('badge query failed');
     }
 
     const attendees = tteBadges.map((b) => {

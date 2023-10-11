@@ -180,5 +180,45 @@ describe('ConventionService', () => {
 
       expect(convention?.id).toBe(1);
     });
+
+    describe('importAttendees', () => {
+      it('should fail with missing tte id', async () => {
+        mockCtx.prisma.convention.findUnique.mockResolvedValue({
+          id: 1,
+          typeId: 1,
+          organizationId: 1,
+          name: 'Test Convention',
+          theme: 'Test Theme',
+          logo: Buffer.from(''),
+          logoSquare: Buffer.from(''),
+          icon: '',
+          startDate: new Date(),
+          endDate: null,
+          tteConventionId: null,
+          annual: '1st Testable',
+          size: 300,
+          registrationUrl: 'fakeurl',
+          playAndWinAnnounced: false,
+          playAndWinCollectionId: null,
+          playAndWinWinnersSelected: false,
+          doorPrizeCollectionId: null,
+          doorPrizesAnnounced: false,
+          cancelled: false,
+          playAndWinWinnersAnnounced: false,
+        });
+
+        expect(
+          service.importAttendees(
+            {
+              userName: '',
+              password: '',
+              apiKey: '',
+            },
+            1,
+            ctx,
+          ),
+        ).rejects.toThrow('Convention missing tteConventionId.');
+      });
+    });
   });
 });

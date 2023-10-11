@@ -41,11 +41,11 @@ export class OrganizationController {
     @Req() request: Request,
   ): Promise<Organization> {
     const ownerId = request['user'].user.id;
-    return this.organizationService
-      .createOrganization(organizationData.name, ownerId, this.ctx)
-      .catch((error) => {
-        return error;
-      });
+    return this.organizationService.createOrganization(
+      organizationData.name,
+      ownerId,
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, OrganizationGuard)
@@ -60,11 +60,7 @@ export class OrganizationController {
       },
     };
 
-    return this.conventionService
-      .createConvention(conventionData, this.ctx)
-      .catch((error) => {
-        return error;
-      });
+    return this.conventionService.createConvention(conventionData, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, OrganizationGuard, UploadGuard)
@@ -82,11 +78,12 @@ export class OrganizationController {
 
     const fields = file?.fields as any;
 
-    return await this.collectionService
-      .importCollection(id, fields, buffer, this.ctx)
-      .catch((error) => {
-        return error;
-      });
+    return await this.collectionService.importCollection(
+      id,
+      fields,
+      buffer,
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, OrganizationGuard, CollectionGuard)
@@ -95,10 +92,6 @@ export class OrganizationController {
     @Param('id') id: number,
     @Param('colId') colId: number,
   ) {
-    return await this.collectionService
-      .deleteCollection(colId, this.ctx)
-      .catch((error) => {
-        return error;
-      });
+    return await this.collectionService.deleteCollection(colId, this.ctx);
   }
 }

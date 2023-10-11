@@ -11,6 +11,7 @@ import {
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
+import { BadGatewayException } from '@nestjs/common';
 
 describe('ConventionController', () => {
   let controller: ConventionController;
@@ -107,9 +108,11 @@ describe('ConventionController', () => {
         },
       };
 
-      mockCtx.prisma.organization.findUnique.mockResolvedValue(organization);
+      mockCtx.prisma.organization.findUnique.mockResolvedValueOnce(
+        organization,
+      );
 
-      mockCtx.prisma.convention.create.mockResolvedValue(convention);
+      mockCtx.prisma.convention.create.mockResolvedValueOnce(convention);
 
       const createConvention = await controller.createConvention({
         name: 'Geekway to the Testing',
@@ -120,7 +123,24 @@ describe('ConventionController', () => {
         },
       });
 
-      expect(createConvention.name).toBe('Geekway to the Testing');
+      expect(createConvention?.name).toBe('Geekway to the Testing');
+    });
+
+    it('should throw an error', async () => {
+      mockCtx.prisma.organization.findUnique.mockImplementationOnce(() => {
+        throw new BadGatewayException();
+      });
+
+      expect(
+        controller.createConvention({
+          name: 'Geekway to the Testing',
+          organization: {
+            connect: {
+              id: 1,
+            },
+          },
+        }),
+      ).rejects.toThrow();
     });
   });
 
@@ -150,11 +170,25 @@ describe('ConventionController', () => {
         tteConventionId: '',
       };
 
-      mockCtx.prisma.convention.findUnique.mockResolvedValue(convention);
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(convention);
 
       const getConvention = await controller.getConvention(1);
 
-      expect(getConvention.id).toBe(1);
+      expect(getConvention?.id).toBe(1);
+    });
+
+    it('should error', () => {
+      mockCtx.prisma.convention.findUnique.mockImplementationOnce(() => {
+        throw new BadGatewayException();
+      });
+
+      expect(controller.getConvention(1)).rejects.toThrow();
+    });
+
+    it('should error not found', () => {
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(null);
+
+      expect(controller.getConvention(1)).rejects.toThrow();
     });
   });
 
@@ -184,7 +218,7 @@ describe('ConventionController', () => {
         tteConventionId: 'fake id',
       };
 
-      mockCtx.prisma.convention.update.mockResolvedValue(convention);
+      mockCtx.prisma.convention.update.mockResolvedValueOnce(convention);
 
       const updatedConvention = await controller.updateConvention(1, {
         name: 'Geekway to the Testing Again',
@@ -220,7 +254,7 @@ describe('ConventionController', () => {
         tteConventionId: 'fake id',
       };
 
-      mockCtx.prisma.convention.findUnique.mockResolvedValue(convention);
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(convention);
 
       const attendeeCount = await controller.importAttendees(1, {
         apiKey: 'fake api key',

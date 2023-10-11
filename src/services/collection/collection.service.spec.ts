@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CollectionService } from './collection.service';
 import { Context, MockContext, createMockContext } from '../prisma/context';
+import { Prisma } from '@prisma/client';
 
 describe('CollectionService', () => {
   let service: CollectionService;
@@ -38,14 +39,14 @@ describe('CollectionService', () => {
 
   describe('importCollection', () => {
     it('should import a collection', async () => {
-      mockCtx.prisma.collection.create.mockResolvedValue({
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
         id: 1,
         name: 'Test Collection',
         organizationId: 1,
         public: false,
       });
 
-      mockCtx.prisma.copy.create.mockResolvedValue({
+      mockCtx.prisma.copy.create.mockResolvedValueOnce({
         id: 1,
         gameId: 1,
         dateAdded: new Date(),
@@ -57,7 +58,7 @@ describe('CollectionService', () => {
         coverArtOverride: null,
       });
 
-      mockCtx.prisma.game.create.mockResolvedValue({
+      mockCtx.prisma.game.create.mockResolvedValueOnce({
         id: 1,
         name: 'test title',
         minPlayers: null,
@@ -94,7 +95,7 @@ describe('CollectionService', () => {
     });
 
     it('should create a play and win', async () => {
-      mockCtx.prisma.collection.create.mockResolvedValue({
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
         id: 1,
         name: 'Test Collection',
         organizationId: 1,
@@ -125,7 +126,7 @@ describe('CollectionService', () => {
     });
 
     it('should create door prizes', async () => {
-      mockCtx.prisma.collection.create.mockResolvedValue({
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
         id: 1,
         name: 'Test Collection',
         organizationId: 1,
@@ -198,11 +199,81 @@ describe('CollectionService', () => {
       );
       expect(result).rejects.toBe('missing convention id');
     });
+
+    it('should error on duplicate collection name', async () => {
+      mockCtx.prisma.collection.create.mockImplementationOnce(() => {
+        throw new Prisma.PrismaClientKnownRequestError('mocked', {
+          code: 'P2002',
+          clientVersion: '',
+          meta: undefined,
+          batchRequestIdx: undefined,
+        });
+      });
+
+      expect(
+        service.importCollection(
+          1,
+          {
+            name: {
+              value: 'Test Collection',
+            },
+          },
+          Buffer.from('test title,1'),
+          ctx,
+        ),
+      ).rejects.toBe('a collection already exists with that name');
+    });
+
+    it('should error differently', async () => {
+      mockCtx.prisma.collection.create.mockImplementationOnce(() => {
+        throw new Prisma.PrismaClientKnownRequestError('mocked', {
+          code: 'P42069',
+          clientVersion: '',
+          meta: undefined,
+          batchRequestIdx: undefined,
+        });
+      });
+
+      expect(
+        service.importCollection(
+          1,
+          {
+            name: {
+              value: 'Test Collection',
+            },
+          },
+          Buffer.from('test title,1'),
+          ctx,
+        ),
+      ).rejects.toBe('mocked');
+    });
+
+    it('should fail the csv parse', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+      });
+
+      expect(
+        service.importCollection(
+          1,
+          {
+            name: {
+              value: 'Test Collection',
+            },
+          },
+          Buffer.from('test title,"8*,1'),
+          ctx,
+        ),
+      ).rejects.toBe('invalid csv file');
+    });
   });
 
   describe('deleteCollection', () => {
     it('should delete a collection', async () => {
-      mockCtx.prisma.collection.delete.mockResolvedValue({
+      mockCtx.prisma.collection.delete.mockResolvedValueOnce({
         id: 1,
         name: 'Test Collection',
         organizationId: 1,
@@ -230,9 +301,9 @@ describe('CollectionService', () => {
           ],
         },
       ];
-      mockCtx.prisma.copy.findMany.mockResolvedValue(findManyResolved);
+      mockCtx.prisma.copy.findMany.mockResolvedValueOnce(findManyResolved);
 
-      mockCtx.prisma.copy.delete.mockResolvedValue({
+      mockCtx.prisma.copy.delete.mockResolvedValueOnce({
         id: 1,
         gameId: 1,
         winnable: false,

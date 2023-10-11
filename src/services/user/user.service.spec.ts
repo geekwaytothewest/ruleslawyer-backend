@@ -22,12 +22,44 @@ describe('UserService', () => {
   });
 
   describe('user', () => {
-    it('should return a user count', async () => {
-      mockCtx.prisma.user.count.mockResolvedValue(4);
+    it('should return a user', async () => {
+      mockCtx.prisma.user.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Test User',
+        email: 'test@geekway.com',
+        username: 'testuser',
+        superAdmin: false,
+        pronounsId: 1,
+      });
 
-      const count = await service.getUserCount(ctx);
+      const user = await service.user({ id: 1 }, ctx);
 
-      expect(count).toBe(4);
+      expect(user?.id).toBe(1);
+    });
+  });
+
+  describe('createUser', () => {
+    it('should create a user', async () => {
+      mockCtx.prisma.user.create.mockResolvedValue({
+        id: 1,
+        name: 'Test User',
+        email: 'test@geekway.com',
+        username: 'testuser',
+        superAdmin: false,
+        pronounsId: 1,
+      });
+
+      const user = await service.createUser(
+        {
+          name: 'Test User',
+          email: 'test@geekway.com',
+          username: 'testuser',
+          superAdmin: false,
+        },
+        ctx,
+      );
+
+      expect(user?.id).toBe(1);
     });
   });
 

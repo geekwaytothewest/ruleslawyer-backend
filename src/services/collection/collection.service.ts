@@ -21,8 +21,7 @@ export class CollectionService {
   ) {
     const promise = new Promise(async (resolve, reject) => {
       if (!fields?.name) {
-        reject('missing name');
-        return;
+        return reject('missing name');
       }
 
       if (fields?.type !== undefined) {
@@ -30,13 +29,11 @@ export class CollectionService {
           fields?.type.value !== 'Door Prizes' &&
           fields?.type.value !== 'Play and Win'
         ) {
-          reject('invalid type');
-          return;
+          return reject('invalid type');
         }
 
         if (!fields?.conventionId) {
-          reject('missing convention id');
-          return;
+          return reject('missing convention id');
         }
       }
 
@@ -53,14 +50,11 @@ export class CollectionService {
         if (ex instanceof Prisma.PrismaClientKnownRequestError) {
           switch (ex.code) {
             case 'P2002':
-              reject('a collection already exists with that name');
-              return;
-              break;
+              return reject('a collection already exists with that name');
           }
         }
 
-        reject(ex.message);
-        return;
+        return reject(ex.message);
       }
 
       if (fields?.type?.value === 'Door Prizes') {
@@ -89,8 +83,7 @@ export class CollectionService {
 
       parse(csvData, { delimiter: ',' }, async (error, records) => {
         if (error) {
-          reject(error);
-          return;
+          return reject('invalid csv file');
         }
 
         for (const r of records) {
@@ -121,7 +114,7 @@ export class CollectionService {
           importCount++;
         }
 
-        resolve({
+        return resolve({
           collectionId: collection?.id,
           importCount: importCount,
         });
