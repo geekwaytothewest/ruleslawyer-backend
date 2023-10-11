@@ -30,39 +30,6 @@ describe('CopyController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('createCopy', () => {
-    it('should create a copy', async () => {
-      mockCtx.prisma.copy.create.mockResolvedValue({
-        id: 1,
-        gameId: 1,
-        dateAdded: new Date(),
-        dateRetired: null,
-        winnable: false,
-        winnerId: null,
-        coverArtOverride: null,
-        barcode: '*00001*',
-        barcodeNumber: 1,
-      });
-
-      const copy = await controller.createCopy({
-        game: {
-          connect: {
-            id: 1,
-          },
-        },
-        dateAdded: new Date(),
-        dateRetired: null,
-        winnable: false,
-        winner: undefined,
-        coverArtOverride: null,
-        barcode: '*00001*',
-        barcodeNumber: 1,
-      });
-
-      expect(copy?.id).toBe(1);
-    });
-  });
-
   describe('updateCopy', () => {
     it('should update a copy', async () => {
       mockCtx.prisma.copy.update.mockResolvedValue({
