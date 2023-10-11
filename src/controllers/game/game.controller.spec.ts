@@ -80,12 +80,12 @@ describe('GameController', () => {
         minAge: 10,
       });
 
-      const game = await controller.updateGame({
-        where: { id: 1 },
-        data: {
+      const game = await controller.updateGame(
+        {
           shortDescription: 'Updated Short Description',
         },
-      });
+        1,
+      );
 
       expect(game?.shortDescription).toBe('Updated Short Description');
     });
@@ -112,7 +112,7 @@ describe('GameController', () => {
         minAge: 10,
       });
 
-      const game = await controller.game('1');
+      const game = await controller.getGame(1);
 
       expect(game?.id).toBe(1);
     });

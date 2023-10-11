@@ -34,18 +34,17 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
-  @Put()
+  @Put(':id')
   async updateGame(
-    @Body()
-    params: {
-      data: Prisma.GameUpdateInput;
-      where: Prisma.GameWhereUniqueInput;
-    },
+    @Body() data: Prisma.GameUpdateInput,
+    @Param('id') id: number,
   ): Promise<Game | null> {
     return this.gameService.updateGame(
       {
-        data: params.data,
-        where: params.where,
+        data: data,
+        where: {
+          id: id,
+        },
       },
       this.ctx,
     );
@@ -53,7 +52,7 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async game(@Param('id') id: string) {
+  async getGame(@Param('id') id: number) {
     return this.gameService.game({ id: Number(id) }, this.ctx);
   }
 }

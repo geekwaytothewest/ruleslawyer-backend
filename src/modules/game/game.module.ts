@@ -5,7 +5,6 @@ import { GameController } from '../../controllers/game/game.controller';
 import { GameService } from '../../services/game/game.service';
 
 @Module({
-  imports: [],
   controllers: [GameController],
   providers: [UserService, PrismaService, GameService],
   exports: [GameService],
