@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth.guard';
 import { CopyGuard } from '../../guards/copy/copy.guard';
@@ -14,7 +6,7 @@ import { CopyService } from '../../services/copy/copy.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 
-@Controller('copy')
+@Controller()
 export class CopyController {
   ctx: Context;
 
@@ -25,12 +17,6 @@ export class CopyController {
     this.ctx = {
       prisma: prismaService,
     };
-  }
-
-  @UseGuards(JwtAuthGuard, CopyGuard)
-  @Post()
-  async createCopy(@Body() copy: Prisma.CopyCreateInput) {
-    return await this.copyService.createCopy(copy, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
