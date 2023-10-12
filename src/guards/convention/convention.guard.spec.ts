@@ -8,7 +8,7 @@ import { ConventionService } from '../../services/convention/convention.service'
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { OrganizationService } from '../../services/organization/organization.service';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule } from 'nestjs-http-promise';
 
 describe('ConventionGuard', () => {
   let guard: ConventionGuard;

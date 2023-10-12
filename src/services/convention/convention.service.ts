@@ -88,88 +88,90 @@ export class ConventionService {
   }
 
   async importAttendees(userData, conventionId, ctx) {
-    await this.attendeeService.truncate(conventionId, ctx);
+    return new Promise(async (resolve, rejects) => {
+      await this.attendeeService.truncate(conventionId, ctx);
 
-    const convention = await this.convention(
-      {
-        id: Number(conventionId),
-      },
-      ctx,
-    );
-
-    if (!convention?.tteConventionId) {
-      throw new Error('Convention missing tteConventionId.');
-    }
-
-    const session = await this.tteService.getSession(
-      userData.userName,
-      userData.password,
-      userData.apiKey,
-    );
-
-    if (!session) {
-      throw new Error('invalid tte session');
-    }
-
-    const tteBadgeTypes: any[] = await this.tteService.getBadgeTypes(
-      convention.tteConventionId,
-      session,
-    );
-
-    if (!tteBadgeTypes) {
-      throw new Error('badge type query failed');
-    }
-
-    const tteBadges = await this.tteService.getBadges(
-      convention.tteConventionId,
-      session,
-    );
-
-    if (!tteBadges) {
-      throw new Error('badge query failed');
-    }
-
-    const attendees = tteBadges.map((b) => {
-      return <Prisma.AttendeeCreateInput>{
-        convention: {
-          connect: {
-            id: Number(conventionId),
-          },
+      const convention = await this.convention(
+        {
+          id: Number(conventionId),
         },
-        name: b.name,
-        badgeType: {
-          connectOrCreate: {
-            create: {
-              name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
-                .name,
-            },
-            where: {
-              name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
-                .name,
+        ctx,
+      );
+
+      if (!convention?.tteConventionId) {
+        return rejects('Convention missing tteConventionId.');
+      }
+
+      const session = await this.tteService.getSession(
+        userData.userName,
+        userData.password,
+        userData.apiKey,
+      );
+
+      if (!session) {
+        return rejects('invalid tte session');
+      }
+
+      const tteBadgeTypes = await this.tteService.getBadgeTypes(
+        convention.tteConventionId,
+        session,
+      );
+
+      if (tteBadgeTypes.length === 0) {
+        return rejects('no badge types found');
+      }
+
+      const tteBadges = await this.tteService.getBadges(
+        convention.tteConventionId,
+        session,
+      );
+
+      if (tteBadges.length === 0) {
+        return rejects('no badges found');
+      }
+
+      const attendees = tteBadges.map((b) => {
+        return <Prisma.AttendeeCreateInput>{
+          convention: {
+            connect: {
+              id: Number(conventionId),
             },
           },
-        },
-        registrationCode: crypto.randomUUID(),
-        email: b.email,
-        badgeNumber: b.badge_number.toString(),
-        tteBadgeNumber: b.badge_number,
-        pronouns: {
-          connectOrCreate: {
-            create: {
-              pronouns: b.custom_fields.PreferredPronouns,
-            },
-            where: {
-              pronouns: b.custom_fields.PreferredPronouns,
+          name: b.name,
+          badgeType: {
+            connectOrCreate: {
+              create: {
+                name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
+                  .name,
+              },
+              where: {
+                name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
+                  .name,
+              },
             },
           },
-        },
-      };
+          registrationCode: crypto.randomUUID(),
+          email: b.email,
+          badgeNumber: b.badge_number.toString(),
+          tteBadgeNumber: b.badge_number,
+          pronouns: {
+            connectOrCreate: {
+              create: {
+                pronouns: b.custom_fields.PreferredPronouns,
+              },
+              where: {
+                pronouns: b.custom_fields.PreferredPronouns,
+              },
+            },
+          },
+        };
+      });
+
+      for (const a of attendees) {
+        await this.attendeeService.createAttendee(a, ctx);
+      }
+
+      return resolve(attendees.length);
     });
-
-    for (const a of attendees) {
-      await this.attendeeService.createAttendee(a, ctx);
-    }
-
-    return attendees.length;
   }
 }

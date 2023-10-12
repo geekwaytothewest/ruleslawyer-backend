@@ -60,7 +60,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
       );
 
       if (user.id === 1) {
-        await this.userService.updateUser(
+        user = await this.userService.updateUser(
           {
             where: {
               id: user.id,

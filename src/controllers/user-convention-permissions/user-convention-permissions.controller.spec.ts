@@ -4,7 +4,7 @@ import { ConventionService } from '../../services/convention/convention.service'
 import { OrganizationService } from '../../services/organization/organization.service';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule } from 'nestjs-http-promise';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import {

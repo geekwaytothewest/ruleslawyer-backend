@@ -6,17 +6,12 @@ import { Context } from '../prisma/context';
 export class AttendeeService {
   constructor() {}
 
-  async createAttendee(
-    data: Prisma.AttendeeCreateInput,
-    ctx: Context,
-  ): Promise<boolean> {
-    await ctx.prisma.attendee.create({ data });
-
-    return true;
+  async createAttendee(data: Prisma.AttendeeCreateInput, ctx: Context) {
+    return ctx.prisma.attendee.create({ data });
   }
 
   async truncate(conventionId: number, ctx: Context) {
-    await ctx.prisma.attendee.deleteMany({
+    return ctx.prisma.attendee.deleteMany({
       where: {
         conventionId: Number(conventionId),
       },

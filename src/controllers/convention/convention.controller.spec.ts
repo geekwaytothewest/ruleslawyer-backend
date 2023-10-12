@@ -5,7 +5,7 @@ import { OrganizationService } from '../../services/organization/organization.se
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule } from 'nestjs-http-promise';
 import {
   Context,
   MockContext,
@@ -28,28 +28,7 @@ describe('ConventionController', () => {
         ConventionService,
         OrganizationService,
         AttendeeService,
-        {
-          provide: TabletopeventsService,
-          useValue: {
-            importAttendees: jest.fn().mockImplementation(() => 1),
-            getSession: jest.fn().mockImplementation(() => 'fake session'),
-            getBadgeTypes: jest.fn().mockImplementation(() => [
-              {
-                name: 'fake badge type',
-              },
-            ]),
-            getBadges: jest.fn().mockImplementation(() => [
-              {
-                name: 'fake name',
-                badge_number: 1,
-                email: 'fake@email.com',
-                custom_fields: {
-                  PreferredPronouns: 'she/her',
-                },
-              },
-            ]),
-          },
-        },
+        TabletopeventsService,
         PrismaService,
       ],
     }).compile();
@@ -254,7 +233,15 @@ describe('ConventionController', () => {
         tteConventionId: 'fake id',
       };
 
+      mockCtx.prisma.attendee.deleteMany.mockResolvedValueOnce({
+        count: 10,
+      });
+
       mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(convention);
+
+      jest
+        .spyOn(controller['conventionService'], 'importAttendees')
+        .mockResolvedValueOnce(1);
 
       const attendeeCount = await controller.importAttendees(1, {
         apiKey: 'fake api key',

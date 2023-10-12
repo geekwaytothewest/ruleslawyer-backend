@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule } from 'nestjs-http-promise';
 import { Module } from '@nestjs/common';
 import { ConventionController } from '../../controllers/convention/convention.controller';
 import { AttendeeService } from '../../services/attendee/attendee.service';

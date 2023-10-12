@@ -23,7 +23,22 @@ describe('AttendeeService', () => {
   });
 
   describe('createAttendee', () => {
-    it('should return true', async () => {
+    it('should return an attendee', async () => {
+      mockCtx.prisma.attendee.create.mockResolvedValue({
+        id: 1,
+        conventionId: 1,
+        name: 'Test Attendee',
+        userId: null,
+        badgeNumber: '1',
+        badgeTypeId: 1,
+        tteBadgeNumber: 1,
+        email: 'test@geekway.com',
+        pronounsId: 1,
+        checkedIn: false,
+        printed: false,
+        registrationCode: 'asdf',
+      });
+
       const attendee = await service.createAttendee(
         {
           name: 'Test Attendee',
@@ -36,7 +51,7 @@ describe('AttendeeService', () => {
         ctx,
       );
 
-      expect(attendee).toBe(true);
+      expect(attendee.id).toBe(1);
     });
   });
 

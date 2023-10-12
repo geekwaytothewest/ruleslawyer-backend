@@ -6,7 +6,7 @@ import { UserModule } from './modules/user/user.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { AuthzModule } from './modules/authz/authz.module';
 import { ConventionModule } from './modules/convention/convention.module';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule } from 'nestjs-http-promise';
 import { UserOrganizationPermissionsModule } from './modules/user-organization-permissions/user-organization-permissions.module';
 import { UserConventionPermissionsModule } from './modules/user-convention-permissions/user-convention-permissions.module';
 import { UserController } from './controllers/user/user.controller';

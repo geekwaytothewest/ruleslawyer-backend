@@ -65,10 +65,6 @@ export class CopyGuard implements CanActivate {
       }
     });
 
-    if (!collections) {
-      return false;
-    }
-
     if (collections.length > 0) {
       return true;
     }

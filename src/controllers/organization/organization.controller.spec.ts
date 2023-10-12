@@ -5,7 +5,7 @@ import { OrganizationService } from '../../services/organization/organization.se
 import { ConventionService } from '../../services/convention/convention.service';
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { AttendeeService } from '../../services/attendee/attendee.service';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule } from 'nestjs-http-promise';
 import {
   Context,
   MockContext,
@@ -13,6 +13,9 @@ import {
 } from '../../services/prisma/context';
 import { CollectionService } from '../../services/collection/collection.service';
 import { CopyService } from '../../services/copy/copy.service';
+import { createMock } from '@golevelup/ts-jest';
+import fastify = require('fastify');
+import { ExecutionContext } from '@nestjs/common';
 
 describe('OrganizationController', () => {
   let controller: OrganizationController;
@@ -197,6 +200,151 @@ describe('OrganizationController', () => {
       });
 
       expect(copy?.id).toBe(1);
+    });
+  });
+
+  describe('importCollection', () => {
+    it('should missing file', async () => {
+      const ctx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => null,
+            isMultipart: () => false,
+          }),
+        }),
+      });
+
+      const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
+
+      expect(controller.importCollection(req, 1)).rejects.toBe('missing file');
+    });
+
+    it('should missing name', async () => {
+      const ctx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => ({
+              toBuffer: () => 'thisisabuffer',
+              fields: ['an', 'array'],
+            }),
+            isMultipart: () => false,
+          }),
+        }),
+      });
+
+      const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
+
+      expect(controller.importCollection(req, 1)).rejects.toBe('missing name');
+    });
+
+    it('should invalid type', async () => {
+      const ctx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => ({
+              toBuffer: () => 'thisisabuffer',
+              fields: {
+                name: 'Test File',
+                type: 'lol',
+              },
+            }),
+            isMultipart: () => false,
+          }),
+        }),
+      });
+
+      const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
+
+      expect(controller.importCollection(req, 1)).rejects.toBe('invalid type');
+    });
+
+    it('should missing convention id', async () => {
+      const ctx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => ({
+              toBuffer: () => 'thisisabuffer',
+              fields: {
+                name: 'Test File',
+                type: {
+                  value: 'Play and Win',
+                },
+              },
+            }),
+            isMultipart: () => false,
+          }),
+        }),
+      });
+
+      const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
+
+      expect(controller.importCollection(req, 1)).rejects.toBe(
+        'missing convention id',
+      );
+    });
+
+    it('should hate invalid csv files', async () => {
+      const ctx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => ({
+              toBuffer: () => Buffer.from(',",'),
+              fields: {
+                name: 'Test File',
+                type: {
+                  value: 'Play and Win',
+                },
+                conventionId: 1,
+              },
+            }),
+            isMultipart: () => false,
+          }),
+        }),
+      });
+
+      const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
+
+      expect(controller.importCollection(req, 1)).rejects.toBe(
+        'invalid csv file',
+      );
+    });
+
+    it('should import a collection', async () => {
+      const ctx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => ({
+              toBuffer: () => 'test,data',
+              fields: {
+                name: 'Test File',
+                type: {
+                  value: 'Play and Win',
+                },
+                conventionId: 1,
+              },
+            }),
+            isMultipart: () => false,
+          }),
+        }),
+      });
+
+      const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
+
+      mockCtx.prisma.copy.create.mockResolvedValue({
+        id: 1,
+        gameId: 1,
+        winnable: true,
+        winnerId: null,
+        coverArtOverride: null,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcode: '*00001*',
+        barcodeNumber: 1,
+      });
+
+      const importResult = (await controller.importCollection(req, 1)) as any;
+
+      expect(importResult?.importCount).toBe(1);
     });
   });
 });

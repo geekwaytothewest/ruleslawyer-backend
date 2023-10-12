@@ -75,12 +75,12 @@ export class OrganizationController {
     const buffer = await file?.toBuffer();
 
     if (buffer === undefined) {
-      return 'missing file';
+      return Promise.reject('missing file');
     }
 
     const fields = file?.fields as any;
 
-    return await this.collectionService.importCollection(
+    return this.collectionService.importCollection(
       id,
       fields,
       buffer,
