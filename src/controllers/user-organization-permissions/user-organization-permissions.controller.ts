@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { UserOrganizationPermissions } from '@prisma/client';
-import { JwtAuthGuard } from '../../guards/auth.guard';
+import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationGuard } from '../../guards/organization/organization.guard';
 import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
 import { Context } from '../../services/prisma/context';

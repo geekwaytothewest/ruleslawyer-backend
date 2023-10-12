@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { JwtAuthGuard } from '../../guards/auth.guard';
+import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CopyGuard } from '../../guards/copy/copy.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { Context } from '../../services/prisma/context';

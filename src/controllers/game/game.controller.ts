@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { JwtAuthGuard } from '../../guards/auth.guard';
+import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { Game, Prisma } from '@prisma/client';
 import { GameService } from '../../services/game/game.service';

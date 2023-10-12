@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { ConventionService } from '../../services/convention/convention.service';
-import { JwtAuthGuard } from '../../guards/auth.guard';
+import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { ConventionGuard } from '../../guards/convention/convention.guard';
 import { PrismaService } from '../../services/prisma/prisma.service';

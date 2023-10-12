@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { User as UserModel } from '@prisma/client';
-import { JwtAuthGuard } from '../../guards/auth.guard';
+import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { UserGuard } from '../../guards/user/user.guard';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';

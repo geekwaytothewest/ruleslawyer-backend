@@ -10,12 +10,12 @@ import {
 import { Convention, Organization, Prisma } from '@prisma/client';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { ConventionService } from '../../services/convention/convention.service';
-import { JwtAuthGuard } from '../../guards/auth.guard';
+import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationGuard } from '../../guards/organization/organization.guard';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import fastify = require('fastify');
-import { UploadGuard } from '../../guards/upload.guard';
+import { UploadGuard } from '../../guards/upload/upload.guard';
 import { CollectionService } from '../../services/collection/collection.service';
 import { CollectionGuard } from '../../guards/collection/collection.guard';
 import { CopyService } from '../../services/copy/copy.service';
