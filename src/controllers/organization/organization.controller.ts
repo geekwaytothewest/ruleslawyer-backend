@@ -104,7 +104,7 @@ export class OrganizationController {
     @Param('colId') colId: number,
     @Body() data: Prisma.CopyCreateInput,
   ) {
-    data.collections = {
+    data.collection = {
       connect: {
         id: Number(colId),
       },

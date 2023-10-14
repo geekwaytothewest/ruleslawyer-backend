@@ -56,6 +56,7 @@ describe('CollectionService', () => {
         barcode: '*00001*',
         barcodeNumber: 1,
         coverArtOverride: null,
+        collectionId: 1,
       });
 
       mockCtx.prisma.game.create.mockResolvedValueOnce({
@@ -291,14 +292,13 @@ describe('CollectionService', () => {
           dateRetired: null,
           barcode: '*00001*',
           barcodeNumber: 1,
-          collections: [
-            {
-              id: 1,
-              name: 'Test Collection',
-              organizationId: 1,
-              public: false,
-            },
-          ],
+          collectionId: 1,
+          collection: {
+            id: 1,
+            name: 'Test Collection',
+            organizationId: 1,
+            public: false,
+          },
         },
       ];
       mockCtx.prisma.copy.findMany.mockResolvedValueOnce(findManyResolved);
@@ -313,6 +313,7 @@ describe('CollectionService', () => {
         dateRetired: null,
         barcode: '*00001*',
         barcodeNumber: 1,
+        collectionId: 1,
       });
 
       expect(await service.deleteCollection(1, ctx)).toBe('deleted');

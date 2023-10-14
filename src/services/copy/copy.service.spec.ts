@@ -33,6 +33,7 @@ describe('CopyService', () => {
         winnerId: null,
         coverArtOverride: Buffer.from(''),
         dateRetired: null,
+        collectionId: 1,
       });
 
       const copy = await service.copy({ id: 1 }, ctx);
@@ -53,6 +54,7 @@ describe('CopyService', () => {
         winnerId: null,
         coverArtOverride: Buffer.from(''),
         dateRetired: null,
+        collectionId: 1,
       });
 
       const copy = await service.createCopy(
@@ -89,6 +91,7 @@ describe('CopyService', () => {
         winnerId: null,
         coverArtOverride: Buffer.from(''),
         dateRetired: null,
+        collectionId: 1,
       });
 
       const copy = await service.updateCopy(
@@ -112,8 +115,8 @@ describe('CopyService', () => {
     });
   });
 
-  describe('copyWithCollections', () => {
-    it('should return a copy with collections', async () => {
+  describe('copyWithCollection', () => {
+    it('should return a copy with a collection', async () => {
       const query = {
         id: 1,
         gameId: 1,
@@ -124,18 +127,17 @@ describe('CopyService', () => {
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
-        collections: [
-          {
-            id: 1,
-            name: 'Geekway Library',
-          },
-        ],
+        collectionId: 1,
+        collection: {
+          id: 1,
+          name: 'Geekway Library',
+        },
       };
       mockCtx.prisma.copy.findUnique.mockResolvedValue(query);
 
-      const copy = await service.copyWithCollections({ id: 1 }, ctx);
+      const copy = await service.copyWithCollection({ id: 1 }, ctx);
 
-      expect(copy?.collections.length).toBe(1);
+      expect(copy?.collection.id).toBe(1);
     });
   });
 });

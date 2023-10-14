@@ -31,8 +31,6 @@ export class CopyController {
     @Param('id') id: number,
     @Body() copy: Prisma.CopyUpdateInput,
   ) {
-    copy.collections = undefined; //Don't allow editing collections
-
     return await this.copyService.updateCopy(
       {
         where: {

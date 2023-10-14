@@ -58,14 +58,11 @@ describe('CopyGuard', () => {
       coverArtOverride: null,
       barcode: '*00001*',
       barcodeNumber: 1,
-      collections: [
-        {
-          id: 1,
-          name: 'Geekway Library',
-          organizationId: 1,
-          public: false,
-        },
-      ],
+      collectionId: 1,
+      collection: {
+        id: 1,
+        name: 'Test Collection',
+      },
     };
 
     const orgQuery = {
@@ -110,14 +107,12 @@ describe('CopyGuard', () => {
       coverArtOverride: null,
       barcode: '*00001*',
       barcodeNumber: 1,
-      collections: [
-        {
-          id: 1,
-          name: 'Geekway Library',
-          organizationId: 1,
-          public: false,
-        },
-      ],
+      collectionId: 1,
+      collection: {
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+      },
     };
 
     const orgQuery = {
@@ -162,14 +157,11 @@ describe('CopyGuard', () => {
       coverArtOverride: null,
       barcode: '*00001*',
       barcodeNumber: 1,
-      collections: [
-        {
-          id: 1,
-          name: 'Geekway Library',
-          organizationId: 1,
-          public: false,
-        },
-      ],
+      collectionId: 1,
+      collection: {
+        id: 1,
+        name: 'Test Collection',
+      },
     };
 
     mockCtx.prisma.copy.findUnique.mockResolvedValue(query);
@@ -201,14 +193,11 @@ describe('CopyGuard', () => {
       coverArtOverride: null,
       barcode: '*00001*',
       barcodeNumber: 1,
-      collections: [
-        {
-          id: 1,
-          name: 'Geekway Library',
-          organizationId: 1,
-          public: false,
-        },
-      ],
+      collectionId: 1,
+      collection: {
+        id: 1,
+        name: 'Test Collection',
+      },
     };
 
     const orgQuery = {

@@ -21,7 +21,7 @@ export class CopyGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
     const copyId = context.getArgByIndex(0).params?.id;
-    const copy = await this.copyService.copyWithCollections(
+    const copy = await this.copyService.copyWithCollection(
       {
         id: Number(copyId),
       },
@@ -32,41 +32,29 @@ export class CopyGuard implements CanActivate {
       return false;
     }
 
-    const collectionFilter = async (arr, predicate) => {
-      const results = await Promise.all(arr.map(predicate));
+    const organization = await this.organizationService.organizationWithUsers(
+      {
+        id: copy.collection.organizationId,
+      },
+      this.ctx,
+    );
 
-      return arr.filter((_v, index) => results[index]);
-    };
-
-    const collections = await collectionFilter(copy.collections, async (i) => {
-      const organization = await this.organizationService.organizationWithUsers(
-        {
-          id: i.organizationId,
-        },
-        this.ctx,
-      );
-
-      if (organization?.ownerId === user.id) {
-        return true;
-      }
-
-      const users = organization?.users?.filter(
-        (u) => u.id === user.id && u.admin,
-      );
-
-      if (!users) {
-        return false;
-      }
-
-      if (users.length > 0) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-
-    if (collections.length > 0) {
+    if (organization?.ownerId === user.id) {
       return true;
+    }
+
+    const users = organization?.users?.filter(
+      (u) => u.id === user.id && u.admin,
+    );
+
+    if (!users) {
+      return false;
+    }
+
+    if (users.length > 0) {
+      return true;
+    } else {
+      return false;
     }
 
     return false;

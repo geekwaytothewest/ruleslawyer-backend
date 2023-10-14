@@ -42,6 +42,7 @@ describe('CopyController', () => {
         coverArtOverride: null,
         barcode: '*00001*',
         barcodeNumber: 1,
+        collectionId: 1,
       });
 
       const copy = await controller.updateCopy(1, {
@@ -64,6 +65,7 @@ describe('CopyController', () => {
         coverArtOverride: null,
         barcode: '*00001*',
         barcodeNumber: 1,
+        collectionId: 1,
       });
 
       const copy = await controller.getCopy(1);
