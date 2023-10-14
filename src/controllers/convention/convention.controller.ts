@@ -15,6 +15,7 @@ import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { ConventionGuard } from '../../guards/convention/convention.guard';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { Context } from '../../services/prisma/context';
+import { AttendeeService } from '../../services/attendee/attendee.service';
 
 @Controller()
 export class ConventionController {
@@ -23,6 +24,7 @@ export class ConventionController {
   constructor(
     private readonly conventionService: ConventionService,
     private readonly prismaService: PrismaService,
+    private readonly attendeeService: AttendeeService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -85,5 +87,18 @@ export class ConventionController {
     },
   ) {
     return this.conventionService.importAttendees(userData, id, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Post(':id/attendee')
+  async createAttendee(
+    @Param('id') id: number,
+    @Body() attendee: Prisma.AttendeeCreateInput,
+  ) {
+    if (attendee.convention.connect?.id !== id) {
+      return Promise.reject('convention id mismatch');
+    }
+
+    return this.attendeeService.createAttendee(attendee, this.ctx);
   }
 }

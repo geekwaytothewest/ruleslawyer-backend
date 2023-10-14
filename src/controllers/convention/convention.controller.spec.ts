@@ -252,4 +252,66 @@ describe('ConventionController', () => {
       expect(attendeeCount).toBe(1);
     });
   });
+
+  describe('createAttendee', () => {
+    it('should create an attendee', async () => {
+      mockCtx.prisma.attendee.create.mockResolvedValue({
+        id: 1,
+        conventionId: 1,
+        badgeNumber: '1',
+        tteBadgeNumber: 1,
+        pronounsId: 1,
+        name: 'Test Attendee',
+        userId: null,
+        badgeTypeId: 1,
+        email: 'test@geekway.com',
+        checkedIn: false,
+        printed: false,
+        registrationCode: 'fakecode',
+      });
+
+      const attendee = await controller.createAttendee(1, {
+        name: 'Test Attendee',
+        badgeNumber: '1',
+        convention: {
+          connect: { id: 1 },
+        },
+        user: undefined,
+        tteBadgeNumber: 1,
+        email: 'test@geekway.com',
+      });
+
+      expect(attendee?.id).toBe(1);
+    });
+
+    it('should reject a mismatched convention id', async () => {
+      mockCtx.prisma.attendee.create.mockResolvedValue({
+        id: 1,
+        conventionId: 1,
+        badgeNumber: '1',
+        tteBadgeNumber: 1,
+        pronounsId: 1,
+        name: 'Test Attendee',
+        userId: null,
+        badgeTypeId: 1,
+        email: 'test@geekway.com',
+        checkedIn: false,
+        printed: false,
+        registrationCode: 'fakecode',
+      });
+
+      expect(
+        controller.createAttendee(1, {
+          name: 'Test Attendee',
+          badgeNumber: '1',
+          convention: {
+            connect: { id: 2 },
+          },
+          user: undefined,
+          tteBadgeNumber: 1,
+          email: 'test@geekway.com',
+        }),
+      ).rejects.toBe('convention id mismatch');
+    });
+  });
 });
