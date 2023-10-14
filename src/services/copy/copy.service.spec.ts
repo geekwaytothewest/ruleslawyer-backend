@@ -28,7 +28,7 @@ describe('CopyService', () => {
         gameId: 1,
         dateAdded: new Date(),
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
@@ -49,7 +49,7 @@ describe('CopyService', () => {
         gameId: 1,
         dateAdded: new Date(),
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
@@ -66,7 +66,7 @@ describe('CopyService', () => {
           },
           dateAdded: new Date(),
           barcode: '*00001*',
-          barcodeNumber: 1,
+          barcodeLabel: '1',
           winnable: false,
           winner: undefined,
           coverArtOverride: Buffer.from(''),
@@ -86,7 +86,7 @@ describe('CopyService', () => {
         gameId: 1,
         dateAdded: new Date(),
         barcode: '*00002*',
-        barcodeNumber: 2,
+        barcodeLabel: '2',
         winnable: true,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
@@ -102,7 +102,7 @@ describe('CopyService', () => {
           data: {
             dateAdded: new Date(),
             barcode: '*00002*',
-            barcodeNumber: 2,
+            barcodeLabel: '2',
             winnable: true,
             coverArtOverride: Buffer.from(''),
             dateRetired: null,
@@ -111,7 +111,7 @@ describe('CopyService', () => {
         ctx,
       );
 
-      expect(copy.barcodeNumber).toBe(2);
+      expect(copy.barcodeLabel).toBe('2');
     });
   });
 
@@ -123,7 +123,7 @@ describe('CopyService', () => {
         dateAdded: new Date(),
         dateRetired: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),

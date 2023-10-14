@@ -149,7 +149,7 @@ model Copy {
   game             Game        @relation(fields: gameId, references: [id])
   gameId           Int
   dateAdded        DateTime
-  barcodeNumber    Int
+  barcodeLabel     String
   barcode          String
   dateRetired      DateTime?
   winnable         Boolean     @default(true)
@@ -159,6 +159,8 @@ model Copy {
   collection       Collection? @relation(fields: collectionId, references: [id])
   collectionId     Int?
   checkOuts        CheckOut[]
+
+  @@unique([collectionId, barcode])
 }
 
 model CheckOut {

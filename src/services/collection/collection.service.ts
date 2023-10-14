@@ -89,7 +89,7 @@ export class CollectionService {
         for (const r of records) {
           await ctx.prisma.copy.create({
             data: {
-              barcodeNumber: Number(r[1]),
+              barcodeLabel: r[1],
               barcode: '*' + r[1].padStart(5, '0') + '*',
               game: {
                 connectOrCreate: {

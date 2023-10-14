@@ -41,7 +41,7 @@ describe('CopyController', () => {
         winnerId: null,
         coverArtOverride: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         collectionId: 1,
       });
 
@@ -64,7 +64,7 @@ describe('CopyController', () => {
         winnerId: null,
         coverArtOverride: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         collectionId: 1,
       });
 

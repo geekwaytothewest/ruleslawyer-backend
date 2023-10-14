@@ -181,7 +181,7 @@ describe('OrganizationController', () => {
         dateAdded: new Date(),
         dateRetired: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         collectionId: 1,
       });
 
@@ -197,7 +197,7 @@ describe('OrganizationController', () => {
         dateAdded: new Date(),
         dateRetired: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
       });
 
       expect(copy?.id).toBe(1);
@@ -340,7 +340,7 @@ describe('OrganizationController', () => {
         dateAdded: new Date(),
         dateRetired: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         collectionId: 1,
       });
 

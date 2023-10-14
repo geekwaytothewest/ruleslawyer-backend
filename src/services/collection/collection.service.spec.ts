@@ -54,7 +54,7 @@ describe('CollectionService', () => {
         winnable: false,
         winnerId: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         coverArtOverride: null,
         collectionId: 1,
       });
@@ -291,7 +291,7 @@ describe('CollectionService', () => {
           dateAdded: new Date(),
           dateRetired: null,
           barcode: '*00001*',
-          barcodeNumber: 1,
+          barcodeLabel: '1',
           collectionId: 1,
           collection: {
             id: 1,
@@ -312,7 +312,7 @@ describe('CollectionService', () => {
         dateAdded: new Date(),
         dateRetired: null,
         barcode: '*00001*',
-        barcodeNumber: 1,
+        barcodeLabel: '1',
         collectionId: 1,
       });
 
