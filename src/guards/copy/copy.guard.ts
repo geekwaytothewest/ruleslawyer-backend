@@ -53,8 +53,6 @@ export class CopyGuard implements CanActivate {
 
     if (users.length > 0) {
       return true;
-    } else {
-      return false;
     }
 
     return false;
