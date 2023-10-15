@@ -5,9 +5,8 @@ import {
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
-import { GameService } from '../../services/game/game.service';
-import { PrismaService } from '../../services/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { GameModule } from '../../modules/game/game.module';
 
 describe('GameController', () => {
   let controller: GameController;
@@ -18,8 +17,7 @@ describe('GameController', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [GameController],
-      providers: [GameService, PrismaService],
+      imports: [GameModule],
     }).compile();
 
     controller = module.get<GameController>(GameController);

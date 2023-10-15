@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
+import { CopyService } from '../copy/copy.service';
 
 @Injectable()
 export class CollectionService {
-  constructor() {}
+  constructor(private readonly copyService: CopyService) {}
 
   async collection(id: number, ctx: Context) {
     return await ctx.prisma.collection.findUnique({
@@ -87,8 +88,8 @@ export class CollectionService {
         }
 
         for (const r of records) {
-          await ctx.prisma.copy.create({
-            data: {
+          await this.copyService.createCopy(
+            {
               barcodeLabel: r[1],
               barcode: '*' + r[1].padStart(5, '0') + '*',
               game: {
@@ -109,7 +110,8 @@ export class CollectionService {
                 },
               },
             },
-          });
+            ctx,
+          );
 
           importCount++;
         }

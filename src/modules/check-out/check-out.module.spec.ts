@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { UserModule } from './user.module';
+import { CheckOutModule } from './check-out.module';
 
-describe('UserModule', () => {
+describe('CheckOutModule', () => {
   it('should compile the module', async () => {
     const module = await Test.createTestingModule({
-      controllers: [UserModule],
+      imports: [CheckOutModule],
     }).compile();
 
     expect(module).toBeDefined();

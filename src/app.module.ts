@@ -9,11 +9,12 @@ import { ConventionModule } from './modules/convention/convention.module';
 import { HttpModule } from 'nestjs-http-promise';
 import { UserOrganizationPermissionsModule } from './modules/user-organization-permissions/user-organization-permissions.module';
 import { UserConventionPermissionsModule } from './modules/user-convention-permissions/user-convention-permissions.module';
-import { UserController } from './controllers/user/user.controller';
 import { UserService } from './services/user/user.service';
 import { PrismaService } from './services/prisma/prisma.service';
 import { GameModule } from './modules/game/game.module';
 import { CopyModule } from './modules/copy/copy.module';
+import { CollectionModule } from './modules/collection/collection.module';
+import { AttendeeModule } from './modules/attendee/attendee.module';
 
 const routes = [
   {
@@ -58,8 +59,10 @@ const routes = [
     UserConventionPermissionsModule,
     GameModule,
     CopyModule,
+    CollectionModule,
+    AttendeeModule,
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController],
   providers: [AppService, UserService, PrismaService],
 })
 export class AppModule {}

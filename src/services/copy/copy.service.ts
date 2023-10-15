@@ -12,6 +12,7 @@ export class CopyService {
       where: copyWhereUniqueInput,
     });
   }
+
   async copyWithCollection(
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
@@ -20,6 +21,18 @@ export class CopyService {
       where: copyWhereUniqueInput,
       include: {
         collection: true,
+      },
+    });
+  }
+
+  async copyWithCheckouts(
+    copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
+    ctx: Context,
+  ): Promise<any> {
+    return ctx.prisma.copy.findUnique({
+      where: copyWhereUniqueInput,
+      include: {
+        checkOuts: true,
       },
     });
   }

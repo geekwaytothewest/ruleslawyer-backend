@@ -32,6 +32,7 @@ model Attendee {
   user             User?      @relation(fields: userId, references: [id])
   userId           Int?
   badgeNumber      String?
+  barcode          String?
   badgeType        BadgeType? @relation(fields: badgeTypeId, references: [id])
   badgeTypeId      Int?
   tteBadgeNumber   Int?
@@ -41,9 +42,12 @@ model Attendee {
   checkedIn        Boolean    @default(false)
   printed          Boolean    @default(false)
   registrationCode String?
-  Copy             Copy[]
-  CheckOut         CheckOut[]
-  Player           Player[]
+  copies           Copy[]
+  checkOuts        CheckOut[]
+  players          Player[]
+
+  @@unique([conventionId, badgeNumber])
+  @@unique([conventionId, barcode])
 }
 
 model BadgeType {

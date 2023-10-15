@@ -1,11 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConventionService } from './convention.service';
-import { OrganizationService } from '../organization/organization.service';
-import { AttendeeService } from '../attendee/attendee.service';
-import { TabletopeventsService } from '../tabletopevents/tabletopevents.service';
-import { HttpModule } from 'nestjs-http-promise';
-import { PrismaService } from '../prisma/prisma.service';
 import { MockContext, Context, createMockContext } from '../prisma/context';
+import { ConventionModule } from '../../modules/convention/convention.module';
 
 describe('ConventionService', () => {
   let service: ConventionService;
@@ -16,14 +12,7 @@ describe('ConventionService', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      imports: [HttpModule],
-      providers: [
-        ConventionService,
-        OrganizationService,
-        AttendeeService,
-        TabletopeventsService,
-        PrismaService,
-      ],
+      imports: [ConventionModule],
     }).compile();
 
     service = module.get<ConventionService>(ConventionService);
@@ -420,6 +409,73 @@ describe('ConventionService', () => {
           ctx,
         ),
       ).resolves.toBe(1);
+    });
+  });
+
+  describe('checkOutGame', () => {
+    it('should check out a game', async () => {
+      const copy = {
+        id: 1,
+        gameId: 1,
+        winnable: true,
+        coverArtOverride: null,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcodeLabel: '1',
+        barcode: '*000001*',
+        collectionId: 1,
+        winnerId: null,
+        checkOuts: [
+          {
+            id: 1,
+            checkOut: new Date(),
+            checkIn: new Date(),
+            copyId: 1,
+            attendeeId: 1,
+          },
+        ],
+      };
+
+      const attendee = {
+        id: 1,
+        conventionId: 1,
+        name: 'Test Attendee',
+        userId: null,
+        badgeNumber: '1',
+        badgeTypeId: 1,
+        tteBadgeNumber: 1,
+        email: 'test@geekway.com',
+        pronounsId: 1,
+        checkedIn: false,
+        printed: false,
+        registrationCode: 'fakecode',
+        barcode: '*000001*',
+        checkOuts: [
+          {
+            id: 1,
+            checkOut: new Date(),
+            checkIn: new Date(),
+            copyId: 1,
+            attendeeId: 1,
+          },
+        ],
+      };
+
+      mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
+
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
+
+      mockCtx.prisma.checkOut.create.mockResolvedValue({
+        id: 1,
+        checkOut: new Date(),
+        checkIn: null,
+        copyId: 1,
+        attendeeId: 1,
+      });
+
+      expect(
+        service.checkOutGame(1, '*000001*', '*000001*', 1, ctx),
+      ).resolves.toBeTruthy();
     });
   });
 });

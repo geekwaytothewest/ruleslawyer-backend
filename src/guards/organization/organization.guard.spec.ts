@@ -2,9 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext } from '@nestjs/common';
 import { createMock } from '@golevelup/ts-jest';
 import { OrganizationGuard } from './organization.guard';
-import { OrganizationService } from '../../services/organization/organization.service';
 import { MockContext, createMockContext } from '../../services/prisma/context';
-import { PrismaService } from '../../services/prisma/prisma.service';
+import { OrganizationModule } from '../../modules/organization/organization.module';
 
 describe('OrganizationGuard', () => {
   let guard: OrganizationGuard;
@@ -13,8 +12,7 @@ describe('OrganizationGuard', () => {
   beforeEach(async () => {
     mockCtx = createMockContext();
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [],
-      providers: [OrganizationGuard, OrganizationService, PrismaService],
+      imports: [OrganizationModule],
     }).compile();
 
     guard = module.get<OrganizationGuard>(OrganizationGuard);

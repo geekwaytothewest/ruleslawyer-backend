@@ -1,17 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConventionController } from './convention.controller';
-import { ConventionService } from '../../services/convention/convention.service';
-import { OrganizationService } from '../../services/organization/organization.service';
-import { AttendeeService } from '../../services/attendee/attendee.service';
-import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
-import { PrismaService } from '../../services/prisma/prisma.service';
-import { HttpModule } from 'nestjs-http-promise';
 import {
   Context,
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
 import { BadGatewayException } from '@nestjs/common';
+import { ConventionModule } from '../../modules/convention/convention.module';
 
 describe('ConventionController', () => {
   let controller: ConventionController;
@@ -22,15 +17,7 @@ describe('ConventionController', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      imports: [HttpModule],
-      controllers: [ConventionController],
-      providers: [
-        ConventionService,
-        OrganizationService,
-        AttendeeService,
-        TabletopeventsService,
-        PrismaService,
-      ],
+      imports: [ConventionModule],
     }).compile();
 
     controller = module.get<ConventionController>(ConventionController);
@@ -259,6 +246,7 @@ describe('ConventionController', () => {
         id: 1,
         conventionId: 1,
         badgeNumber: '1',
+        barcode: '*000001*',
         tteBadgeNumber: 1,
         pronounsId: 1,
         name: 'Test Attendee',
@@ -289,6 +277,7 @@ describe('ConventionController', () => {
         id: 1,
         conventionId: 1,
         badgeNumber: '1',
+        barcode: '*000001*',
         tteBadgeNumber: 1,
         pronounsId: 1,
         name: 'Test Attendee',

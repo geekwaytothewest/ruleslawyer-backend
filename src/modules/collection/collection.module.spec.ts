@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { UserModule } from './user.module';
+import { CollectionModule } from './collection.module';
 
-describe('UserModule', () => {
+describe('CollectionModule', () => {
   it('should compile the module', async () => {
     const module = await Test.createTestingModule({
-      controllers: [UserModule],
+      imports: [CollectionModule],
     }).compile();
 
     expect(module).toBeDefined();

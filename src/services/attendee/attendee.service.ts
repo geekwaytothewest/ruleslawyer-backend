@@ -17,4 +17,20 @@ export class AttendeeService {
       },
     });
   }
+
+  async attendee(data: Prisma.AttendeeWhereUniqueInput, ctx: Context) {
+    return ctx.prisma.attendee.findUnique({ where: data });
+  }
+
+  async attendeeWithCheckouts(
+    data: Prisma.AttendeeWhereUniqueInput,
+    ctx: Context,
+  ) {
+    return ctx.prisma.attendee.findUnique({
+      where: data,
+      include: {
+        checkOuts: true,
+      },
+    });
+  }
 }

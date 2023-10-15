@@ -7,6 +7,6 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 @Module({
   imports: [PassportModule.register({ defaultStrategy: 'gwJwt' })],
   providers: [JwtStrategy, UserService, PrismaService],
-  exports: [PassportModule],
+  exports: [PassportModule, UserService],
 })
 export class AuthzModule {}

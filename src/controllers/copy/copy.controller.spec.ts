@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CopyController } from './copy.controller';
-import { CopyService } from '../../services/copy/copy.service';
-import { PrismaService } from '../../services/prisma/prisma.service';
 import {
   Context,
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
-import { OrganizationService } from '../../services/organization/organization.service';
+import { CopyModule } from '../../modules/copy/copy.module';
 
 describe('CopyController', () => {
   let controller: CopyController;
@@ -18,8 +16,7 @@ describe('CopyController', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CopyController],
-      providers: [CopyService, PrismaService, OrganizationService],
+      imports: [CopyModule],
     }).compile();
 
     controller = module.get<CopyController>(CopyController);

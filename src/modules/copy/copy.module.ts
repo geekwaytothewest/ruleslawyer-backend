@@ -5,6 +5,7 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { OrganizationService } from '../../services/organization/organization.service';
 
 @Module({
+  imports: [],
   controllers: [CopyController],
   providers: [CopyService, PrismaService, OrganizationService],
   exports: [CopyService],

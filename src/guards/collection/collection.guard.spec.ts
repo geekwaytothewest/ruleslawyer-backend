@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext } from '@nestjs/common';
 import { createMock } from '@golevelup/ts-jest';
-import { OrganizationService } from '../../services/organization/organization.service';
 import { MockContext, createMockContext } from '../../services/prisma/context';
-import { PrismaService } from '../../services/prisma/prisma.service';
 import { CollectionGuard } from './collection.guard';
-import { CollectionService } from '../../services/collection/collection.service';
+import { CollectionModule } from '../../modules/collection/collection.module';
 
 describe('CollectionGuard', () => {
   let guard: CollectionGuard;
@@ -14,13 +12,7 @@ describe('CollectionGuard', () => {
   beforeEach(async () => {
     mockCtx = createMockContext();
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [],
-      providers: [
-        CollectionGuard,
-        CollectionService,
-        OrganizationService,
-        PrismaService,
-      ],
+      imports: [CollectionModule],
     }).compile();
 
     guard = module.get<CollectionGuard>(CollectionGuard);

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CollectionService } from './collection.service';
 import { Context, MockContext, createMockContext } from '../prisma/context';
 import { Prisma } from '@prisma/client';
+import { CollectionModule } from '../../modules/collection/collection.module';
 
 describe('CollectionService', () => {
   let service: CollectionService;
@@ -12,7 +13,7 @@ describe('CollectionService', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CollectionService],
+      imports: [CollectionModule],
     }).compile();
 
     service = module.get<CollectionService>(CollectionService);

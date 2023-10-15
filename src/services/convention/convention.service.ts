@@ -5,6 +5,7 @@ import { AttendeeService } from '../attendee/attendee.service';
 import { TabletopeventsService } from '../tabletopevents/tabletopevents.service';
 import * as crypto from 'crypto';
 import { Context } from '../prisma/context';
+import { CheckOutService } from '../check-out/check-out.service';
 
 @Injectable()
 export class ConventionService {
@@ -12,6 +13,7 @@ export class ConventionService {
     private readonly organizationService: OrganizationService,
     private readonly attendeeService: AttendeeService,
     private readonly tteService: TabletopeventsService,
+    private readonly checkOutService: CheckOutService,
   ) {}
 
   async createConvention(
@@ -153,6 +155,7 @@ export class ConventionService {
           registrationCode: crypto.randomUUID(),
           email: b.email,
           badgeNumber: b.badge_number.toString(),
+          barcode: '*' + b.badge_number.toString().padStart(6, '0') + '*',
           tteBadgeNumber: b.badge_number,
           pronouns: {
             connectOrCreate: {
@@ -173,5 +176,21 @@ export class ConventionService {
 
       return resolve(attendees.length);
     });
+  }
+
+  async checkOutGame(
+    id: number,
+    copyBarcode: string,
+    attendeeBarcode: string,
+    collectionId: number,
+    ctx: Context,
+  ) {
+    return await this.checkOutService.checkout(
+      collectionId,
+      copyBarcode,
+      id,
+      attendeeBarcode,
+      ctx,
+    );
   }
 }

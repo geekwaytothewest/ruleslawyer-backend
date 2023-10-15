@@ -1,11 +1,9 @@
 import { MockContext, createMockContext } from '../../services/prisma/context';
 import { CopyGuard } from './copy.guard';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CopyService } from '../../services/copy/copy.service';
-import { PrismaService } from '../../services/prisma/prisma.service';
-import { OrganizationService } from '../../services/organization/organization.service';
 import { ExecutionContext } from '@nestjs/common';
 import { createMock } from '@golevelup/ts-jest';
+import { CopyModule } from '../../modules/copy/copy.module';
 
 describe('CopyGuard', () => {
   let guard: CopyGuard;
@@ -14,8 +12,7 @@ describe('CopyGuard', () => {
   beforeEach(async () => {
     mockCtx = createMockContext();
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [],
-      providers: [CopyGuard, PrismaService, CopyService, OrganizationService],
+      imports: [CopyModule],
     }).compile();
 
     guard = module.get<CopyGuard>(CopyGuard);
@@ -57,7 +54,7 @@ describe('CopyGuard', () => {
       winnerId: null,
       coverArtOverride: null,
       barcode: '*00001*',
-      barcodeNumber: 1,
+      barcodeLabel: '1',
       collectionId: 1,
       collection: {
         id: 1,
@@ -106,7 +103,7 @@ describe('CopyGuard', () => {
       winnerId: null,
       coverArtOverride: null,
       barcode: '*00001*',
-      barcodeNumber: 1,
+      barcodeLabel: '1',
       collectionId: 1,
       collection: {
         id: 1,
@@ -156,7 +153,7 @@ describe('CopyGuard', () => {
       winnerId: null,
       coverArtOverride: null,
       barcode: '*00001*',
-      barcodeNumber: 1,
+      barcodeLabel: '1',
       collectionId: 1,
       collection: {
         id: 1,
@@ -192,7 +189,7 @@ describe('CopyGuard', () => {
       winnerId: null,
       coverArtOverride: null,
       barcode: '*00001*',
-      barcodeNumber: 1,
+      barcodeLabel: '1',
       collectionId: 1,
       collection: {
         id: 1,

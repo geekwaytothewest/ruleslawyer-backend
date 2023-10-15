@@ -1,21 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrganizationController } from './organization.controller';
-import { PrismaService } from '../../services/prisma/prisma.service';
-import { OrganizationService } from '../../services/organization/organization.service';
-import { ConventionService } from '../../services/convention/convention.service';
-import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
-import { AttendeeService } from '../../services/attendee/attendee.service';
-import { HttpModule } from 'nestjs-http-promise';
 import {
   Context,
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
-import { CollectionService } from '../../services/collection/collection.service';
-import { CopyService } from '../../services/copy/copy.service';
 import { createMock } from '@golevelup/ts-jest';
 import fastify = require('fastify');
 import { ExecutionContext } from '@nestjs/common';
+import { OrganizationModule } from '../../modules/organization/organization.module';
 
 describe('OrganizationController', () => {
   let controller: OrganizationController;
@@ -26,17 +19,7 @@ describe('OrganizationController', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      imports: [HttpModule],
-      controllers: [OrganizationController],
-      providers: [
-        PrismaService,
-        OrganizationService,
-        ConventionService,
-        TabletopeventsService,
-        AttendeeService,
-        CollectionService,
-        CopyService,
-      ],
+      imports: [OrganizationModule],
     }).compile();
 
     controller = module.get<OrganizationController>(OrganizationController);

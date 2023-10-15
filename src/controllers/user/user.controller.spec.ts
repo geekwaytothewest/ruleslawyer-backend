@@ -1,12 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
-import { UserService } from '../../services/user/user.service';
-import { PrismaService } from '../../services/prisma/prisma.service';
 import {
   Context,
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
+import { UserModule } from '../../modules/user/user.module';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -17,8 +16,7 @@ describe('UserController', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UserController],
-      providers: [PrismaService, UserService],
+      imports: [UserModule],
     }).compile();
 
     controller = module.get<UserController>(UserController);

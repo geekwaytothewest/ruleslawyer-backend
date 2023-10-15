@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserOrganizationPermissionsController } from './user-organization-permissions.controller';
-import { OrganizationService } from '../../services/organization/organization.service';
-import { PrismaService } from '../../services/prisma/prisma.service';
-import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
 import {
   Context,
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
+import { UserOrganizationPermissionsModule } from '../../modules/user-organization-permissions/user-organization-permissions.module';
 
 describe('UserOrganizationPermissionsController', () => {
   let controller: UserOrganizationPermissionsController;
@@ -18,12 +16,7 @@ describe('UserOrganizationPermissionsController', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UserOrganizationPermissionsController],
-      providers: [
-        OrganizationService,
-        PrismaService,
-        UserOrganizationPermissionsService,
-      ],
+      imports: [UserOrganizationPermissionsModule],
     }).compile();
 
     controller = module.get<UserOrganizationPermissionsController>(
