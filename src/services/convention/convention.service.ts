@@ -185,7 +185,7 @@ export class ConventionService {
     collectionId: number,
     ctx: Context,
   ) {
-    return await this.checkOutService.checkout(
+    return await this.checkOutService.checkOut(
       collectionId,
       copyBarcode,
       id,

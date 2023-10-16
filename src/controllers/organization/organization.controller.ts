@@ -19,6 +19,8 @@ import { UploadGuard } from '../../guards/upload/upload.guard';
 import { CollectionService } from '../../services/collection/collection.service';
 import { CollectionGuard } from '../../guards/collection/collection.guard';
 import { CopyService } from '../../services/copy/copy.service';
+import { CheckOutService } from '../../services/check-out/check-out.service';
+import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 
 @Controller()
 export class OrganizationController {
@@ -30,6 +32,7 @@ export class OrganizationController {
     private readonly prismaService: PrismaService,
     private readonly collectionService: CollectionService,
     private readonly copyService: CopyService,
+    private readonly checkOutService: CheckOutService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -113,5 +116,34 @@ export class OrganizationController {
     data.dateAdded = new Date();
 
     return await this.copyService.createCopy(data, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @Post(':id/con/:conId/col/:colId/copy/:copyBarcode/checkOut/:attendeeBarcode')
+  async checkOutCopy(
+    @Param('id') id: number,
+    @Param('conId') conId: number,
+    @Param('colId') colId: number,
+    @Param('copyBarcode') copyBarcode: string,
+    @Param('attendeeBarcode') attendeeBarcode: string,
+  ) {
+    return await this.checkOutService.checkOut(
+      colId,
+      copyBarcode,
+      id,
+      attendeeBarcode,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @Post(':id/con/:conId/col/:colId/copy/:copyBarcode/checkIn')
+  async checkInCopy(
+    @Param('id') id: number,
+    @Param('conId') conId: number,
+    @Param('colId') colId: number,
+    @Param('copyBarcode') copyBarcode: string,
+  ) {
+    return await this.checkOutService.checkIn(colId, copyBarcode, this.ctx);
   }
 }

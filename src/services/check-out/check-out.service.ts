@@ -9,7 +9,8 @@ export class CheckOutService {
     private readonly copyService: CopyService,
     private readonly attendeeService: AttendeeService,
   ) {}
-  async checkout(
+
+  async checkOut(
     collectionId: number,
     copyBarcode: string,
     conventionId: number,
@@ -57,6 +58,39 @@ export class CheckOutService {
         copyId: copy.id,
         checkOut: new Date(),
         attendeeId: attendee.id,
+      },
+    });
+  }
+
+  async checkIn(collectionId: number, copyBarcode: string, ctx: Context) {
+    const copy = await this.copyService.copyWithCheckouts(
+      {
+        collectionId_barcode: {
+          collectionId: collectionId,
+          barcode: copyBarcode,
+        },
+      },
+      ctx,
+    );
+
+    if (!copy) {
+      return Promise.reject('copy not found');
+    }
+
+    const checkOuts = copy.checkOuts.filter((co) => !co.checkIn);
+
+    if (checkOuts.length === 0) {
+      return Promise.reject('already checked in');
+    }
+
+    const checkOut = checkOuts[0];
+
+    return await ctx.prisma.checkOut.update({
+      where: {
+        id: checkOut.id,
+      },
+      data: {
+        checkIn: new Date(),
       },
     });
   }

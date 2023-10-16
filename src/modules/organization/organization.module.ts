@@ -7,6 +7,7 @@ import { UserOrganizationPermissionsModule } from '../user-organization-permissi
 import { ConventionModule } from '../convention/convention.module';
 import { CollectionModule } from '../collection/collection.module';
 import { CopyService } from '../../services/copy/copy.service';
+import { CheckOutModule } from '../check-out/check-out.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CopyService } from '../../services/copy/copy.service';
     UserOrganizationPermissionsModule,
     ConventionModule,
     CollectionModule,
+    CheckOutModule,
   ],
   controllers: [OrganizationController],
   providers: [OrganizationService, PrismaService, CopyService],
