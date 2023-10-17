@@ -24,6 +24,22 @@ export class CheckOutGuard implements CanActivate {
     const collectionId = context.getArgByIndex(0).params?.colId;
     const conventionId = context.getArgByIndex(0).params?.conId;
 
+    if (!user) {
+      return false;
+    }
+
+    if (!organizationId) {
+      return false;
+    }
+
+    if (!conventionId) {
+      return false;
+    }
+
+    if (!collectionId) {
+      return false;
+    }
+
     const convention = await this.conventionService.conventionWithUsers(
       {
         id: conventionId,
@@ -31,11 +47,7 @@ export class CheckOutGuard implements CanActivate {
       this.ctx,
     );
 
-    if (convention.playAndWinCollectionId === collectionId) {
-      if (convention?.ownerId === user.id) {
-        return true;
-      }
-
+    if (convention?.playAndWinCollectionId === collectionId) {
       const users = convention?.users?.filter(
         (u) => u.id === user.id && (u.admin || u.geekGuide),
       );
@@ -55,7 +67,7 @@ export class CheckOutGuard implements CanActivate {
         this.ctx,
       );
 
-      if (organization.ownerId === user.id) {
+      if (organization?.ownerId === user.id) {
         return true;
       }
 

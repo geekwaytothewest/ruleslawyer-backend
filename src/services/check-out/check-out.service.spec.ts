@@ -296,4 +296,76 @@ describe('CheckOutService', () => {
       );
     });
   });
+
+  describe('checkIn', () => {
+    it('should checkin a game', async () => {
+      const copy = {
+        id: 1,
+        gameId: 1,
+        winnable: true,
+        coverArtOverride: null,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcodeLabel: '1',
+        barcode: '*000001*',
+        collectionId: 1,
+        winnerId: null,
+        checkOuts: [
+          {
+            id: 1,
+            checkOut: new Date(),
+            checkIn: null,
+            copyId: 1,
+            attendeeId: 1,
+          },
+        ],
+      };
+
+      const checkOut = {
+        id: 1,
+        checkOut: new Date(),
+        checkIn: new Date(),
+        copyId: 1,
+        attendeeId: 1,
+      };
+
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
+
+      mockCtx.prisma.checkOut.update.mockResolvedValue(checkOut);
+
+      const checkIn = await service.checkIn(1, '*000001*', ctx);
+
+      expect(checkIn.checkIn).toBeTruthy();
+    });
+
+    it('should copy not found', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
+
+      expect(service.checkIn(1, '*000001*', ctx)).rejects.toBe(
+        'copy not found',
+      );
+    });
+
+    it('should already be checked in', async () => {
+      const copy = {
+        id: 1,
+        gameId: 1,
+        winnable: true,
+        coverArtOverride: null,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcodeLabel: '1',
+        barcode: '*000001*',
+        collectionId: 1,
+        winnerId: null,
+        checkOuts: [],
+      };
+
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
+
+      expect(service.checkIn(1, '*000001*', ctx)).rejects.toBe(
+        'already checked in',
+      );
+    });
+  });
 });
