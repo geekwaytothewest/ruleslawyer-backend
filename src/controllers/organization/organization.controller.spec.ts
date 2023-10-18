@@ -332,4 +332,24 @@ describe('OrganizationController', () => {
       expect(importResult?.importCount).toBe(1);
     });
   });
+
+  describe('checkOutCopy', () => {
+    it('should call check out copy', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
+
+      expect(controller.checkOutCopy(1, 1, 1, '*000001*', '1')).rejects.toBe(
+        'copy not found',
+      );
+    });
+  });
+
+  describe('checkInCopy', () => {
+    it('should call check ub copy', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
+
+      expect(controller.checkInCopy(1, 1, 1, '*000001*')).rejects.toBe(
+        'copy not found',
+      );
+    });
+  });
 });

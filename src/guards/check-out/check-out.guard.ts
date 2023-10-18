@@ -47,37 +47,14 @@ export class CheckOutGuard implements CanActivate {
       this.ctx,
     );
 
+    if (convention?.organizationId !== organizationId) {
+      return false;
+    }
+
     if (convention?.playAndWinCollectionId === collectionId) {
       const users = convention?.users?.filter(
         (u) => u.id === user.id && (u.admin || u.geekGuide),
       );
-
-      if (!users) {
-        return false;
-      }
-
-      if (users.length > 0) {
-        return true;
-      }
-    } else {
-      const organization = await this.organizationService.organizationWithUsers(
-        {
-          id: organizationId,
-        },
-        this.ctx,
-      );
-
-      if (organization?.ownerId === user.id) {
-        return true;
-      }
-
-      const users = organization?.users?.filter(
-        (u) => u.id === user.id && (u.admin || u.geekGuide),
-      );
-
-      if (!users) {
-        return false;
-      }
 
       if (users.length > 0) {
         return true;
