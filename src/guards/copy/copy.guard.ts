@@ -20,7 +20,12 @@ export class CopyGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    const copyId = context.getArgByIndex(0).params?.id;
+    let copyId = context.getArgByIndex(0).params?.id;
+
+    if (!copyId) {
+      copyId = context.getArgByIndex(0).params?.copyId;
+    }
+
     const copy = await this.copyService.copyWithCollection(
       {
         id: Number(copyId),

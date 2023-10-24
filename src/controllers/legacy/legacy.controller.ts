@@ -1,10 +1,20 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CollectionService } from '../../services/collection/collection.service';
 import { OrganizationGuard } from '../../guards/organization/organization.guard';
-import { CopyService } from 'src/services/copy/copy.service';
+import { CopyService } from '../../services/copy/copy.service';
+import { CopyGuard } from '../../guards/copy/copy.guard';
+import { CollectionGuard } from '../../guards/collection/collection.guard';
 
 @Controller()
 export class LegacyController {
@@ -88,5 +98,80 @@ export class LegacyController {
         };
       }),
     };
+  }
+
+  @UseGuards(JwtAuthGuard, CopyGuard)
+  @Put('org/:orgId/con/:conId/copies/:copyId')
+  async updateCopy(
+    @Param('copyId') copyId: number,
+    @Body()
+    copy: {
+      collectionId: number;
+      libraryId: number;
+      title: string;
+      winnable: boolean;
+    },
+  ) {
+    return this.copyService.updateCopy(
+      {
+        where: {
+          id: Number(copyId),
+        },
+        data: {
+          collection: {
+            connect: {
+              id: copy.collectionId,
+            },
+          },
+          game: {
+            connectOrCreate: {
+              create: {
+                name: copy.title,
+              },
+              where: {
+                name: copy.title,
+              },
+            },
+          },
+          winnable: copy.winnable,
+        },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionGuard)
+  @Post('org/:orgId/con/:conId/copycollections/:colId/copies')
+  async addCopy(
+    @Param('colId') colId: number,
+    @Body()
+    copy: {
+      libraryId: number;
+      title: string;
+    },
+  ) {
+    return this.copyService.createCopy(
+      {
+        dateAdded: new Date(),
+        barcode: copy.libraryId.toString(),
+        barcodeLabel: copy.libraryId.toString(),
+        collection: {
+          connect: {
+            id: Number(colId),
+          },
+        },
+        game: {
+          connectOrCreate: {
+            where: {
+              name: copy.title,
+            },
+            create: {
+              name: copy.title,
+            },
+          },
+        },
+      },
+      this.ctx,
+    );
   }
 }
