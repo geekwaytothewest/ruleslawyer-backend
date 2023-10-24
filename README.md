@@ -24,9 +24,8 @@ DATABASE_URL=
 AUTH0_ISSUER_URL=
 AUTH0_AUDIENCE=
 FASTIFY_PORT=
-ORIGIN_URL=
-LEGACY_ORG=
-LEGACY_CON=
+ORIGIN_URL1=
+ORIGIN_URL2=
 ```
 
 Set the Database URL based on your PostgreSQL connection string
@@ -35,7 +34,7 @@ Set your Auth0 API data in Issuer URL and Audience
 
 Choose a port to run Fastify on (Ex: 3000)
 
-Set the Origin URL to match the front end (Ex: http://localhost:3000)
+Set the Origin URLs to match the front ends (Ex: http://localhost:3000)
 
 ```bash
 $ npm install

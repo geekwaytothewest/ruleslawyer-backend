@@ -20,7 +20,11 @@ export class ConventionGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    const conId = context.getArgByIndex(0).params?.id;
+    let conId = context.getArgByIndex(0).params?.id;
+
+    if (!conId) {
+      conId = context.getArgByIndex(0).params?.conId;
+    }
 
     if (!conId) {
       return false;

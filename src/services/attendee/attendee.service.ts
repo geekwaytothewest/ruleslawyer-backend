@@ -33,4 +33,26 @@ export class AttendeeService {
       },
     });
   }
+
+  async attendees(conventionId: number, ctx: Context) {
+    return ctx.prisma.attendee.findMany({
+      where: {
+        conventionId: conventionId,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  async updateAttendee(
+    params: {
+      where: Prisma.AttendeeWhereUniqueInput;
+      data: Prisma.AttendeeUpdateInput;
+    },
+    ctx: Context,
+  ) {
+    const { where, data } = params;
+    return ctx.prisma.attendee.update({ data, where });
+  }
 }

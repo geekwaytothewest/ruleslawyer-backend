@@ -15,6 +15,8 @@ import { OrganizationGuard } from '../../guards/organization/organization.guard'
 import { CopyService } from '../../services/copy/copy.service';
 import { CopyGuard } from '../../guards/copy/copy.guard';
 import { CollectionGuard } from '../../guards/collection/collection.guard';
+import { ConventionGuard } from '../../guards/convention/convention.guard';
+import { AttendeeService } from '../../services/attendee/attendee.service';
 
 @Controller()
 export class LegacyController {
@@ -24,6 +26,7 @@ export class LegacyController {
     private readonly prismaService: PrismaService,
     private readonly collectionService: CollectionService,
     private readonly copyService: CopyService,
+    private readonly attendeeService: AttendeeService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -169,6 +172,74 @@ export class LegacyController {
               name: copy.title,
             },
           },
+        },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Get('org/:orgId/con/:conId/attendees')
+  async getAttendees(@Param('conId') conId: number) {
+    const attendees = await this.attendeeService.attendees(
+      Number(conId),
+      this.ctx,
+    );
+
+    return {
+      Errors: [],
+      Result: {
+        Attendees: attendees.map((a) => {
+          return {
+            BadgeNumber: a.badgeNumber,
+            ID: a.id,
+            Name: a.name,
+          };
+        }),
+      },
+    };
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Post('org/:orgId/con/:conId/attendees')
+  async addAttendee(
+    @Param('conId') conId: number,
+    @Body() attendee: { badgeNumber: string; name: string },
+  ) {
+    return this.attendeeService.createAttendee(
+      {
+        name: attendee.name,
+        badgeNumber: attendee.badgeNumber,
+        barcode: '*' + attendee.badgeNumber.toString().padStart(6, '0') + '*',
+        convention: {
+          connect: {
+            id: Number(conId),
+          },
+        },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Put('org/:orgId/con/:conId/attendees/:badgeNumber')
+  async updateAttendee(
+    @Param('badgeNumber') badgeNumber: string,
+    @Param('conId') conId: number,
+    @Body() attendee: { badgeNumber: string; name: string },
+  ) {
+    return this.attendeeService.updateAttendee(
+      {
+        where: {
+          conventionId_badgeNumber: {
+            badgeNumber: badgeNumber,
+            conventionId: Number(conId),
+          },
+        },
+        data: {
+          name: attendee.name,
+          badgeNumber: attendee.badgeNumber,
+          barcode: '*' + attendee.badgeNumber.toString().padStart(6, '0') + '*',
         },
       },
       this.ctx,
