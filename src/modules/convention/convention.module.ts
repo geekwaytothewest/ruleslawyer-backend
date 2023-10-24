@@ -8,7 +8,7 @@ import { OrganizationService } from '../../services/organization/organization.se
 import { CollectionModule } from '../collection/collection.module';
 import { AttendeeModule } from '../attendee/attendee.module';
 import { CheckOutModule } from '../check-out/check-out.module';
-import { ConventionGuard } from 'src/guards/convention/convention.guard';
+import { ConventionGuard } from '../../guards/convention/convention.guard';
 
 @Module({
   imports: [HttpModule, CollectionModule, AttendeeModule, CheckOutModule],

@@ -43,6 +43,8 @@ describe('AttendeeService', () => {
       const attendee = await service.createAttendee(
         {
           name: 'Test Attendee',
+          badgeNumber: '1',
+          barcode: '*000001*',
           convention: {
             connect: {
               id: 1,

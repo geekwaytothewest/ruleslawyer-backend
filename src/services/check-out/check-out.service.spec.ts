@@ -84,7 +84,7 @@ describe('CheckOutService', () => {
       });
 
       expect(
-        service.checkOut(1, '*00001*', 1, '*000001*', ctx),
+        service.checkOut(1, '*00001*', 1, '*000001*', false, ctx),
       ).resolves.toBeTruthy();
     });
 
@@ -117,9 +117,9 @@ describe('CheckOutService', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
 
-      expect(service.checkOut(1, '*000002*', 1, '*000001*', ctx)).rejects.toBe(
-        'copy not found',
-      );
+      expect(
+        service.checkOut(1, '*000002*', 1, '*000001*', false, ctx),
+      ).rejects.toBe('copy not found');
     });
 
     it('should reject already checked out', async () => {
@@ -172,9 +172,9 @@ describe('CheckOutService', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      expect(service.checkOut(1, '*00002*', 1, '*000001*', ctx)).rejects.toBe(
-        'already checked out',
-      );
+      expect(
+        service.checkOut(1, '*00002*', 1, '*000001*', false, ctx),
+      ).rejects.toBe('already checked out');
     });
 
     it('should reject bad attendee', async () => {
@@ -203,9 +203,9 @@ describe('CheckOutService', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      expect(service.checkOut(1, '*00002*', 1, '*000001*', ctx)).rejects.toBe(
-        'already checked out',
-      );
+      expect(
+        service.checkOut(1, '*00002*', 1, '*000001*', false, ctx),
+      ).rejects.toBe('already checked out');
     });
 
     it('should reject attendee with a checkout', async () => {
@@ -259,9 +259,9 @@ describe('CheckOutService', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      expect(service.checkOut(1, '*00002*', 1, '*000001*', ctx)).rejects.toBe(
-        'attendee already has a game checked out',
-      );
+      expect(
+        service.checkOut(1, '*00002*', 1, '*000001*', false, ctx),
+      ).rejects.toBe('attendee already has a game checked out');
     });
 
     it('should reject bad attendee', async () => {
@@ -291,9 +291,9 @@ describe('CheckOutService', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      expect(service.checkOut(1, '*00002*', 1, '*000001*', ctx)).rejects.toBe(
-        'attendee not found',
-      );
+      expect(
+        service.checkOut(1, '*00002*', 1, '*000001*', false, ctx),
+      ).rejects.toBe('attendee not found');
     });
   });
 

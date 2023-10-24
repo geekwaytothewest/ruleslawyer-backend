@@ -261,6 +261,7 @@ describe('ConventionController', () => {
       const attendee = await controller.createAttendee(1, {
         name: 'Test Attendee',
         badgeNumber: '1',
+        barcode: '*000001*',
         convention: {
           connect: { id: 1 },
         },
@@ -293,6 +294,7 @@ describe('ConventionController', () => {
         controller.createAttendee(1, {
           name: 'Test Attendee',
           badgeNumber: '1',
+          barcode: '*000001*',
           convention: {
             connect: { id: 2 },
           },

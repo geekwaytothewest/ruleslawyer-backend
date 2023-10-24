@@ -63,7 +63,7 @@ export class CheckOutGuard implements CanActivate {
         (u) => u.id === user.id && (u.admin || u.geekGuide),
       );
 
-      if (users.length > 0) {
+      if (users && users.length > 0) {
         return true;
       }
     }
@@ -79,11 +79,11 @@ export class CheckOutGuard implements CanActivate {
       return true;
     }
 
-    const orgUsers = organization.users.filter(
+    const orgUsers = organization?.users?.filter(
       (u) => u.id === user.id && (u.admin || u.geekGuide),
     );
 
-    if (orgUsers.length > 0) {
+    if (orgUsers && orgUsers.length > 0) {
       return true;
     }
 
