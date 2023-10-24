@@ -65,6 +65,80 @@ describe('LegacyController', () => {
 
       expect(bigResponse.Result.length).toBe(1);
     });
+
+    it('should return legacy collections but weirder', async () => {
+      const bigCollection = [
+        {
+          id: 1,
+          name: 'Test Collection',
+          organizationId: 1,
+          public: false,
+          copies: [
+            {
+              id: 1,
+              checkOuts: [
+                {
+                  id: 1,
+                  checkOut: new Date(),
+                  checkIn: new Date(),
+                  attendee: {
+                    id: 1,
+                    name: 'Test Attendee',
+                  },
+                },
+              ],
+              game: {
+                id: 1,
+                name: 'Test Game',
+              },
+            },
+          ],
+        },
+      ];
+
+      mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
+
+      const bigResponse = await controller.getCopyCollections(1);
+
+      expect(bigResponse.Result.length).toBe(1);
+    });
+
+    it('should return legacy collections but weird', async () => {
+      const bigCollection = [
+        {
+          id: 1,
+          name: 'Test Collection',
+          organizationId: 1,
+          public: false,
+          copies: [
+            {
+              id: 1,
+              checkOuts: [
+                {
+                  id: 1,
+                  checkOut: new Date(),
+                  checkIn: new Date(),
+                  attendee: {
+                    id: 1,
+                    name: 'Test Attendee',
+                  },
+                },
+              ],
+              game: {
+                id: 1,
+                name: 'Test Game',
+              },
+            },
+          ],
+        },
+      ];
+
+      mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
+
+      const bigResponse = await controller.getCopyCollections(1);
+
+      expect(bigResponse.Result.length).toBe(1);
+    });
   });
 
   describe('addCopy', () => {
@@ -202,6 +276,147 @@ describe('LegacyController', () => {
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
+
+    it('should actually return', async () => {
+      const convention = {
+        id: 1,
+        organizationId: 1,
+        name: 'Geekway to the Testing',
+        theme: 'Theme to the Testing',
+        logo: <Buffer>{},
+        logoSquare: <Buffer>{},
+        icon: '',
+        startDate: null,
+        endDate: null,
+        registrationUrl: '',
+        typeId: 1,
+        annual: '',
+        size: 3000,
+        cancelled: false,
+        playAndWinAnnounced: false,
+        doorPrizesAnnounced: false,
+        playAndWinCollectionId: null,
+        doorPrizeCollectionId: null,
+        playAndWinWinnersAnnounced: false,
+        playAndWinWinnersSelected: false,
+        tteConventionId: '',
+      };
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue(convention);
+
+      const organization = {
+        id: 1,
+        name: 'Geekway to the Testing',
+        ownerId: 1,
+        collections: [
+          {
+            id: 1,
+            name: 'Test Collection',
+          },
+        ],
+      };
+
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(organization);
+
+      const copy = {
+        id: 1,
+        gameId: 1,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        dateAdded: new Date(),
+        winnable: true,
+        dateRetired: null,
+        coverArtOverride: null,
+        winnerId: null,
+        collectionId: 1,
+        game: {
+          id: 1,
+          name: 'Test Game',
+        },
+        collection: {
+          id: 1,
+          name: 'Test Collection',
+        },
+        checkOuts: [],
+      };
+
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
+
+      const bigResponse = await controller.getCopy(1, 1, '*00001*');
+
+      expect(bigResponse?.Result.Winnable).toBeTruthy();
+    });
+
+    it('should not break', async () => {
+      const convention = {
+        id: 1,
+        organizationId: 1,
+        name: 'Geekway to the Testing',
+        theme: 'Theme to the Testing',
+        logo: <Buffer>{},
+        logoSquare: <Buffer>{},
+        icon: '',
+        startDate: null,
+        endDate: null,
+        registrationUrl: '',
+        typeId: 1,
+        annual: '',
+        size: 3000,
+        cancelled: false,
+        playAndWinAnnounced: false,
+        doorPrizesAnnounced: false,
+        playAndWinCollectionId: null,
+        doorPrizeCollectionId: null,
+        playAndWinWinnersAnnounced: false,
+        playAndWinWinnersSelected: false,
+        tteConventionId: '',
+      };
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue(convention);
+
+      const organization = {
+        id: 1,
+        name: 'Geekway to the Testing',
+        ownerId: 1,
+        collections: [
+          {
+            id: 1,
+            name: 'Test Collection',
+          },
+        ],
+      };
+
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(organization);
+
+      const copy = {
+        id: 1,
+        gameId: 1,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        dateAdded: new Date(),
+        winnable: true,
+        dateRetired: null,
+        coverArtOverride: null,
+        winnerId: null,
+        collectionId: 1,
+        game: {
+          id: 1,
+          name: 'Test Game',
+        },
+        collection: {
+          id: 1,
+          name: 'Test Collection',
+        },
+        checkOuts: [],
+      };
+
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
+
+      const bigResponse = await controller.getCopy(1, 1, '*00001*');
+
+      expect(bigResponse?.Result.Winnable).toBeTruthy();
+    });
+
     it('should definitely get a copy that does not have a checkout', async () => {
       const convention = {
         id: 1,
@@ -265,7 +480,7 @@ describe('LegacyController', () => {
         checkOuts: [
           {
             id: 1,
-            checkIn: new Date(),
+            checkIn: null,
             checkOut: new Date(),
             attendee: {
               badgeNumber: '1',
@@ -1184,7 +1399,7 @@ describe('LegacyController', () => {
           {
             id: 1,
             checkIn: null,
-            checkOut: null,
+            checkOut: new Date(),
             attendee: {
               badgeNumber: '1',
               id: 1,
@@ -1201,7 +1416,7 @@ describe('LegacyController', () => {
         copyId: 1,
         attendeeId: 1,
         checkIn: null,
-        checkOut: null,
+        checkOut: new Date(),
       });
 
       const bigResponse = await controller.checkinCopy(1, 1, '1');
@@ -1273,7 +1488,7 @@ describe('LegacyController', () => {
           {
             id: 1,
             checkIn: null,
-            checkOut: null,
+            checkOut: new Date(),
             attendee: {
               badgeNumber: '1',
               id: 1,
@@ -1292,7 +1507,7 @@ describe('LegacyController', () => {
         copyId: 1,
         attendeeId: 1,
         checkIn: null,
-        checkOut: null,
+        checkOut: new Date(),
       });
 
       expect(controller.checkinCopy(1, 1, '1')).rejects.toBe('copy not found');
@@ -1438,6 +1653,124 @@ describe('LegacyController', () => {
 
   describe('searchCopies', () => {
     it('should return some copies', async () => {
+      const copies = [
+        {
+          id: 1,
+          gameId: 1,
+          barcode: '*00001*',
+          barcodeLabel: '1',
+          dateAdded: new Date(),
+          winnable: true,
+          dateRetired: null,
+          coverArtOverride: null,
+          winnerId: null,
+          collectionId: 1,
+          game: {
+            id: 1,
+            name: 'Test Game',
+          },
+          collection: {
+            id: 1,
+            name: 'Test Collection',
+          },
+          checkOuts: [
+            {
+              id: 1,
+              checkIn: new Date(),
+              checkOut: new Date(),
+              attendee: {
+                badgeNumber: '1',
+                id: 1,
+                name: 'Test Attendee',
+              },
+            },
+          ],
+        },
+      ];
+
+      mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
+
+      const expectedCopies = await controller.searchCopies('test', 1, 1);
+
+      expect(expectedCopies.Result.length).toBe(1);
+    });
+
+    it('should return some copies and not break', async () => {
+      const copies = [
+        {
+          id: 1,
+          gameId: 1,
+          barcode: '*00001*',
+          barcodeLabel: '1',
+          dateAdded: new Date(),
+          winnable: true,
+          dateRetired: null,
+          coverArtOverride: null,
+          winnerId: null,
+          collectionId: 1,
+          game: {
+            id: 1,
+            name: 'Test Game',
+          },
+          collection: {
+            id: 1,
+            name: 'Test Collection',
+          },
+          checkOuts: [],
+        },
+      ];
+
+      mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
+
+      const expectedCopies = await controller.searchCopies('test', 1, 1);
+
+      expect(expectedCopies.Result.length).toBe(1);
+    });
+
+    it('should return some copies and have a weird checkout', async () => {
+      const copies = [
+        {
+          id: 1,
+          gameId: 1,
+          barcode: '*00001*',
+          barcodeLabel: '1',
+          dateAdded: new Date(),
+          winnable: true,
+          dateRetired: null,
+          coverArtOverride: null,
+          winnerId: null,
+          collectionId: 1,
+          game: {
+            id: 1,
+            name: 'Test Game',
+          },
+          collection: {
+            id: 1,
+            name: 'Test Collection',
+          },
+          checkOuts: [
+            {
+              id: 1,
+              checkIn: null,
+              checkOut: new Date(),
+              attendee: {
+                badgeNumber: '1',
+                id: 1,
+                name: 'Test Attendee',
+              },
+            },
+          ],
+        },
+      ];
+
+      mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
+
+      const expectedCopies = await controller.searchCopies('test', 1, 1);
+
+      expect(expectedCopies.Result.length).toBe(1);
+    });
+
+    it('should return some copies and have a checkout', async () => {
       const copies = [
         {
           id: 1,

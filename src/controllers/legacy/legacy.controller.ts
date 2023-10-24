@@ -58,14 +58,18 @@ export class LegacyController {
           ID: c.id,
           Name: c.name,
           Copies: c.copies.map((cp) => {
-            const currentCheckout = cp.checkOuts.find((co) => !co.checkIn);
-            const currentCheckoutLength =
-              (currentCheckout?.checkIn
-                ? currentCheckout.checkIn.getTime()
-                : new Date().getTime()) -
-              (currentCheckout?.checkOut
-                ? currentCheckout?.checkOut?.getTime()
-                : new Date().getTime());
+            const currentCheckout = cp.checkOuts.find(
+              (co) => co.checkIn === null,
+            );
+
+            let currentCheckoutLength = 0;
+
+            if (currentCheckout) {
+              currentCheckoutLength =
+                (currentCheckout.checkIn
+                  ? currentCheckout.checkIn.getTime()
+                  : new Date().getTime()) - currentCheckout.checkOut.getTime();
+            }
 
             const days = Math.floor(
               currentCheckoutLength / (1000 * 60 * 60 * 24),
@@ -270,9 +274,13 @@ export class LegacyController {
     return {
       Errors: [],
       Result: checkouts.map((c) => {
-        const currentCheckoutLength =
-          (c?.checkIn ? c.checkIn.getTime() : new Date().getTime()) -
-          (c?.checkOut ? c?.checkOut?.getTime() : new Date().getTime());
+        let currentCheckoutLength = 0;
+
+        if (c) {
+          currentCheckoutLength =
+            (c.checkIn ? c.checkIn.getTime() : new Date().getTime()) -
+            c.checkOut.getTime();
+        }
 
         const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
         let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
@@ -346,9 +354,13 @@ export class LegacyController {
     return {
       Errors: [],
       Result: checkouts.map((c) => {
-        const currentCheckoutLength =
-          (c?.checkIn ? c.checkIn.getTime() : new Date().getTime()) -
-          (c?.checkOut ? c?.checkOut?.getTime() : new Date().getTime());
+        let currentCheckoutLength = 0;
+
+        if (c) {
+          currentCheckoutLength =
+            (c.checkIn ? c.checkIn.getTime() : new Date().getTime()) -
+            c.checkOut.getTime();
+        }
 
         const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
         let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
@@ -500,15 +512,16 @@ export class LegacyController {
       });
     }
 
-    const currentCheckout = copy.checkOuts.find((co) => !co.checkIn);
+    const currentCheckout = copy.checkOuts.find((co) => co.checkIn === null);
 
-    const currentCheckoutLength =
-      (currentCheckout?.checkIn
-        ? currentCheckout.checkIn.getTime()
-        : new Date().getTime()) -
-      (currentCheckout?.checkOut
-        ? currentCheckout?.checkOut?.getTime()
-        : new Date().getTime());
+    let currentCheckoutLength = 0;
+
+    if (currentCheckout) {
+      currentCheckoutLength =
+        (currentCheckout.checkIn
+          ? currentCheckout.checkIn.getTime()
+          : new Date().getTime()) - currentCheckout.checkOut.getTime();
+    }
 
     const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
     let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
@@ -579,7 +592,6 @@ export class LegacyController {
   async searchCopies(
     @Query('query') query: string,
     @Param('orgId') orgId: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Param('conId') conId: number,
   ) {
     const copies = await this.copyService.searchCopies(
@@ -613,14 +625,16 @@ export class LegacyController {
     return {
       Errors: [],
       Result: copies.map((c) => {
-        const currentCheckout = c.checkOuts.find((co) => !co.checkIn);
-        const currentCheckoutLength =
-          (currentCheckout?.checkIn
-            ? currentCheckout.checkIn.getTime()
-            : new Date().getTime()) -
-          (currentCheckout?.checkOut
-            ? currentCheckout?.checkOut?.getTime()
-            : new Date().getTime());
+        const currentCheckout = c.checkOuts.find((co) => co.checkIn === null);
+
+        let currentCheckoutLength = 0;
+
+        if (currentCheckout) {
+          currentCheckoutLength =
+            (currentCheckout.checkIn
+              ? currentCheckout.checkIn.getTime()
+              : new Date().getTime()) - currentCheckout.checkOut?.getTime();
+        }
 
         const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
         let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
@@ -706,7 +720,7 @@ export class LegacyController {
     }
 
     if (
-      attendee.checkOuts.filter((co) => !co.checkIn).length > 0 &&
+      attendee.checkOuts.filter((co) => co.checkIn === null).length > 0 &&
       !body.overrideLimit
     ) {
       throw new BadRequestException({
@@ -887,9 +901,13 @@ export class LegacyController {
       this.ctx,
     );
 
-    const currentCheckoutLength =
-      (checkIn?.checkIn ? checkIn.checkIn.getTime() : new Date().getTime()) -
-      (checkIn?.checkOut ? checkIn?.checkOut?.getTime() : new Date().getTime());
+    let currentCheckoutLength = 0;
+
+    if (checkIn) {
+      currentCheckoutLength =
+        (checkIn.checkIn ? checkIn.checkIn.getTime() : new Date().getTime()) -
+        checkIn.checkOut.getTime();
+    }
 
     const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
     let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
