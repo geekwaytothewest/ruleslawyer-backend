@@ -579,6 +579,7 @@ export class LegacyController {
   async searchCopies(
     @Query('query') query: string,
     @Param('orgId') orgId: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Param('conId') conId: number,
   ) {
     const copies = await this.copyService.searchCopies(
@@ -720,13 +721,6 @@ export class LegacyController {
       },
       this.ctx,
     );
-
-    if (!copy?.collectionId) {
-      throw new BadRequestException({
-        Errors: ['Copy not in a collection'],
-        Result: null,
-      });
-    }
 
     const checkOut = await this.checkOutService.checkOut(
       copy?.collectionId,
