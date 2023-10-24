@@ -675,7 +675,7 @@ export class LegacyController {
     @Param('orgId') orgId: number,
     @Param('conId') conId: number,
   ) {
-    let attendee = await this.attendeeService.attendee(
+    let attendee = await this.attendeeService.attendeeWithCheckouts(
       {
         conventionId_barcode: {
           conventionId: Number(conId),
@@ -686,7 +686,7 @@ export class LegacyController {
     );
 
     if (!attendee) {
-      attendee = await this.attendeeService.attendee(
+      attendee = await this.attendeeService.attendeeWithCheckouts(
         {
           conventionId_badgeNumber: {
             conventionId: Number(conId),
@@ -700,6 +700,16 @@ export class LegacyController {
     if (!attendee) {
       throw new BadRequestException({
         Errors: ['Attendee not found.'],
+        Result: null,
+      });
+    }
+
+    if (
+      attendee.checkOuts.filter((co) => !co.checkIn).length > 0 &&
+      !body.overrideLimit
+    ) {
+      throw new BadRequestException({
+        Errors: ['Attendee already has a game checked out.'],
         Result: null,
       });
     }
@@ -723,6 +733,7 @@ export class LegacyController {
       copy?.barcode,
       Number(conId),
       attendee.barcode,
+      body.overrideLimit,
       this.ctx,
     );
 

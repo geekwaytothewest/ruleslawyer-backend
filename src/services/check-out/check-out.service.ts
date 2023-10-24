@@ -57,6 +57,7 @@ export class CheckOutService {
     copyBarcode: string,
     conventionId: number,
     attendeeBarcode: string,
+    overrideLimit: boolean,
     ctx: Context,
   ) {
     const copy = await this.copyService.copyWithCheckouts(
@@ -91,7 +92,10 @@ export class CheckOutService {
       return Promise.reject('attendee not found');
     }
 
-    if (attendee.checkOuts.filter((co) => !co.checkIn).length > 0) {
+    if (
+      attendee.checkOuts.filter((co) => !co.checkIn).length > 0 &&
+      !overrideLimit
+    ) {
       return Promise.reject('attendee already has a game checked out');
     }
 

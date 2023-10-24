@@ -132,6 +132,7 @@ export class OrganizationController {
       copyBarcode,
       Number(id),
       attendeeBarcode,
+      false,
       this.ctx,
     );
   }

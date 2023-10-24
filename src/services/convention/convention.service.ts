@@ -190,6 +190,7 @@ export class ConventionService {
       copyBarcode,
       id,
       attendeeBarcode,
+      false,
       ctx,
     );
   }
