@@ -55,10 +55,6 @@ export class CheckOutGuard implements CanActivate {
       collectionId &&
       convention?.playAndWinCollectionId === Number(collectionId)
     ) {
-      if (convention?.ownerId === Number(user.id)) {
-        return true;
-      }
-
       const users = convention?.users?.filter(
         (u) => u.id === user.id && (u.admin || u.geekGuide),
       );
