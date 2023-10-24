@@ -85,4 +85,60 @@ describe('AttendeeService', () => {
       expect(service.attendee({ id: 1 }, ctx)).resolves.toBeTruthy();
     });
   });
+
+  describe('attendees', () => {
+    it('should return attendees', async () => {
+      mockCtx.prisma.attendee.findMany.mockResolvedValue([
+        {
+          id: 1,
+          conventionId: 1,
+          name: 'Test Attendee',
+          userId: null,
+          badgeNumber: '1',
+          badgeTypeId: 1,
+          tteBadgeNumber: 1,
+          email: 'test@geekway.com',
+          pronounsId: 1,
+          checkedIn: false,
+          printed: false,
+          registrationCode: 'asdf',
+          barcode: '*000001*',
+        },
+      ]);
+
+      const attendees = await service.attendees(1, ctx);
+
+      expect(attendees.length).toBe(1);
+    });
+  });
+
+  describe('updateAttendee', () => {
+    it('should update an attendee', async () => {
+      mockCtx.prisma.attendee.update.mockResolvedValue({
+        id: 1,
+        conventionId: 1,
+        name: 'asdf',
+        userId: null,
+        badgeNumber: '1',
+        badgeTypeId: 1,
+        tteBadgeNumber: 1,
+        email: 'test@geekway.com',
+        pronounsId: 1,
+        checkedIn: false,
+        printed: false,
+        registrationCode: 'asdf',
+        barcode: '*000001*',
+      });
+
+      const attendee = await service.updateAttendee(
+        {
+          where: { id: 1 },
+          data: { name: 'asdf' },
+        },
+        ctx,
+      );
+
+      expect(attendee.name).toBe('asdf');
+    });
+  });
 });

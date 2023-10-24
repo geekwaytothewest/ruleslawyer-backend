@@ -368,4 +368,40 @@ describe('CheckOutService', () => {
       );
     });
   });
+
+  describe('getLongestCheckouts', () => {
+    it('should get some checkouts', async () => {
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue([
+        {
+          id: 1,
+          attendeeId: 1,
+          checkOut: new Date(),
+          checkIn: null,
+          copyId: 1,
+        },
+      ]);
+
+      const checkouts = await service.getLongestCheckouts(1, ctx);
+
+      expect(checkouts.length).toBe(1);
+    });
+  });
+
+  describe('getLongestCheckouts', () => {
+    it('should get some checkouts', async () => {
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue([
+        {
+          id: 1,
+          attendeeId: 1,
+          checkOut: new Date(),
+          checkIn: null,
+          copyId: 1,
+        },
+      ]);
+
+      const checkouts = await service.getRecentCheckouts(1, ctx);
+
+      expect(checkouts.length).toBe(1);
+    });
+  });
 });
