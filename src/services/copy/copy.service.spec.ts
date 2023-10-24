@@ -140,4 +140,79 @@ describe('CopyService', () => {
       expect(copy?.collection.id).toBe(1);
     });
   });
+
+  describe('copyWithCheckOutsGameAndCollection', () => {
+    it('should return a copy with checkouts, a game, and collection', async () => {
+      const query = {
+        id: 1,
+        gameId: 1,
+        dateAdded: new Date(),
+        dateRetired: null,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        winnable: false,
+        winnerId: null,
+        coverArtOverride: Buffer.from(''),
+        collectionId: 1,
+        collection: {
+          id: 1,
+          name: 'Geekway Library',
+        },
+        game: {
+          id: 1,
+          name: 'Test Game',
+        },
+        checkOuts: [
+          {
+            id: 1,
+          },
+        ],
+      };
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(query);
+
+      const copy = await service.copyWithCheckOutsGameAndCollection(
+        { id: 1 },
+        ctx,
+      );
+
+      expect(copy?.checkOuts.length).toBe(1);
+    });
+  });
+
+  describe('searchCopies', () => {
+    it('should return so many copies', async () => {
+      const query = [
+        {
+          id: 1,
+          gameId: 1,
+          dateAdded: new Date(),
+          dateRetired: null,
+          barcode: '*00001*',
+          barcodeLabel: '1',
+          winnable: false,
+          winnerId: null,
+          coverArtOverride: Buffer.from(''),
+          collectionId: 1,
+          collection: {
+            id: 1,
+            name: 'Geekway Library',
+          },
+          game: {
+            id: 1,
+            name: 'Test Game',
+          },
+          checkOuts: [
+            {
+              id: 1,
+            },
+          ],
+        },
+      ];
+      mockCtx.prisma.copy.findMany.mockResolvedValue(query);
+
+      const copies = await service.searchCopies({ winnable: false }, ctx);
+
+      expect(copies.length).toBe(1);
+    });
+  });
 });

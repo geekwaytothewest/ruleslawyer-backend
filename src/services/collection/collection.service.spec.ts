@@ -38,6 +38,23 @@ describe('CollectionService', () => {
     });
   });
 
+  describe('collectionsByOrg', () => {
+    it('should return all an org collections', async () => {
+      mockCtx.prisma.collection.findMany.mockResolvedValue([
+        {
+          id: 1,
+          name: 'Test Collection',
+          organizationId: 1,
+          public: false,
+        },
+      ]);
+
+      const collections = await service.collectionsByOrg(1, ctx);
+
+      expect(collections.length).toBe(1);
+    });
+  });
+
   describe('importCollection', () => {
     it('should import a collection', async () => {
       mockCtx.prisma.collection.create.mockResolvedValueOnce({

@@ -67,4 +67,31 @@ describe('OrganizationService', () => {
       expect(org?.users.length).toBe(1);
     });
   });
+
+  describe('organizationWithCollections', () => {
+    it('should get an organization with collections', async () => {
+      const organization = {
+        id: 1,
+        name: 'Geekway to the Testing',
+        ownerId: 1,
+        collections: [
+          {
+            id: 1,
+            name: 'Test Collection',
+          },
+        ],
+      };
+
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(organization);
+
+      const org = await service.organizationWithCollections(
+        {
+          id: 1,
+        },
+        ctx,
+      );
+
+      expect(org?.collections.length).toBe(1);
+    });
+  });
 });
