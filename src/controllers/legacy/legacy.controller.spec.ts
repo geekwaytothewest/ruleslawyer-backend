@@ -1120,6 +1120,95 @@ describe('LegacyController', () => {
       expect(bigResponse?.Result.Length.Days).toBe(0);
     });
 
+    it('should not break', async () => {
+      const convention = {
+        id: 1,
+        organizationId: 1,
+        name: 'Geekway to the Testing',
+        theme: 'Theme to the Testing',
+        logo: <Buffer>{},
+        logoSquare: <Buffer>{},
+        icon: '',
+        startDate: null,
+        endDate: null,
+        registrationUrl: '',
+        typeId: 1,
+        annual: '',
+        size: 3000,
+        cancelled: false,
+        playAndWinAnnounced: false,
+        doorPrizesAnnounced: false,
+        playAndWinCollectionId: 1,
+        doorPrizeCollectionId: 1,
+        playAndWinWinnersAnnounced: false,
+        playAndWinWinnersSelected: false,
+        tteConventionId: '',
+      };
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue(convention);
+
+      const organization = {
+        id: 1,
+        name: 'Geekway to the Testing',
+        ownerId: 1,
+        collections: [
+          {
+            id: 1,
+            name: 'Test Collection',
+          },
+        ],
+      };
+
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(organization);
+
+      const copy = {
+        id: 1,
+        gameId: 1,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        dateAdded: new Date(),
+        winnable: true,
+        dateRetired: null,
+        coverArtOverride: null,
+        winnerId: null,
+        collectionId: 1,
+        game: {
+          id: 1,
+          name: 'Test Game',
+        },
+        collection: {
+          id: 1,
+          name: 'Test Collection',
+        },
+        checkOuts: [
+          {
+            id: 1,
+            checkIn: null,
+            checkOut: null,
+            attendee: {
+              badgeNumber: '1',
+              id: 1,
+              name: 'Test Attendee',
+            },
+          },
+        ],
+      };
+
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
+
+      mockCtx.prisma.checkOut.update.mockResolvedValue({
+        id: 1,
+        copyId: 1,
+        attendeeId: 1,
+        checkIn: null,
+        checkOut: null,
+      });
+
+      const bigResponse = await controller.checkinCopy(1, 1, '1');
+
+      expect(bigResponse?.Result.Length.Days).toBe(0);
+    });
+
     it('should fail to check in a copy with a label', async () => {
       const convention = {
         id: 1,
@@ -1184,7 +1273,7 @@ describe('LegacyController', () => {
           {
             id: 1,
             checkIn: null,
-            checkOut: new Date(),
+            checkOut: null,
             attendee: {
               badgeNumber: '1',
               id: 1,
@@ -1202,8 +1291,8 @@ describe('LegacyController', () => {
         id: 1,
         copyId: 1,
         attendeeId: 1,
-        checkIn: new Date(),
-        checkOut: new Date(),
+        checkIn: null,
+        checkOut: null,
       });
 
       expect(controller.checkinCopy(1, 1, '1')).rejects.toBe('copy not found');
