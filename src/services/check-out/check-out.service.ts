@@ -66,7 +66,7 @@ export class CheckOutService {
     const copy = await this.copyService.copyWithCheckouts(
       {
         collectionId_barcode: {
-          collectionId: collectionId,
+          collectionId: Number(collectionId),
           barcode: copyBarcode,
         },
       },

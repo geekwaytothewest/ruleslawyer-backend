@@ -42,16 +42,20 @@ export class CheckOutGuard implements CanActivate {
 
     const convention = await this.conventionService.conventionWithUsers(
       {
-        id: conventionId,
+        id: Number(conventionId),
       },
       this.ctx,
     );
 
-    if (convention?.organizationId !== organizationId) {
+    if (convention?.organizationId !== Number(organizationId)) {
       return false;
     }
 
-    if (convention?.playAndWinCollectionId === collectionId) {
+    if (convention?.playAndWinCollectionId === Number(collectionId)) {
+      if (convention?.ownerId === Number(user.id)) {
+        return true;
+      }
+
       const users = convention?.users?.filter(
         (u) => u.id === user.id && (u.admin || u.geekGuide),
       );
@@ -59,6 +63,25 @@ export class CheckOutGuard implements CanActivate {
       if (users.length > 0) {
         return true;
       }
+    }
+
+    const organization = await this.organizationService.organizationWithUsers(
+      {
+        id: Number(organizationId),
+      },
+      this.ctx,
+    );
+
+    if (organization?.ownerId === user.id) {
+      return true;
+    }
+
+    const orgUsers = organization.users.filter(
+      (u) => u.id === user.id && (u.admin || u.geekGuide),
+    );
+
+    if (orgUsers.length > 0) {
+      return true;
     }
 
     return false;
