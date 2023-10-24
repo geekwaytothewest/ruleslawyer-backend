@@ -23,11 +23,17 @@ Create .env file with the following contents:
 DATABASE_URL=
 AUTH0_ISSUER_URL=
 AUTH0_AUDIENCE=
+FASTIFY_PORT=
+ORIGIN_URL=
 ```
 
 Set the Database URL based on your PostgreSQL connection string
 
 Set your Auth0 API data in Issuer URL and Audience
+
+Choose a port to run Fastify on (Ex: 3000)
+
+Set the Origin URL to match the front end (Ex: http://localhost:3000)
 
 ```bash
 $ npm install
