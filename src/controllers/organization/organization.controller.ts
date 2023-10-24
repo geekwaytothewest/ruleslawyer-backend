@@ -128,9 +128,9 @@ export class OrganizationController {
     @Param('attendeeBarcode') attendeeBarcode: string,
   ) {
     return await this.checkOutService.checkOut(
-      colId,
+      Number(colId),
       copyBarcode,
-      id,
+      Number(id),
       attendeeBarcode,
       this.ctx,
     );

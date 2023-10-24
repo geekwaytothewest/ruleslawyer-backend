@@ -14,6 +14,27 @@ export class CollectionService {
     });
   }
 
+  async collectionsByOrg(orgId: number, ctx: Context) {
+    return await ctx.prisma.collection.findMany({
+      where: {
+        organizationId: orgId,
+      },
+      include: {
+        copies: {
+          include: {
+            checkOuts: {
+              include: {
+                attendee: true,
+              },
+            },
+            collection: true,
+            game: true,
+          },
+        },
+      },
+    });
+  }
+
   async importCollection(
     orgId: number,
     fields: any,

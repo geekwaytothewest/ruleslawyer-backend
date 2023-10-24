@@ -15,6 +15,7 @@ import { GameModule } from './modules/game/game.module';
 import { CopyModule } from './modules/copy/copy.module';
 import { CollectionModule } from './modules/collection/collection.module';
 import { AttendeeModule } from './modules/attendee/attendee.module';
+import { LegacyModule } from './modules/legacy/legacy.module';
 
 const routes = [
   {
@@ -45,6 +46,10 @@ const routes = [
     path: 'copy',
     module: CopyModule,
   },
+  {
+    path: 'legacy',
+    module: LegacyModule,
+  },
 ];
 
 @Module({
@@ -61,6 +66,7 @@ const routes = [
     CopyModule,
     CollectionModule,
     AttendeeModule,
+    LegacyModule,
   ],
   controllers: [AppController],
   providers: [AppService, UserService, PrismaService],

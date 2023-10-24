@@ -25,6 +25,8 @@ AUTH0_ISSUER_URL=
 AUTH0_AUDIENCE=
 FASTIFY_PORT=
 ORIGIN_URL=
+LEGACY_ORG=
+LEGACY_CON=
 ```
 
 Set the Database URL based on your PostgreSQL connection string

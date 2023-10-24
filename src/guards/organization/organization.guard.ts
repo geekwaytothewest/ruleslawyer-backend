@@ -23,6 +23,10 @@ export class OrganizationGuard implements CanActivate {
     let orgId = context.getArgByIndex(0).params?.id;
 
     if (!orgId) {
+      orgId = context.getArgByIndex(0).params?.orgId;
+    }
+
+    if (!orgId) {
       orgId = context.getArgByIndex(0).body?.organizationId;
     }
 
