@@ -39,10 +39,10 @@ export class TabletopeventsService {
 
       await this.sleep(1000);
 
-      for (let i = 1; i < badgePage.data.result.paging.total_pages; i++) {
+      for (let i = 2; i <= badgePage.data.result.paging.total_pages; i++) {
         badgePage = await this.httpService.get(
           this.tteApiUrl +
-            `convention/${tteConventionId}/badges?session_id=${session}`,
+            `convention/${tteConventionId}/badges?session_id=${session}&_page_number=${i}`,
         );
 
         badges.push(...badgePage.data.result.items);
@@ -67,10 +67,10 @@ export class TabletopeventsService {
 
       await this.sleep(1000);
 
-      for (let i = 1; i < badgeTypePage.data.result.paging.total_pages; i++) {
+      for (let i = 2; i <= badgeTypePage.data.result.paging.total_pages; i++) {
         badgeTypePage = await this.httpService.get(
           this.tteApiUrl +
-            `convention/${tteConventionId}/badgetypes?session_id=${session}`,
+            `convention/${tteConventionId}/badgetypes?session_id=${session}&_page_number=${i}`,
         );
 
         badgeTypes.push(...badgeTypePage.data.result.items);
