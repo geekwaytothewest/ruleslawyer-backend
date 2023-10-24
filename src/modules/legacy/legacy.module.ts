@@ -6,6 +6,7 @@ import { OrganizationModule } from '../organization/organization.module';
 import { CopyModule } from '../copy/copy.module';
 import { ConventionModule } from '../convention/convention.module';
 import { AttendeeModule } from '../attendee/attendee.module';
+import { CheckOutModule } from '../check-out/check-out.module';
 
 @Module({
   controllers: [LegacyController],
@@ -17,6 +18,7 @@ import { AttendeeModule } from '../attendee/attendee.module';
     CopyModule,
     ConventionModule,
     AttendeeModule,
+    CheckOutModule,
   ],
 })
 export class LegacyModule {}

@@ -29,6 +29,18 @@ export class OrganizationService {
     });
   }
 
+  async organizationWithCollections(
+    organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
+    ctx: Context,
+  ): Promise<any> {
+    return ctx.prisma.organization.findUnique({
+      where: organizationWhereUniqueInput,
+      include: {
+        collections: true,
+      },
+    });
+  }
+
   async createOrganization(
     name: string,
     ownerId: number,

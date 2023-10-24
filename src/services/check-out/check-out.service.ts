@@ -10,6 +10,48 @@ export class CheckOutService {
     private readonly attendeeService: AttendeeService,
   ) {}
 
+  async getLongestCheckouts(conventionId: number, ctx: Context) {
+    return ctx.prisma.checkOut.findMany({
+      where: {
+        checkIn: null,
+      },
+      orderBy: {
+        checkOut: 'desc',
+      },
+      take: 10,
+      include: {
+        attendee: true,
+        Copy: {
+          include: {
+            collection: true,
+            game: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getRecentCheckouts(conventionId: number, ctx: Context) {
+    return ctx.prisma.checkOut.findMany({
+      where: {
+        checkIn: null,
+      },
+      orderBy: {
+        checkOut: 'asc',
+      },
+      take: 10,
+      include: {
+        attendee: true,
+        Copy: {
+          include: {
+            collection: true,
+            game: true,
+          },
+        },
+      },
+    });
+  }
+
   async checkOut(
     collectionId: number,
     copyBarcode: string,

@@ -37,6 +37,24 @@ export class CopyService {
     });
   }
 
+  async copyWithCheckOutsGameAndCollection(
+    copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
+    ctx: Context,
+  ): Promise<any> {
+    return ctx.prisma.copy.findUnique({
+      where: copyWhereUniqueInput,
+      include: {
+        collection: true,
+        checkOuts: {
+          include: {
+            attendee: true,
+          },
+        },
+        game: true,
+      },
+    });
+  }
+
   async createCopy(
     data: Prisma.CopyCreateInput,
     ctx: Context,
@@ -53,5 +71,24 @@ export class CopyService {
   ) {
     const { where, data } = params;
     return ctx.prisma.copy.update({ data, where });
+  }
+
+  async searchCopies(where: Prisma.CopyWhereInput, ctx: Context) {
+    return ctx.prisma.copy.findMany({
+      where: where,
+      include: {
+        collection: {
+          include: {
+            organization: true,
+          },
+        },
+        game: true,
+        checkOuts: {
+          include: {
+            attendee: true,
+          },
+        },
+      },
+    });
   }
 }
