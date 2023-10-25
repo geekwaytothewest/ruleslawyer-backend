@@ -13,7 +13,11 @@ async function bootstrap() {
   );
   await app.register(multipart);
   app.enableCors({
-    origin: [`${process.env.ORIGIN_URL1}`, `${process.env.ORIGIN_URL2}`],
+    origin: [
+      `${process.env.ADMIN_CLIENT_ORIGIN}`,
+      `${process.env.LIBRARIAN_CLIENT_ORIGIN}`,
+      `${process.env.PLAY_AND_WIN_CLIENT_ORIGIN}`,
+    ],
   });
   await app.listen(`${process.env.FASTIFY_PORT}`);
 }
