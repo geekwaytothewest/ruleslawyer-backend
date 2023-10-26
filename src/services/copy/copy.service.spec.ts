@@ -34,6 +34,7 @@ describe('CopyService', () => {
         coverArtOverride: Buffer.from(''),
         dateRetired: null,
         collectionId: 1,
+        organizationId: 1,
       });
 
       const copy = await service.copy({ id: 1 }, ctx);
@@ -55,6 +56,7 @@ describe('CopyService', () => {
         coverArtOverride: Buffer.from(''),
         dateRetired: null,
         collectionId: 1,
+        organizationId: 1,
       });
 
       const copy = await service.createCopy(
@@ -71,6 +73,11 @@ describe('CopyService', () => {
           winner: undefined,
           coverArtOverride: Buffer.from(''),
           dateRetired: null,
+          organization: {
+            connect: {
+              id: 1,
+            },
+          },
         },
         ctx,
       );
@@ -92,6 +99,7 @@ describe('CopyService', () => {
         coverArtOverride: Buffer.from(''),
         dateRetired: null,
         collectionId: 1,
+        organizationId: 1,
       });
 
       const copy = await service.updateCopy(
@@ -132,6 +140,7 @@ describe('CopyService', () => {
           id: 1,
           name: 'Geekway Library',
         },
+        organizationId: 1,
       };
       mockCtx.prisma.copy.findUnique.mockResolvedValue(query);
 
@@ -167,6 +176,7 @@ describe('CopyService', () => {
             id: 1,
           },
         ],
+        organizationId: 1,
       };
       mockCtx.prisma.copy.findUnique.mockResolvedValue(query);
 
@@ -206,6 +216,7 @@ describe('CopyService', () => {
               id: 1,
             },
           ],
+          organizationId: 1,
         },
       ];
       mockCtx.prisma.copy.findMany.mockResolvedValue(query);

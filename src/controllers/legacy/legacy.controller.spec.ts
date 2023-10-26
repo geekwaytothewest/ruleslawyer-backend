@@ -154,11 +154,12 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.create.mockResolvedValue(copy);
 
-      const bigResponse = await controller.addCopy(1, {
+      const bigResponse = await controller.addCopy(1, 1, {
         libraryId: 1,
         title: 'Test Title',
       });
@@ -180,6 +181,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.update.mockResolvedValue(copy);
@@ -268,6 +270,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -338,6 +341,7 @@ describe('LegacyController', () => {
           name: 'Test Collection',
         },
         checkOuts: [],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -408,6 +412,7 @@ describe('LegacyController', () => {
           name: 'Test Collection',
         },
         checkOuts: [],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -489,6 +494,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -618,6 +624,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique
@@ -701,6 +708,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique
@@ -784,6 +792,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -1020,6 +1029,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -1134,6 +1144,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValueOnce(copy);
@@ -1223,6 +1234,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValueOnce(copy);
@@ -1318,6 +1330,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -1407,6 +1420,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
@@ -1496,6 +1510,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique
@@ -1585,6 +1600,7 @@ describe('LegacyController', () => {
             },
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValueOnce(copy);
@@ -1685,6 +1701,7 @@ describe('LegacyController', () => {
               },
             },
           ],
+          organizationId: 1,
         },
       ];
 
@@ -1717,6 +1734,7 @@ describe('LegacyController', () => {
             name: 'Test Collection',
           },
           checkOuts: [],
+          organizationId: 1,
         },
       ];
 
@@ -1760,6 +1778,7 @@ describe('LegacyController', () => {
               },
             },
           ],
+          organizationId: 1,
         },
       ];
 
@@ -1803,6 +1822,7 @@ describe('LegacyController', () => {
               },
             },
           ],
+          organizationId: 1,
         },
       ];
 
