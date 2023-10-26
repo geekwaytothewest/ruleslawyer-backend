@@ -1051,6 +1051,128 @@ describe('LegacyController', () => {
       expect(bigResponse?.Result.Length.Days).toBe(0);
     });
 
+    it('should check out a copy by label', async () => {
+      const attendee = {
+        id: 1,
+        name: 'Test Attendee',
+        badgeNumber: '1',
+        barcode: '*00001*',
+        tteBadgeNumber: null,
+        conventionId: 1,
+        printed: false,
+        checkedIn: false,
+        registrationCode: 'fake code',
+        userId: null,
+        badgeTypeId: 1,
+        email: 'test@geekway.com',
+        pronounsId: 1,
+        checkOuts: [
+          {
+            id: 1,
+            checkIn: new Date(),
+            checkOut: new Date(),
+          },
+        ],
+      };
+
+      mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
+
+      const convention = {
+        id: 1,
+        organizationId: 1,
+        name: 'Geekway to the Testing',
+        theme: 'Theme to the Testing',
+        logo: <Buffer>{},
+        logoSquare: <Buffer>{},
+        icon: '',
+        startDate: null,
+        endDate: null,
+        registrationUrl: '',
+        typeId: 1,
+        annual: '',
+        size: 3000,
+        cancelled: false,
+        playAndWinAnnounced: false,
+        doorPrizesAnnounced: false,
+        playAndWinCollectionId: 1,
+        doorPrizeCollectionId: 1,
+        playAndWinWinnersAnnounced: false,
+        playAndWinWinnersSelected: false,
+        tteConventionId: '',
+      };
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue(convention);
+
+      const organization = {
+        id: 1,
+        name: 'Geekway to the Testing',
+        ownerId: 1,
+        collections: [
+          {
+            id: 1,
+            name: 'Test Collection',
+          },
+        ],
+      };
+
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(organization);
+
+      const copy = {
+        id: 1,
+        gameId: 1,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        dateAdded: new Date(),
+        winnable: true,
+        dateRetired: null,
+        coverArtOverride: null,
+        winnerId: null,
+        collectionId: 1,
+        game: {
+          id: 1,
+          name: 'Test Game',
+        },
+        collection: {
+          id: 1,
+          name: 'Test Collection',
+        },
+        checkOuts: [
+          {
+            id: 1,
+            checkIn: new Date(),
+            checkOut: new Date(),
+            attendee: {
+              badgeNumber: '1',
+              id: 1,
+              name: 'Test Attendee',
+            },
+          },
+        ],
+        organizationId: 1,
+      };
+
+      mockCtx.prisma.copy.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(copy)
+        .mockResolvedValueOnce(copy);
+
+      mockCtx.prisma.checkOut.create.mockResolvedValue({
+        id: 1,
+        copyId: 1,
+        attendeeId: 1,
+        checkIn: new Date(),
+        checkOut: new Date(),
+      });
+
+      const bigResponse = await controller.checkoutCopy(
+        { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
+        1,
+        1,
+      );
+
+      expect(bigResponse?.Result.Length.Days).toBe(0);
+    });
+
     it('should fail to check out a copy an attendee already has another checkout', async () => {
       const attendee = {
         id: 1,
