@@ -130,6 +130,11 @@ export class CollectionService {
                   id: Number(collection?.id),
                 },
               },
+              organization: {
+                connect: {
+                  id: Number(orgId),
+                },
+              },
             },
             ctx,
           );

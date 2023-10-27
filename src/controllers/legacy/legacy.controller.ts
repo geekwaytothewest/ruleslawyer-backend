@@ -160,6 +160,7 @@ export class LegacyController {
   @UseGuards(JwtAuthGuard, CollectionGuard)
   @Post('org/:orgId/con/:conId/copycollections/:colId/copies')
   async addCopy(
+    @Param('orgId') orgId: number,
     @Param('colId') colId: number,
     @Body()
     copy: {
@@ -185,6 +186,11 @@ export class LegacyController {
             create: {
               name: copy.title,
             },
+          },
+        },
+        organization: {
+          connect: {
+            id: Number(orgId),
           },
         },
       },
@@ -427,82 +433,26 @@ export class LegacyController {
     @Param('conId') conId: number,
     @Param('copyBarcode') copyBarcode: string,
   ) {
-    //Check play and win for the copy first, then check organization collections
-    const convention = await this.conventionService.convention(
+    let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
       {
-        id: Number(conId),
+        organizationId_barcode: {
+          organizationId: Number(orgId),
+          barcode: copyBarcode,
+        },
       },
       this.ctx,
     );
 
-    const organization =
-      await this.organizationService.organizationWithCollections(
-        {
-          id: Number(orgId),
-        },
-        this.ctx,
-      );
-
-    let copy;
-
-    if (convention?.playAndWinCollectionId) {
+    if (!copy) {
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
-          collectionId_barcode: {
-            collectionId: convention?.playAndWinCollectionId,
-            barcode: copyBarcode,
+          organizationId_barcodeLabel: {
+            organizationId: Number(orgId),
+            barcodeLabel: copyBarcode,
           },
         },
         this.ctx,
       );
-
-      if (!copy) {
-        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
-          {
-            collectionId_barcodeLabel: {
-              collectionId: convention?.playAndWinCollectionId,
-              barcodeLabel: copyBarcode,
-            },
-          },
-          this.ctx,
-        );
-      }
-    }
-
-    if (!copy) {
-      for (const c of organization.collections) {
-        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
-          {
-            collectionId_barcode: {
-              collectionId: c.id,
-              barcode: copyBarcode,
-            },
-          },
-          this.ctx,
-        );
-
-        if (copy) {
-          break;
-        }
-      }
-    }
-
-    if (!copy) {
-      for (const c of organization.collections) {
-        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
-          {
-            collectionId_barcodeLabel: {
-              collectionId: c.id,
-              barcodeLabel: copyBarcode,
-            },
-          },
-          this.ctx,
-        );
-
-        if (copy) {
-          break;
-        }
-      }
     }
 
     if (!copy) {
@@ -729,12 +679,27 @@ export class LegacyController {
       });
     }
 
-    const copy = await this.copyService.copyWithCheckOutsGameAndCollection(
+    let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
       {
-        id: Number(body.libraryId),
+        organizationId_barcode: {
+          organizationId: Number(orgId),
+          barcode: body.libraryId,
+        },
       },
       this.ctx,
     );
+
+    if (!copy) {
+      copy = await this.copyService.copyWithCheckOutsGameAndCollection(
+        {
+          organizationId_barcodeLabel: {
+            organizationId: Number(orgId),
+            barcodeLabel: body.libraryId,
+          },
+        },
+        this.ctx,
+      );
+    }
 
     const checkOut = await this.checkOutService.checkOut(
       copy?.collectionId,
@@ -803,82 +768,26 @@ export class LegacyController {
     @Param('conId') conId: number,
     @Param('copyBarcode') copyBarcode: string,
   ) {
-    //Check play and win for the copy first, then check organization collections
-    const convention = await this.conventionService.convention(
+    let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
       {
-        id: Number(conId),
+        organizationId_barcode: {
+          organizationId: Number(orgId),
+          barcode: copyBarcode,
+        },
       },
       this.ctx,
     );
 
-    const organization =
-      await this.organizationService.organizationWithCollections(
-        {
-          id: Number(orgId),
-        },
-        this.ctx,
-      );
-
-    let copy;
-
-    if (convention?.playAndWinCollectionId) {
+    if (!copy) {
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
-          collectionId_barcode: {
-            collectionId: convention?.playAndWinCollectionId,
-            barcode: copyBarcode,
+          organizationId_barcodeLabel: {
+            organizationId: Number(orgId),
+            barcodeLabel: copyBarcode,
           },
         },
         this.ctx,
       );
-
-      if (!copy) {
-        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
-          {
-            collectionId_barcodeLabel: {
-              collectionId: convention?.playAndWinCollectionId,
-              barcodeLabel: copyBarcode,
-            },
-          },
-          this.ctx,
-        );
-      }
-    }
-
-    if (!copy) {
-      for (const c of organization.collections) {
-        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
-          {
-            collectionId_barcode: {
-              collectionId: c.id,
-              barcode: copyBarcode,
-            },
-          },
-          this.ctx,
-        );
-
-        if (copy) {
-          break;
-        }
-      }
-    }
-
-    if (!copy) {
-      for (const c of organization.collections) {
-        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
-          {
-            collectionId_barcodeLabel: {
-              collectionId: c.id,
-              barcodeLabel: copyBarcode,
-            },
-          },
-          this.ctx,
-        );
-
-        if (copy) {
-          break;
-        }
-      }
     }
 
     if (!copy) {

@@ -166,6 +166,7 @@ describe('OrganizationController', () => {
         barcode: '*00001*',
         barcodeLabel: '1',
         collectionId: 1,
+        organizationId: 1,
       });
 
       const copy = await controller.createCopy(1, 1, {
@@ -181,6 +182,11 @@ describe('OrganizationController', () => {
         dateRetired: null,
         barcode: '*00001*',
         barcodeLabel: '1',
+        organization: {
+          connect: {
+            id: 1,
+          },
+        },
       });
 
       expect(copy?.id).toBe(1);
@@ -325,6 +331,7 @@ describe('OrganizationController', () => {
         barcode: '*00001*',
         barcodeLabel: '1',
         collectionId: 1,
+        organizationId: 1,
       });
 
       const importResult = (await controller.importCollection(req, 1)) as any;
