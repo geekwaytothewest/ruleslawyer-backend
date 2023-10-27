@@ -198,8 +198,8 @@ model Convention {
   logo                       Bytes                       @default("")
   logoSquare                 Bytes                       @default("")
   icon                       String                      @default("")
-  startDate                  DateTime?
-  endDate                    DateTime?
+  startDate                  DateTime
+  endDate                    DateTime
   registrationUrl            String?                     @default("")
   type                       ConventionType?             @relation(fields: typeId, references: [id])
   typeId                     Int?

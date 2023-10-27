@@ -93,12 +93,14 @@ export class ConventionService {
     return new Promise(async (resolve, rejects) => {
       await this.attendeeService.truncate(conventionId, ctx);
 
-      const convention = await this.convention(
-        {
+      const convention = await ctx.prisma.convention.findUnique({
+        where: {
           id: Number(conventionId),
         },
-        ctx,
-      );
+        include: {
+          type: true,
+        },
+      });
 
       if (!convention?.tteConventionId) {
         return rejects('Convention missing tteConventionId.');
@@ -154,7 +156,10 @@ export class ConventionService {
           },
           registrationCode: crypto.randomUUID(),
           email: b.email,
-          badgeNumber: b.badge_number.toString(),
+          badgeNumber:
+            convention.startDate.getFullYear().toString().substring(2) +
+            convention.typeId +
+            b.badge_number.toString(),
           barcode: '*' + b.badge_number.toString().padStart(6, '0') + '*',
           tteBadgeNumber: b.badge_number,
           pronouns: {
