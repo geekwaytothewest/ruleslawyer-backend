@@ -358,12 +358,38 @@ describe('OrganizationController', () => {
   });
 
   describe('checkInCopy', () => {
-    it('should call check ub copy', async () => {
+    it('should call check in copy', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
 
       expect(controller.checkInCopy(1, 1, 1, '*000001*')).rejects.toBe(
         'copy not found',
       );
+    });
+  });
+
+  describe('createConventionType', () => {
+    it('should create a convention type', async () => {
+      mockCtx.prisma.conventionType.create.mockResolvedValue({
+        id: 1,
+        organizationId: 1,
+        name: 'Geekway to the West',
+        description: null,
+        logo: null,
+        logoSquare: null,
+        icon: null,
+        content: null,
+      });
+
+      expect(
+        controller.createConventionType(1, {
+          name: 'Geekway to the West',
+          organization: {
+            connect: {
+              id: 1,
+            },
+          },
+        }),
+      ).resolves.toBeTruthy();
     });
   });
 });

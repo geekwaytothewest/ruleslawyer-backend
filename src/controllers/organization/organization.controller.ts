@@ -160,16 +160,16 @@ export class OrganizationController {
   async createConventionType(
     @Param('id') id: number,
     @Body()
-    conventionData: Prisma.ConventionTypeCreateInput,
+    conventionTypeData: Prisma.ConventionTypeCreateInput,
   ): Promise<ConventionType | void> {
-    conventionData.organization = {
+    conventionTypeData.organization = {
       connect: {
         id: Number(id),
       },
     };
 
     return this.conventionTypeService.createConventionType(
-      conventionData,
+      conventionTypeData,
       this.ctx,
     );
   }
