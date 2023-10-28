@@ -44,6 +44,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        organizationId: 1,
       };
 
       const attendee = {
@@ -142,6 +143,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        organizationId: 1,
       };
 
       const attendee = {
@@ -197,6 +199,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(null);
@@ -229,6 +232,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        organizationId: 1,
       };
 
       const attendee = {
@@ -285,6 +289,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        organizationId: 1,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(null);
@@ -319,6 +324,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        organizationId: 1,
       };
 
       const checkOut = {
@@ -359,6 +365,7 @@ describe('CheckOutService', () => {
         collectionId: 1,
         winnerId: null,
         checkOuts: [],
+        organizationId: 1,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);

@@ -79,8 +79,8 @@ describe('OrganizationController', () => {
         logo: <Buffer>{},
         logoSquare: <Buffer>{},
         icon: '',
-        startDate: null,
-        endDate: null,
+        startDate: new Date(),
+        endDate: new Date(),
         registrationUrl: '',
         typeId: 1,
         annual: '',
@@ -122,6 +122,13 @@ describe('OrganizationController', () => {
         {
           name: 'Geekway to the Testing',
           organization: {},
+          type: {
+            connect: {
+              id: 1,
+            },
+          },
+          startDate: new Date(),
+          endDate: new Date(),
         },
         1,
       );

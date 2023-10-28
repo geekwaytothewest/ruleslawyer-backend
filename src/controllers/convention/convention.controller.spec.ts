@@ -38,8 +38,8 @@ describe('ConventionController', () => {
         logo: <Buffer>{},
         logoSquare: <Buffer>{},
         icon: '',
-        startDate: null,
-        endDate: null,
+        startDate: new Date(),
+        endDate: new Date(),
         registrationUrl: '',
         typeId: 1,
         annual: '',
@@ -82,6 +82,13 @@ describe('ConventionController', () => {
 
       const createConvention = await controller.createConvention({
         name: 'Geekway to the Testing',
+        startDate: new Date(),
+        endDate: new Date(),
+        type: {
+          connect: {
+            id: 1,
+          },
+        },
         organization: {
           connect: {
             id: 1,
@@ -100,6 +107,13 @@ describe('ConventionController', () => {
       expect(
         controller.createConvention({
           name: 'Geekway to the Testing',
+          startDate: new Date(),
+          endDate: new Date(),
+          type: {
+            connect: {
+              id: 1,
+            },
+          },
           organization: {
             connect: {
               id: 1,
@@ -120,8 +134,8 @@ describe('ConventionController', () => {
         logo: <Buffer>{},
         logoSquare: <Buffer>{},
         icon: '',
-        startDate: null,
-        endDate: null,
+        startDate: new Date(),
+        endDate: new Date(),
         registrationUrl: '',
         typeId: 1,
         annual: '',
@@ -168,8 +182,8 @@ describe('ConventionController', () => {
         logo: <Buffer>{},
         logoSquare: <Buffer>{},
         icon: '',
-        startDate: null,
-        endDate: null,
+        startDate: new Date(),
+        endDate: new Date(),
         registrationUrl: '',
         typeId: 1,
         annual: '',
@@ -204,8 +218,8 @@ describe('ConventionController', () => {
         logo: <Buffer>{},
         logoSquare: <Buffer>{},
         icon: '',
-        startDate: null,
-        endDate: null,
+        startDate: new Date(),
+        endDate: new Date(),
         registrationUrl: '',
         typeId: 1,
         annual: '',

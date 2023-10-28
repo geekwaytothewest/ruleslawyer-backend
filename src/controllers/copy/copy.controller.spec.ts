@@ -40,6 +40,7 @@ describe('CopyController', () => {
         barcode: '*00001*',
         barcodeLabel: '1',
         collectionId: 1,
+        organizationId: 1,
       });
 
       const copy = await controller.updateCopy(1, {
@@ -63,6 +64,7 @@ describe('CopyController', () => {
         barcode: '*00001*',
         barcodeLabel: '1',
         collectionId: 1,
+        organizationId: 1,
       });
 
       const copy = await controller.getCopy(1);

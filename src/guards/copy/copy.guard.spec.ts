@@ -60,6 +60,7 @@ describe('CopyGuard', () => {
         id: 1,
         name: 'Test Collection',
       },
+      organizationId: 1,
     };
 
     const orgQuery = {
@@ -110,6 +111,7 @@ describe('CopyGuard', () => {
         name: 'Test Collection',
         organizationId: 1,
       },
+      organizationId: 1,
     };
 
     const orgQuery = {
@@ -159,6 +161,7 @@ describe('CopyGuard', () => {
         id: 1,
         name: 'Test Collection',
       },
+      organizationId: 1,
     };
 
     mockCtx.prisma.copy.findUnique.mockResolvedValue(query);
@@ -195,6 +198,7 @@ describe('CopyGuard', () => {
         id: 1,
         name: 'Test Collection',
       },
+      organizationId: 1,
     };
 
     const orgQuery = {
