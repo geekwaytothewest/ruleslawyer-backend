@@ -447,7 +447,10 @@ describe('ConventionService', () => {
       const attendee = {
         id: 1,
         conventionId: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         userId: null,
         badgeNumber: '1',
         badgeTypeId: 1,

@@ -263,7 +263,10 @@ describe('ConventionController', () => {
         barcode: '*000001*',
         tteBadgeNumber: 1,
         pronounsId: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         userId: null,
         badgeTypeId: 1,
         email: 'test@geekway.com',
@@ -274,7 +277,10 @@ describe('ConventionController', () => {
       });
 
       const attendee = await controller.createAttendee(1, {
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         badgeNumber: '1',
         barcode: '*000001*',
         convention: {
@@ -296,7 +302,10 @@ describe('ConventionController', () => {
         barcode: '*000001*',
         tteBadgeNumber: 1,
         pronounsId: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         userId: null,
         badgeTypeId: 1,
         email: 'test@geekway.com',
@@ -308,7 +317,10 @@ describe('ConventionController', () => {
 
       expect(
         controller.createAttendee(1, {
-          name: 'Test Attendee',
+          badgeName: 'asdf',
+          badgeFirstName: 'asdf',
+          badgeLastName: 'asdf',
+          legalName: 'asdf',
           badgeNumber: '1',
           barcode: '*000001*',
           convention: {

@@ -808,7 +808,10 @@ describe('LegacyController', () => {
       const attendees = [
         {
           id: 1,
-          name: 'Test Attendee',
+          badgeName: 'asdf',
+          badgeFirstName: 'asdf',
+          badgeLastName: 'asdf',
+          legalName: 'asdf',
           conventionId: 1,
           badgeNumber: '1',
           barcode: '*00001*',
@@ -836,7 +839,10 @@ describe('LegacyController', () => {
     it('should add an attendee', async () => {
       const attendee = {
         id: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         conventionId: 1,
         badgeNumber: '1',
         barcode: '*00001*',
@@ -853,7 +859,10 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.attendee.create.mockResolvedValue(attendee);
 
-      const bigResponse = await controller.addAttendee(1, attendee);
+      const bigResponse = await controller.addAttendee(1, {
+        badgeNumber: '1',
+        name: 'asdf',
+      });
 
       expect(bigResponse.id).toBe(1);
     });
@@ -863,7 +872,10 @@ describe('LegacyController', () => {
     it('should update an attendee', async () => {
       const attendee = {
         id: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         conventionId: 1,
         badgeNumber: '1',
         barcode: '*00001*',
@@ -880,7 +892,10 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.attendee.update.mockResolvedValue(attendee);
 
-      const bigResponse = await controller.updateAttendee('1', 1, attendee);
+      const bigResponse = await controller.updateAttendee('1', 1, {
+        badgeNumber: '1',
+        name: 'asdf',
+      });
 
       expect(bigResponse.id).toBe(1);
     });
@@ -938,7 +953,10 @@ describe('LegacyController', () => {
     it('should check out a copy', async () => {
       const attendee = {
         id: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         badgeNumber: '1',
         barcode: '*00001*',
         tteBadgeNumber: null,
@@ -1058,7 +1076,10 @@ describe('LegacyController', () => {
     it('should check out a copy by label', async () => {
       const attendee = {
         id: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         badgeNumber: '1',
         barcode: '*00001*',
         tteBadgeNumber: null,
@@ -1181,7 +1202,10 @@ describe('LegacyController', () => {
     it('should fail to check out a copy an attendee already has another checkout', async () => {
       const attendee = {
         id: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         badgeNumber: '1',
         barcode: '*00001*',
         tteBadgeNumber: null,

@@ -27,7 +27,11 @@ describe('AttendeeService', () => {
       mockCtx.prisma.attendee.create.mockResolvedValue({
         id: 1,
         conventionId: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
+        merch: null,
         userId: null,
         badgeNumber: '1',
         badgeTypeId: 1,
@@ -42,7 +46,11 @@ describe('AttendeeService', () => {
 
       const attendee = await service.createAttendee(
         {
-          name: 'Test Attendee',
+          badgeName: 'asdf',
+          badgeFirstName: 'asdf',
+          badgeLastName: 'asdf',
+          legalName: 'asdf',
+          merch: null,
           badgeNumber: '1',
           barcode: '*000001*',
           convention: {
@@ -69,7 +77,11 @@ describe('AttendeeService', () => {
       mockCtx.prisma.attendee.findUnique.mockResolvedValue({
         id: 1,
         conventionId: 1,
-        name: 'Test Attendee',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
+        merch: null,
         userId: null,
         badgeNumber: '1',
         badgeTypeId: 1,
@@ -92,7 +104,10 @@ describe('AttendeeService', () => {
         {
           id: 1,
           conventionId: 1,
-          name: 'Test Attendee',
+          badgeName: 'asdf',
+          badgeFirstName: 'asdf',
+          badgeLastName: 'asdf',
+          legalName: 'asdf',
           userId: null,
           badgeNumber: '1',
           badgeTypeId: 1,
@@ -103,6 +118,7 @@ describe('AttendeeService', () => {
           printed: false,
           registrationCode: 'asdf',
           barcode: '*000001*',
+          merch: null,
         },
       ]);
 
@@ -117,7 +133,10 @@ describe('AttendeeService', () => {
       mockCtx.prisma.attendee.update.mockResolvedValue({
         id: 1,
         conventionId: 1,
-        name: 'asdf',
+        badgeName: 'asdf',
+        badgeFirstName: 'asdf',
+        badgeLastName: 'asdf',
+        legalName: 'asdf',
         userId: null,
         badgeNumber: '1',
         badgeTypeId: 1,
@@ -128,17 +147,18 @@ describe('AttendeeService', () => {
         printed: false,
         registrationCode: 'asdf',
         barcode: '*000001*',
+        merch: null,
       });
 
       const attendee = await service.updateAttendee(
         {
           where: { id: 1 },
-          data: { name: 'asdf' },
+          data: { badgeName: 'asdf' },
         },
         ctx,
       );
 
-      expect(attendee.name).toBe('asdf');
+      expect(attendee.badgeName).toBe('asdf');
     });
   });
 });
