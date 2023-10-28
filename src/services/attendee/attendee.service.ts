@@ -40,7 +40,7 @@ export class AttendeeService {
         conventionId: conventionId,
       },
       orderBy: {
-        name: 'asc',
+        badgeName: 'asc',
       },
     });
   }

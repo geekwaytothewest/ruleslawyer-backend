@@ -98,7 +98,7 @@ export class LegacyController {
                     Attendee: {
                       ID: currentCheckout.attendee.id,
                       BadgeNumber: currentCheckout.attendee.badgeNumber,
-                      Name: currentCheckout.attendee.name,
+                      Name: currentCheckout.attendee.badgeName,
                     },
                     TimeOut: currentCheckout.checkOut,
                     TimeIn: currentCheckout.checkIn,
@@ -213,7 +213,7 @@ export class LegacyController {
           return {
             BadgeNumber: a.badgeNumber,
             ID: a.id,
-            Name: a.name,
+            Name: a.badgeName,
           };
         }),
       },
@@ -228,7 +228,10 @@ export class LegacyController {
   ) {
     return this.attendeeService.createAttendee(
       {
-        name: attendee.name,
+        badgeName: attendee.name,
+        badgeFirstName: attendee.name.split(' ', 1)[0],
+        badgeLastName: attendee.name.split(' ', 1)[1],
+        legalName: attendee.name,
         badgeNumber: attendee.badgeNumber,
         barcode: '*' + attendee.badgeNumber.toString().padStart(6, '0') + '*',
         convention: {
@@ -257,7 +260,7 @@ export class LegacyController {
           },
         },
         data: {
-          name: attendee.name,
+          badgeName: attendee.name,
           badgeNumber: attendee.badgeNumber,
           barcode: '*' + attendee.badgeNumber.toString().padStart(6, '0') + '*',
         },
@@ -300,7 +303,7 @@ export class LegacyController {
           Attendee: {
             BadgeNumber: c.attendee.badgeNumber,
             ID: c.attendee.id,
-            Name: c.attendee.name,
+            Name: c.attendee.badgeName,
           },
           Copy: {
             Collection: {
@@ -311,7 +314,7 @@ export class LegacyController {
               Attendee: {
                 BadgeNumber: c.attendee.badgeNumber,
                 ID: c.attendee.id,
-                Name: c.attendee.name,
+                Name: c.attendee.badgeName,
               },
               ID: c.id,
               TimeIn: c.checkIn,
@@ -380,7 +383,7 @@ export class LegacyController {
           Attendee: {
             BadgeNumber: c.attendee.badgeNumber,
             ID: c.attendee.id,
-            Name: c.attendee.name,
+            Name: c.attendee.badgeName,
           },
           Copy: {
             Collection: {
@@ -391,7 +394,7 @@ export class LegacyController {
               Attendee: {
                 BadgeNumber: c.attendee.badgeNumber,
                 ID: c.attendee.id,
-                Name: c.attendee.name,
+                Name: c.attendee.badgeName,
               },
               ID: c.id,
               TimeIn: c.checkIn,
@@ -603,7 +606,7 @@ export class LegacyController {
             Attendee: {
               BadgeNumber: currentCheckout?.attendee.badgeNumber,
               ID: currentCheckout?.attendee.id,
-              Name: currentCheckout?.attendee.name,
+              Name: currentCheckout?.attendee.badgeName,
             },
             ID: currentCheckout?.id,
             Length: {
@@ -716,7 +719,7 @@ export class LegacyController {
         Attendee: {
           BadgeNumber: attendee?.badgeNumber,
           ID: attendee?.id,
-          Name: attendee?.name,
+          Name: attendee?.badgeName,
         },
         Copy: {
           Collection: {
@@ -727,7 +730,7 @@ export class LegacyController {
             Attendee: {
               BadgeNumber: attendee?.badgeNumber,
               ID: attendee?.id,
-              Name: attendee?.name,
+              Name: attendee?.badgeName,
             },
             ID: checkOut.id,
             Length: {
@@ -832,7 +835,7 @@ export class LegacyController {
         Attendee: {
           BadgeNumber: attendee?.badgeNumber,
           ID: attendee?.id,
-          Name: attendee?.name,
+          Name: attendee?.badgeName,
         },
         Copy: {
           Collection: {

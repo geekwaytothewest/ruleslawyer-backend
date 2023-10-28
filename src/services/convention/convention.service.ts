@@ -164,7 +164,12 @@ export class ConventionService {
                 id: Number(conventionId),
               },
             },
-            name: b.name,
+            badgeName: b.name,
+            badgeFirstName: b.first_name,
+            badgeLastName: b.last_name,
+            legalName: b.custom_fields.LegalName
+              ? b.custom_fields.LegalName
+              : b.name,
             badgeType: {
               connectOrCreate: {
                 create: {
