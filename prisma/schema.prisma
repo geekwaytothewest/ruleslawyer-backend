@@ -150,18 +150,18 @@ model Game {
 }
 
 model Copy {
-  id               Int           @id @default(autoincrement())
-  game             Game          @relation(fields: gameId, references: [id])
+  id               Int          @id @default(autoincrement())
+  game             Game         @relation(fields: gameId, references: [id])
   gameId           Int
   dateAdded        DateTime
   barcodeLabel     String
   barcode          String
   dateRetired      DateTime?
-  winnable         Boolean       @default(true)
-  winner           Attendee?     @relation(fields: winnerId, references: [id])
+  winnable         Boolean      @default(true)
+  winner           Attendee?    @relation(fields: winnerId, references: [id])
   winnerId         Int?
   coverArtOverride Bytes?
-  collection       Collection?   @relation(fields: collectionId, references: [id])
+  collection       Collection?  @relation(fields: collectionId, references: [id])
   collectionId     Int?
   checkOuts        CheckOut[]
   organization     Organization @relation(fields: organizationId, references: [id])
@@ -206,8 +206,8 @@ model Convention {
   startDate                  DateTime
   endDate                    DateTime
   registrationUrl            String?                     @default("")
-  type                       ConventionType?             @relation(fields: typeId, references: [id])
-  typeId                     Int?
+  type                       ConventionType              @relation(fields: typeId, references: [id])
+  typeId                     Int
   annual                     String                      @default("")
   size                       Int?
   registrationDates          RegistrationDate[]
