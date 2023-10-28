@@ -39,9 +39,37 @@ export class AttendeeService {
       where: {
         conventionId: conventionId,
       },
-      orderBy: {
-        badgeName: 'asc',
+      orderBy: [
+        {
+          badgeLastName: 'asc',
+        },
+        {
+          badgeFirstName: 'asc',
+        },
+      ],
+    });
+  }
+
+  async attendeesWithPronounsAndBadgeTypes(conventionId: number, ctx: Context) {
+    return ctx.prisma.attendee.findMany({
+      where: {
+        conventionId: conventionId,
       },
+      include: {
+        pronouns: true,
+        badgeType: true,
+      },
+      orderBy: [
+        {
+          badgeTypeId: 'asc',
+        },
+        {
+          badgeLastName: 'asc',
+        },
+        {
+          badgeFirstName: 'asc',
+        },
+      ],
     });
   }
 

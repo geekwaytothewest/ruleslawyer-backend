@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { OrganizationService } from '../organization/organization.service';
 import { AttendeeService } from '../attendee/attendee.service';
@@ -6,6 +6,7 @@ import { TabletopeventsService } from '../tabletopevents/tabletopevents.service'
 import * as crypto from 'crypto';
 import { Context } from '../prisma/context';
 import { CheckOutService } from '../check-out/check-out.service';
+import { stringify } from 'csv-stringify';
 
 @Injectable()
 export class ConventionService {
@@ -206,6 +207,34 @@ export class ConventionService {
 
       return resolve(attendees.length);
     });
+  }
+
+  async exportBadgeFile(conventionId: number, ctx: Context) {
+    const attendees =
+      await this.attendeeService.attendeesWithPronounsAndBadgeTypes(
+        conventionId,
+        ctx,
+      );
+
+    const chunks: any[] = [];
+
+    for await (const chunk of stringify(
+      attendees.map((a) => {
+        return {
+          'Badge Name': a.badgeName,
+          'Badge Type': a.badgeType?.name,
+          'Badge Number': a.badgeNumber,
+          Barcode: a.barcode,
+          Pronouns: a.pronouns?.pronouns,
+          Merch: a.merch,
+        };
+      }),
+      { header: true },
+    )) {
+      chunks.push(Buffer.from(chunk));
+    }
+
+    return new StreamableFile(Buffer.concat(chunks));
   }
 
   async checkOutGame(

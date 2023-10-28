@@ -333,4 +333,51 @@ describe('ConventionController', () => {
       ).rejects.toBe('convention id mismatch');
     });
   });
+
+  describe('exportBadgeFile', () => {
+    it('should export a csv', async () => {
+      mockCtx.prisma.attendee.findMany.mockResolvedValue([
+        {
+          id: 1,
+          conventionId: 1,
+          badgeNumber: '1',
+          barcode: '*000001*',
+          tteBadgeNumber: 1,
+          pronounsId: 1,
+          badgeName: 'asdf',
+          badgeFirstName: 'asdf',
+          badgeLastName: 'asdf',
+          legalName: 'asdf',
+          userId: null,
+          badgeTypeId: 1,
+          email: 'test@geekway.com',
+          checkedIn: false,
+          printed: false,
+          registrationCode: 'fakecode',
+          merch: null,
+        },
+        {
+          id: 1,
+          conventionId: 1,
+          badgeNumber: '2',
+          barcode: '*000002*',
+          tteBadgeNumber: 2,
+          pronounsId: 1,
+          badgeName: 'asdf',
+          badgeFirstName: 'asdf',
+          badgeLastName: 'asdf',
+          legalName: 'asdf',
+          userId: null,
+          badgeTypeId: 1,
+          email: 'test@geekway.com',
+          checkedIn: false,
+          printed: false,
+          registrationCode: 'fakecode',
+          merch: null,
+        },
+      ]);
+
+      expect(controller.exportBadgeFile(1)).resolves.toBeTruthy();
+    });
+  });
 });

@@ -7,6 +7,7 @@ import {
   UseGuards,
   NotFoundException,
   Put,
+  Header,
 } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { ConventionService } from '../../services/convention/convention.service';
@@ -100,5 +101,13 @@ export class ConventionController {
     }
 
     return this.attendeeService.createAttendee(attendee, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Get(':id/exportBadgeFile')
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename="badgeFile.csv"')
+  async exportBadgeFile(@Param('id') id: number) {
+    return await this.conventionService.exportBadgeFile(Number(id), this.ctx);
   }
 }
