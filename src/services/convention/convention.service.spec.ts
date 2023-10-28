@@ -393,6 +393,14 @@ describe('ConventionService', () => {
         .spyOn(service['tteService'], 'getBadgeTypes')
         .mockResolvedValueOnce([{ id: 1, name: 'bad badge type' }]);
 
+      jest.spyOn(service['tteService'], 'getSoldProducts').mockResolvedValue([
+        {
+          productvariant: {
+            name: 'fake product',
+          },
+        },
+      ]);
+
       jest.spyOn(service['tteService'], 'getBadges').mockResolvedValue([
         {
           name: 'Test Attendee',

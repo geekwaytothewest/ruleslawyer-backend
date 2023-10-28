@@ -151,4 +151,55 @@ describe('TabletopeventsService', () => {
       expect(badgeTypes.length).toBeGreaterThan(0);
     });
   });
+
+  describe('getSoldProducts', () => {
+    it('should get sold products', async () => {
+      const response = createMock<AxiosResponse>({
+        data: {
+          result: {
+            paging: { total_pages: 1 },
+            items: [
+              {
+                productvariant: {
+                  name: 'fake product',
+                },
+              },
+            ],
+          },
+        },
+      });
+
+      jest.spyOn(service['httpService'], 'get').mockResolvedValueOnce(response);
+
+      const badgeTypes = await service.getBadgeTypes('faketteid', 'fakeid');
+
+      expect(badgeTypes.length).toBeGreaterThan(0);
+    });
+
+    it('should get more sold products', async () => {
+      const response = createMock<AxiosResponse>({
+        data: {
+          result: {
+            paging: { total_pages: 2 },
+            items: [
+              {
+                productvariant: {
+                  name: 'fake product',
+                },
+              },
+            ],
+          },
+        },
+      });
+
+      jest
+        .spyOn(service['httpService'], 'get')
+        .mockResolvedValueOnce(response)
+        .mockResolvedValueOnce(response);
+
+      const badgeTypes = await service.getBadgeTypes('faketteid', 'fakeid');
+
+      expect(badgeTypes.length).toBeGreaterThan(0);
+    });
+  });
 });
