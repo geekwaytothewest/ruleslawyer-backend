@@ -8,6 +8,7 @@ import { ConventionModule } from '../convention/convention.module';
 import { CollectionModule } from '../collection/collection.module';
 import { CopyService } from '../../services/copy/copy.service';
 import { CheckOutModule } from '../check-out/check-out.module';
+import { ConventionTypeService } from '../../services/convention-type/convention-type.service';
 
 @Module({
   imports: [
@@ -18,7 +19,12 @@ import { CheckOutModule } from '../check-out/check-out.module';
     CheckOutModule,
   ],
   controllers: [OrganizationController],
-  providers: [OrganizationService, PrismaService, CopyService],
+  providers: [
+    OrganizationService,
+    PrismaService,
+    CopyService,
+    ConventionTypeService,
+  ],
   exports: [OrganizationService],
 })
 export class OrganizationModule {}

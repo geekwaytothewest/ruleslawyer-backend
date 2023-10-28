@@ -7,7 +7,12 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Convention, Organization, Prisma } from '@prisma/client';
+import {
+  Convention,
+  ConventionType,
+  Organization,
+  Prisma,
+} from '@prisma/client';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -21,6 +26,7 @@ import { CollectionGuard } from '../../guards/collection/collection.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { CheckOutService } from '../../services/check-out/check-out.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
+import { ConventionTypeService } from '../../services/convention-type/convention-type.service';
 
 @Controller()
 export class OrganizationController {
@@ -33,6 +39,7 @@ export class OrganizationController {
     private readonly collectionService: CollectionService,
     private readonly copyService: CopyService,
     private readonly checkOutService: CheckOutService,
+    private readonly conventionTypeService: ConventionTypeService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -146,5 +153,24 @@ export class OrganizationController {
     @Param('copyBarcode') copyBarcode: string,
   ) {
     return await this.checkOutService.checkIn(colId, copyBarcode, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Post(':id/conventionType')
+  async createConventionType(
+    @Param('id') id: number,
+    @Body()
+    conventionData: Prisma.ConventionTypeCreateInput,
+  ): Promise<ConventionType | void> {
+    conventionData.organization = {
+      connect: {
+        id: Number(id),
+      },
+    };
+
+    return this.conventionTypeService.createConventionType(
+      conventionData,
+      this.ctx,
+    );
   }
 }

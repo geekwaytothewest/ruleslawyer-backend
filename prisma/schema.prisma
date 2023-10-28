@@ -86,25 +86,28 @@ model UserConventionPermissions {
 }
 
 model Organization {
-  id          Int                           @id @default(autoincrement())
-  name        String                        @unique
-  owner       User                          @relation(fields: ownerId, references: [id])
-  ownerId     Int
-  users       UserOrganizationPermissions[]
-  collections Collection[]
-  conventions Convention[]
-  Copy        Copy[]
+  id             Int                           @id @default(autoincrement())
+  name           String                        @unique
+  owner          User                          @relation(fields: ownerId, references: [id])
+  ownerId        Int
+  users          UserOrganizationPermissions[]
+  collections    Collection[]
+  conventions    Convention[]
+  Copy           Copy[]
+  ConventionType ConventionType[]
 }
 
 model ConventionType {
-  id          Int          @id @default(autoincrement())
-  name        String
-  description String
-  logo        Bytes
-  logoSquare  Bytes
-  icon        String
-  content     String
-  Convention  Convention[]
+  id             Int          @id @default(autoincrement())
+  name           String
+  description    String?
+  logo           Bytes?
+  logoSquare     Bytes?
+  icon           String?
+  content        String?
+  organization   Organization @relation(fields: organizationId, references: [id])
+  organizationId Int
+  Convention     Convention[]
 }
 
 model RegistrationDate {
