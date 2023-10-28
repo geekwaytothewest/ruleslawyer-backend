@@ -171,7 +171,7 @@ describe('TabletopeventsService', () => {
 
       jest.spyOn(service['httpService'], 'get').mockResolvedValueOnce(response);
 
-      const badgeTypes = await service.getBadgeTypes('faketteid', 'fakeid');
+      const badgeTypes = await service.getSoldProducts('faketteid', 'fakeid');
 
       expect(badgeTypes.length).toBeGreaterThan(0);
     });
@@ -197,7 +197,7 @@ describe('TabletopeventsService', () => {
         .mockResolvedValueOnce(response)
         .mockResolvedValueOnce(response);
 
-      const badgeTypes = await service.getBadgeTypes('faketteid', 'fakeid');
+      const badgeTypes = await service.getSoldProducts('faketteid', 'fakeid');
 
       expect(badgeTypes.length).toBeGreaterThan(0);
     });

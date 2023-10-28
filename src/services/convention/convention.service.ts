@@ -155,7 +155,7 @@ export class ConventionService {
           }
 
           const merch = soldProducts
-            .map((s) => s.productvariant.name)
+            .map((s) => s.productvariant?.name)
             .join(', ');
 
           return <Prisma.AttendeeCreateInput>{

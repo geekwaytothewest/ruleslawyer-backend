@@ -391,12 +391,17 @@ describe('ConventionService', () => {
 
       jest
         .spyOn(service['tteService'], 'getBadgeTypes')
-        .mockResolvedValueOnce([{ id: 1, name: 'bad badge type' }]);
+        .mockResolvedValueOnce([{ id: 1, name: 'Patron badge type' }]);
 
       jest.spyOn(service['tteService'], 'getSoldProducts').mockResolvedValue([
         {
           productvariant: {
             name: 'fake product',
+          },
+        },
+        {
+          productvariant: {
+            name: 'fake product2',
           },
         },
       ]);
@@ -409,6 +414,79 @@ describe('ConventionService', () => {
           badge_number: 1,
           custom_fields: {
             PreferredPronouns: 'she/her',
+          },
+        },
+      ]);
+
+      expect(
+        service.importAttendees(
+          {
+            userName: '',
+            password: '',
+            apiKey: '',
+          },
+          1,
+          ctx,
+        ),
+      ).resolves.toBe(1);
+    });
+
+    it('should import attendees with legal names', async () => {
+      mockCtx.prisma.attendee.deleteMany.mockResolvedValueOnce({ count: 10 });
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce({
+        id: 1,
+        typeId: 1,
+        organizationId: 1,
+        name: 'Test Convention',
+        theme: 'Test Theme',
+        logo: Buffer.from(''),
+        logoSquare: Buffer.from(''),
+        icon: '',
+        startDate: new Date(),
+        endDate: new Date(),
+        tteConventionId: 'fakeid',
+        annual: '1st Testable',
+        size: 300,
+        registrationUrl: 'fakeurl',
+        playAndWinAnnounced: false,
+        playAndWinCollectionId: null,
+        playAndWinWinnersSelected: false,
+        doorPrizeCollectionId: null,
+        doorPrizesAnnounced: false,
+        cancelled: false,
+        playAndWinWinnersAnnounced: false,
+      });
+
+      jest.spyOn(service['tteService'], 'getSession').mockResolvedValueOnce({
+        session_id: 'validsessionmaybelol2',
+      });
+
+      jest
+        .spyOn(service['tteService'], 'getBadgeTypes')
+        .mockResolvedValueOnce([{ id: 1, name: 'Patron badge type' }]);
+
+      jest.spyOn(service['tteService'], 'getSoldProducts').mockResolvedValue([
+        {
+          productvariant: {
+            name: 'fake product',
+          },
+        },
+        {
+          productvariant: {
+            name: 'fake product2',
+          },
+        },
+      ]);
+
+      jest.spyOn(service['tteService'], 'getBadges').mockResolvedValue([
+        {
+          name: 'Test Attendee',
+          badgetype_id: 1,
+          email: 'test@geekway.com',
+          badge_number: 1,
+          custom_fields: {
+            PreferredPronouns: 'she/her',
+            LegalName: 'Test Attendee',
           },
         },
       ]);
