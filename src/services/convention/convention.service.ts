@@ -135,6 +135,11 @@ export class ConventionService {
       }
 
       const attendees = tteBadges.map((b) => {
+        const badgeNumber =
+          convention.startDate.getFullYear().toString().substring(2) +
+          convention.typeId +
+          b.badge_number.toString().padStart(4, '0');
+
         return <Prisma.AttendeeCreateInput>{
           convention: {
             connect: {
@@ -156,11 +161,11 @@ export class ConventionService {
           },
           registrationCode: crypto.randomUUID(),
           email: b.email,
-          badgeNumber:
-            convention.startDate.getFullYear().toString().substring(2) +
-            convention.typeId +
-            b.badge_number.toString(),
-          barcode: '*' + b.badge_number.toString().padStart(6, '0') + '*',
+          badgeNumber: badgeNumber,
+          barcode:
+            '*' +
+            b.badge_number.toString().padStart(badgeNumber.length, '0') +
+            '*',
           tteBadgeNumber: b.badge_number,
           pronouns: {
             connectOrCreate: {
