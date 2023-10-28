@@ -165,8 +165,8 @@ export class ConventionService {
               },
             },
             badgeName: b.name,
-            badgeFirstName: b.first_name,
-            badgeLastName: b.last_name,
+            badgeFirstName: b.firstname,
+            badgeLastName: b.lastname,
             legalName: b.custom_fields.LegalName
               ? b.custom_fields.LegalName
               : b.name,
