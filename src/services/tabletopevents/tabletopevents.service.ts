@@ -26,7 +26,7 @@ export class TabletopeventsService {
     });
   }
 
-  async getBadges(tteConventionId: string, session: any): Promise<any> {
+  async getBadges(tteConventionId: string, session: any): Promise<any[]> {
     return new Promise(async (resolve) => {
       const badges: any[] = [];
 
@@ -54,7 +54,7 @@ export class TabletopeventsService {
     });
   }
 
-  async getBadgeTypes(tteConventionId: string, session: any): Promise<any> {
+  async getBadgeTypes(tteConventionId: string, session: any): Promise<any[]> {
     return new Promise(async (resolve) => {
       const badgeTypes: any[] = [];
 
@@ -79,6 +79,38 @@ export class TabletopeventsService {
       }
 
       return resolve(badgeTypes);
+    });
+  }
+
+  async getSoldProducts(badgeId: string, session: any): Promise<any[]> {
+    return new Promise(async (resolve) => {
+      const soldProducts: any[] = [];
+
+      let soldProductsPage = await this.httpService.get(
+        this.tteApiUrl +
+          `badge/${badgeId}/soldproducts?session_id=${session}&_include_related_objects=productvariant`,
+      );
+
+      soldProducts.push(...soldProductsPage.data.result.items);
+
+      await this.sleep(1000);
+
+      for (
+        let i = 2;
+        i <= soldProductsPage.data.result.paging.total_pages;
+        i++
+      ) {
+        soldProductsPage = await this.httpService.get(
+          this.tteApiUrl +
+            `badge/${badgeId}/soldproducts?session_id=${session}&_page_number=${i}&_include_related_objects=productvariant`,
+        );
+
+        soldProducts.push(...soldProductsPage.data.result.items);
+
+        await this.sleep(1000);
+      }
+
+      return resolve(soldProducts);
     });
   }
 }

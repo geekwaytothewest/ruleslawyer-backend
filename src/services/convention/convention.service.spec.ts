@@ -467,6 +467,7 @@ describe('ConventionService', () => {
             attendeeId: 1,
           },
         ],
+        merch: null,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);

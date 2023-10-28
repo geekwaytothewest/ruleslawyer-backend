@@ -270,6 +270,7 @@ describe('ConventionController', () => {
         checkedIn: false,
         printed: false,
         registrationCode: 'fakecode',
+        merch: null,
       });
 
       const attendee = await controller.createAttendee(1, {
@@ -302,6 +303,7 @@ describe('ConventionController', () => {
         checkedIn: false,
         printed: false,
         registrationCode: 'fakecode',
+        merch: null,
       });
 
       expect(

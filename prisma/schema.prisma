@@ -45,6 +45,7 @@ model Attendee {
   copies           Copy[]
   checkOuts        CheckOut[]
   players          Player[]
+  merch            String?
 
   @@unique([conventionId, badgeNumber])
   @@unique([conventionId, barcode])

@@ -134,51 +134,66 @@ export class ConventionService {
         return rejects('no badges found');
       }
 
-      const attendees = tteBadges.map((b) => {
-        const badgeNumber =
-          convention.startDate.getFullYear().toString().substring(2) +
-          convention.typeId +
-          b.badge_number.toString().padStart(4, '0');
+      const attendees = await Promise.all(
+        tteBadges.map(async (b) => {
+          const badgeNumber =
+            convention.startDate.getFullYear().toString().substring(2) +
+            convention.typeId +
+            b.badge_number.toString().padStart(4, '0');
 
-        return <Prisma.AttendeeCreateInput>{
-          convention: {
-            connect: {
-              id: Number(conventionId),
-            },
-          },
-          name: b.name,
-          badgeType: {
-            connectOrCreate: {
-              create: {
-                name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
-                  .name,
-              },
-              where: {
-                name: tteBadgeTypes.filter((bt) => bt.id === b.badgetype_id)[0]
-                  .name,
-              },
-            },
-          },
-          registrationCode: crypto.randomUUID(),
-          email: b.email,
-          badgeNumber: badgeNumber,
-          barcode:
-            '*' +
-            b.badge_number.toString().padStart(badgeNumber.length, '0') +
-            '*',
-          tteBadgeNumber: b.badge_number,
-          pronouns: {
-            connectOrCreate: {
-              create: {
-                pronouns: b.custom_fields.PreferredPronouns,
-              },
-              where: {
-                pronouns: b.custom_fields.PreferredPronouns,
+          const badgeType: string = tteBadgeTypes.filter(
+            (bt) => bt.id === b.badgetype_id,
+          )[0].name;
+
+          const soldProducts = await this.tteService.getSoldProducts(
+            b.id,
+            session,
+          );
+
+          if (badgeType.includes('Patron')) {
+            soldProducts.push('Patron');
+          }
+
+          const merch = soldProducts
+            .map((s) => s.productvariant.name)
+            .join(', ');
+
+          return <Prisma.AttendeeCreateInput>{
+            convention: {
+              connect: {
+                id: Number(conventionId),
               },
             },
-          },
-        };
-      });
+            name: b.name,
+            badgeType: {
+              connectOrCreate: {
+                create: {
+                  name: badgeType,
+                },
+                where: {
+                  name: badgeType,
+                },
+              },
+            },
+            registrationCode: crypto.randomUUID(),
+            email: b.email,
+            badgeNumber: badgeNumber,
+            barcode: '*' + badgeNumber + '*',
+            tteBadgeNumber: b.badge_number,
+            pronouns: {
+              connectOrCreate: {
+                create: {
+                  pronouns: b.custom_fields.PreferredPronouns,
+                },
+                where: {
+                  pronouns: b.custom_fields.PreferredPronouns,
+                },
+              },
+            },
+            merch: merch,
+          };
+        }),
+      );
 
       for (const a of attendees) {
         await this.attendeeService.createAttendee(a, ctx);

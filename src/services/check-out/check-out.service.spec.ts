@@ -70,6 +70,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        merch: null,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -112,6 +113,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        merch: null,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -168,6 +170,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        merch: null,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -257,6 +260,7 @@ describe('CheckOutService', () => {
             attendeeId: 1,
           },
         ],
+        merch: null,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
