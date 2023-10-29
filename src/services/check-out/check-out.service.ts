@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CopyService } from '../copy/copy.service';
 import { Context } from '../prisma/context';
 import { AttendeeService } from '../attendee/attendee.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CheckOutService {
@@ -137,6 +138,74 @@ export class CheckOutService {
       },
       data: {
         checkIn: new Date(),
+      },
+    });
+  }
+
+  async submitPrizeEntry(
+    checkOutId: number,
+    players: Prisma.PlayerCreateManyInput[],
+    ctx: Context,
+  ) {
+    const checkOut = await ctx.prisma.checkOut.findUnique({
+      where: {
+        id: checkOutId,
+      },
+    });
+
+    if (!checkOut?.checkIn) {
+      return Promise.reject('not checked in');
+    }
+
+    if (checkOut.submitted) {
+      return Promise.reject('already submitted');
+    }
+
+    if (!players.length) {
+      return Promise.reject('no players');
+    }
+
+    for (const p of players) {
+      p.checkoutId = checkOutId;
+
+      if (p.rating && p.rating > 5) {
+        return Promise.reject('invalid rating');
+      }
+    }
+
+    try {
+      await ctx.prisma.player.createMany({
+        data: [...players],
+      });
+    } catch ({ name, message }) {
+      return Promise.reject('failed creating players');
+    }
+
+    return await ctx.prisma.checkOut.update({
+      where: {
+        id: checkOutId,
+      },
+      data: {
+        submitted: true,
+      },
+    });
+  }
+
+  async getAttendeePrizeEntries(attendeeBadgeNumber: string, ctx: Context) {
+    return ctx.prisma.checkOut.findMany({
+      where: {
+        AND: [
+          {
+            attendee: {
+              badgeNumber: attendeeBadgeNumber,
+            },
+          },
+          {
+            checkIn: {
+              not: null,
+            },
+          },
+        ],
       },
     });
   }

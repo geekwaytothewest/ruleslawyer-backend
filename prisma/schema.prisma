@@ -189,6 +189,7 @@ model CheckOut {
   Copy       Copy?     @relation(fields: copyId, references: [id])
   copyId     Int?
   players    Player[]
+  submitted  Boolean   @default(false)
 }
 
 model Player {

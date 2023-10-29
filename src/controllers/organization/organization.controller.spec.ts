@@ -392,4 +392,14 @@ describe('OrganizationController', () => {
       ).resolves.toBeTruthy();
     });
   });
+
+  describe('submitPrizeEntry', () => {
+    it('should call submit', async () => {
+      mockCtx.prisma.checkOut.findUnique.mockResolvedValue(null);
+
+      expect(controller.submitPrizeEntry(1, 1, 1, 1, [])).rejects.toBe(
+        'not checked in',
+      );
+    });
+  });
 });

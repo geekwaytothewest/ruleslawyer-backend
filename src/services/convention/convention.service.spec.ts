@@ -569,6 +569,7 @@ describe('ConventionService', () => {
         checkIn: null,
         copyId: 1,
         attendeeId: 1,
+        submitted: false,
       });
 
       expect(

@@ -914,6 +914,7 @@ describe('LegacyController', () => {
             badgeNumber: '1',
             name: 'Test Name',
           },
+          submitted: false,
         },
       ];
 
@@ -938,6 +939,7 @@ describe('LegacyController', () => {
             badgeNumber: '1',
             name: 'Test Name',
           },
+          submitted: false,
         },
       ];
 
@@ -1062,6 +1064,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: new Date(),
         checkOut: new Date(),
+        submitted: false,
       });
 
       const bigResponse = await controller.checkoutCopy(
@@ -1188,6 +1191,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: new Date(),
         checkOut: new Date(),
+        submitted: false,
       });
 
       const bigResponse = await controller.checkoutCopy(
@@ -1307,6 +1311,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: new Date(),
         checkOut: new Date(),
+        submitted: false,
       });
 
       expect(
@@ -1397,6 +1402,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: new Date(),
         checkOut: new Date(),
+        submitted: false,
       });
 
       expect(
@@ -1493,6 +1499,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: new Date(),
         checkOut: new Date(),
+        submitted: false,
       });
 
       const bigResponse = await controller.checkinCopy(1, 1, '1');
@@ -1583,6 +1590,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: null,
         checkOut: new Date(),
+        submitted: false,
       });
 
       const bigResponse = await controller.checkinCopy(1, 1, '1');
@@ -1675,6 +1683,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: null,
         checkOut: new Date(),
+        submitted: false,
       });
 
       expect(controller.checkinCopy(1, 1, '1')).rejects.toBe('copy not found');
@@ -1763,6 +1772,7 @@ describe('LegacyController', () => {
         attendeeId: 1,
         checkIn: new Date(),
         checkOut: new Date(),
+        submitted: false,
       });
 
       expect(controller.checkinCopy(1, 1, '*00001*')).rejects.toBe(

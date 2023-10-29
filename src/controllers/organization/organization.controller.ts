@@ -155,6 +155,22 @@ export class OrganizationController {
     return await this.checkOutService.checkIn(colId, copyBarcode, this.ctx);
   }
 
+  @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @Post(':id/con/:conId/col/:colId/checkOut/:checkOutId')
+  async submitPrizeEntry(
+    @Param('id') id: number,
+    @Param('conId') conId: number,
+    @Param('colId') colId: number,
+    @Param('checkOutId') checkOutId: number,
+    @Body() players: Prisma.PlayerCreateManyInput[],
+  ) {
+    return await this.checkOutService.submitPrizeEntry(
+      checkOutId,
+      players,
+      this.ctx,
+    );
+  }
+
   @UseGuards(JwtAuthGuard, OrganizationGuard)
   @Post(':id/conventionType')
   async createConventionType(
