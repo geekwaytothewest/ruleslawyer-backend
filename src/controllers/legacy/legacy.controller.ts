@@ -200,11 +200,22 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
   @Get('org/:orgId/con/:conId/attendees')
-  async getAttendees(@Param('conId') conId: number) {
-    const attendees = await this.attendeeService.attendees(
+  async getAttendees(
+    @Param('conId') conId: number,
+    @Query('search') search: string,
+  ) {
+    let attendees = await this.attendeeService.attendees(
       Number(conId),
       this.ctx,
     );
+
+    if (search) {
+      attendees = attendees.filter(
+        (a) =>
+          a.badgeName.toLowerCase().includes(search.toLowerCase()) ||
+          a.badgeNumber === search,
+      );
+    }
 
     return {
       Errors: [],
@@ -863,5 +874,70 @@ export class LegacyController {
         TimeOut: checkIn.checkOut,
       },
     };
+  }
+
+  @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @Get('org/:orgId/con/:conId/checkouts')
+  async getPrizeEntries(@Query('badgeId') badgeId: string) {
+    const prizeEntries = await this.checkOutService.getAttendeePrizeEntries(
+      badgeId,
+      this.ctx,
+    );
+
+    return {
+      Errors: [],
+      Result: prizeEntries.map((e) => {
+        return {
+          Attendee: {
+            ID: e.attendee.id,
+            Name: e.attendee.badgeName,
+            BadgeNumber: e.attendee.badgeNumber,
+          },
+          Copy: {
+            Game: {
+              ID: e.Copy?.game.id,
+              Name: e.Copy?.game.name,
+            },
+            Collection: {
+              ID: e.Copy?.collection?.id,
+              Name: e.Copy?.collection?.name,
+              AllowWinning: e.Copy?.collection?.allowWinning,
+            },
+            ID: e.Copy?.id,
+            Title: e.Copy?.game.name,
+            Winnable: e.Copy?.winnable,
+          },
+          ID: e.id,
+        };
+      }),
+    };
+  }
+
+  @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @Post('org/:orgId/con/:conId/plays')
+  async submitPrizeEntry(
+    @Body()
+    entry: {
+      checkoutId: number;
+      players: {
+        id: number;
+        name: string;
+        rating: number | null;
+        wantsToWin: boolean;
+      }[];
+    },
+  ) {
+    return this.checkOutService.submitPrizeEntry(
+      entry.checkoutId,
+      entry.players.map((p) => {
+        return {
+          checkOutId: entry.checkoutId,
+          attendeeId: p.id,
+          rating: p.rating,
+          wantToWin: p.wantsToWin,
+        };
+      }),
+      this.ctx,
+    );
   }
 }

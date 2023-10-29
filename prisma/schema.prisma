@@ -132,6 +132,7 @@ model Collection {
   conventionDoorPrize  Convention?  @relation("DoorPrizes")
   conventionPlayAndWin Convention?  @relation("PlayAndWins")
   public               Boolean      @default(false)
+  allowWinning         Boolean      @default(false)
 
   @@unique([organizationId, name])
 }
@@ -194,8 +195,8 @@ model CheckOut {
 
 model Player {
   id         Int      @id @default(autoincrement())
-  checkout   CheckOut @relation(fields: checkoutId, references: [id])
-  checkoutId Int
+  checkOut   CheckOut @relation(fields: checkOutId, references: [id])
+  checkOutId Int
   attendee   Attendee @relation(fields: attendeeId, references: [id])
   attendeeId Int
   rating     Int?

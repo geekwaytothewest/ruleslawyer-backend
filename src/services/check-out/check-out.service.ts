@@ -166,7 +166,7 @@ export class CheckOutService {
     }
 
     for (const p of players) {
-      p.checkoutId = checkOutId;
+      p.checkOutId = checkOutId;
 
       if (p.rating && p.rating > 5) {
         return Promise.reject('invalid rating');
@@ -193,6 +193,15 @@ export class CheckOutService {
 
   async getAttendeePrizeEntries(attendeeBadgeNumber: string, ctx: Context) {
     return ctx.prisma.checkOut.findMany({
+      include: {
+        attendee: true,
+        Copy: {
+          include: {
+            collection: true,
+            game: true,
+          },
+        },
+      },
       where: {
         AND: [
           {
@@ -204,6 +213,9 @@ export class CheckOutService {
             checkIn: {
               not: null,
             },
+          },
+          {
+            submitted: false,
           },
         ],
       },

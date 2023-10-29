@@ -488,7 +488,7 @@ describe('CheckOutService', () => {
       });
 
       const badPlayer: Prisma.PlayerCreateManyInput = {
-        checkoutId: 1,
+        checkOutId: 1,
         attendeeId: 0,
         wantToWin: false,
         rating: 69,
@@ -510,7 +510,7 @@ describe('CheckOutService', () => {
       });
 
       const badPlayer: Prisma.PlayerCreateManyInput = {
-        checkoutId: 1,
+        checkOutId: 1,
         attendeeId: 0,
         wantToWin: false,
         rating: 5,
@@ -536,7 +536,7 @@ describe('CheckOutService', () => {
       });
 
       const player: Prisma.PlayerCreateManyInput = {
-        checkoutId: 1,
+        checkOutId: 1,
         attendeeId: 1,
         wantToWin: false,
         rating: 5,
