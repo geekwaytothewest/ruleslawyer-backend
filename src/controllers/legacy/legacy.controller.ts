@@ -556,7 +556,6 @@ export class LegacyController {
   async searchCopies(
     @Query('query') query: string,
     @Param('orgId') orgId: number,
-    @Param('conId') conId: number,
   ) {
     const copies = await this.copyService.searchCopies(
       {

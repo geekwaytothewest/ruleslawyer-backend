@@ -1872,7 +1872,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, 1);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
@@ -1905,7 +1905,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, 1);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
@@ -1949,7 +1949,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, 1);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
@@ -1993,7 +1993,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, 1);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
