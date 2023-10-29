@@ -146,6 +146,7 @@ describe('OrganizationController', () => {
         name: 'Test Collection',
         organizationId: 1,
         public: false,
+        allowWinning: false,
       });
 
       expect(await controller.deleteCollection(1, 1)).toBe('deleted');

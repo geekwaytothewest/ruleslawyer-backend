@@ -56,6 +56,7 @@ describe('LegacyController', () => {
               },
             },
           ],
+          allowWinning: false,
         },
       ];
 
@@ -93,6 +94,7 @@ describe('LegacyController', () => {
               },
             },
           ],
+          allowWinning: false,
         },
       ];
 
@@ -110,6 +112,7 @@ describe('LegacyController', () => {
           name: 'Test Collection',
           organizationId: 1,
           public: false,
+          allowWinning: false,
           copies: [
             {
               id: 1,
@@ -829,7 +832,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
 
-      const bigResponse = await controller.getAttendees(1);
+      const bigResponse = await controller.getAttendees(1, '');
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
     });
