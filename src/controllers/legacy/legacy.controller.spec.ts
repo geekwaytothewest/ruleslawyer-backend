@@ -836,6 +836,36 @@ describe('LegacyController', () => {
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
     });
+
+    it('should get some searched attendees', async () => {
+      const attendees = [
+        {
+          id: 1,
+          badgeName: 'asdf',
+          badgeFirstName: 'asdf',
+          badgeLastName: 'asdf',
+          legalName: 'asdf',
+          conventionId: 1,
+          badgeNumber: '1',
+          barcode: '*00001*',
+          userId: null,
+          tteBadgeNumber: null,
+          badgeTypeId: 1,
+          email: 'test@geekway.com',
+          pronounsId: 1,
+          checkedIn: false,
+          printed: false,
+          registrationCode: 'fake code',
+          merch: null,
+        },
+      ];
+
+      mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
+
+      const bigResponse = await controller.getAttendees(1, 'asdf');
+
+      expect(bigResponse.Result.Attendees.length).toBe(1);
+    });
   });
 
   describe('addAttendee', () => {
@@ -1996,6 +2026,77 @@ describe('LegacyController', () => {
       const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
+    });
+  });
+
+  describe('getPrizeEntries', () => {
+    it('should get some entries', async () => {
+      const many = [
+        {
+          id: 1,
+          attendeeId: 1,
+          attendee: {
+            id: 1,
+            badgeName: 'asdf',
+            badgeNumber: '1',
+          },
+          Copy: {
+            game: {
+              id: 1,
+              name: 'test name',
+            },
+            collection: {
+              id: 1,
+              name: 'Geekway Test',
+              allowWinning: true,
+            },
+            id: 1,
+            name: 'Test Game',
+            winnable: true,
+          },
+          checkOut: new Date(),
+          checkIn: null,
+          copyId: 1,
+          submitted: false,
+        },
+      ];
+
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue(many);
+
+      expect(controller.getPrizeEntries('1')).resolves.toBeTruthy();
+    });
+  });
+
+  describe('submitPrizeEntries', () => {
+    it('should submit', async () => {
+      const checkOut = {
+        id: 1,
+        checkIn: new Date(),
+        checkOut: new Date(),
+        attendeeId: 1,
+        submitted: false,
+        copyId: 1,
+      };
+
+      mockCtx.prisma.checkOut.findUnique.mockResolvedValue(checkOut);
+      mockCtx.prisma.player.createMany.mockResolvedValue({
+        count: 1,
+      });
+      mockCtx.prisma.checkOut.update.mockResolvedValue(checkOut);
+
+      expect(
+        controller.submitPrizeEntry({
+          checkoutId: 1,
+          players: [
+            {
+              id: 1,
+              name: 'Test Player',
+              rating: 5,
+              wantsToWin: true,
+            },
+          ],
+        }),
+      ).toBeTruthy();
     });
   });
 });
