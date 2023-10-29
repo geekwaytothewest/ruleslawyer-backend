@@ -63,6 +63,7 @@ describe('CollectionGuard', () => {
       organizationId: 2,
       name: 'Test Library',
       public: false,
+      allowWinning: false,
     });
 
     const authed = await guard.canActivate(context);
@@ -88,6 +89,7 @@ describe('CollectionGuard', () => {
       organizationId: 1,
       name: 'Test Library',
       public: false,
+      allowWinning: false,
     });
 
     const org = {
@@ -126,6 +128,7 @@ describe('CollectionGuard', () => {
       organizationId: 1,
       name: 'Test Library',
       public: false,
+      allowWinning: false,
     });
 
     const org = {
@@ -164,6 +167,7 @@ describe('CollectionGuard', () => {
       organizationId: 1,
       name: 'Test Library',
       public: false,
+      allowWinning: false,
     });
 
     const org = {
@@ -203,6 +207,7 @@ describe('CollectionGuard', () => {
       organizationId: 1,
       name: 'Test Library',
       public: false,
+      allowWinning: false,
     });
 
     const org = {
@@ -242,6 +247,7 @@ describe('CollectionGuard', () => {
       organizationId: 1,
       name: 'Test Library',
       public: false,
+      allowWinning: false,
     });
 
     const org = {
