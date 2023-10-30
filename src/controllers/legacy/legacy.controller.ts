@@ -240,8 +240,8 @@ export class LegacyController {
     return this.attendeeService.createAttendee(
       {
         badgeName: attendee.name,
-        badgeFirstName: attendee.name.split(' ', 1)[0],
-        badgeLastName: attendee.name.split(' ', 1)[1],
+        badgeFirstName: attendee.name.split(' ', 2)[0],
+        badgeLastName: attendee.name.split(' ', 2)[1],
         legalName: attendee.name,
         badgeNumber: attendee.badgeNumber,
         barcode: '*' + attendee.badgeNumber.toString().padStart(6, '0') + '*',
