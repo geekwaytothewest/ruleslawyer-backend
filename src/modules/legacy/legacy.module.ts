@@ -7,6 +7,7 @@ import { CopyModule } from '../copy/copy.module';
 import { ConventionModule } from '../convention/convention.module';
 import { AttendeeModule } from '../attendee/attendee.module';
 import { CheckOutModule } from '../check-out/check-out.module';
+import { GameModule } from '../game/game.module';
 
 @Module({
   controllers: [LegacyController],
@@ -19,6 +20,7 @@ import { CheckOutModule } from '../check-out/check-out.module';
     ConventionModule,
     AttendeeModule,
     CheckOutModule,
+    GameModule,
   ],
 })
 export class LegacyModule {}

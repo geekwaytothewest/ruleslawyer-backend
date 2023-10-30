@@ -26,6 +26,8 @@ import { CheckOutService } from '../../services/check-out/check-out.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { OrganizationService } from '../../services/organization/organization.service';
 import fastify = require('fastify');
+import { GameService } from 'src/services/game/game.service';
+import { SuperAdminGuard } from 'src/guards/superAdmin/superAdmin.guard';
 
 @Controller()
 export class LegacyController {
@@ -39,6 +41,7 @@ export class LegacyController {
     private readonly checkOutService: CheckOutService,
     private readonly conventionService: ConventionService,
     private readonly organizationService: OrganizationService,
+    private readonly gameService: GameService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -999,6 +1002,34 @@ export class LegacyController {
       Number(colId),
       collection.name,
       collection.allowWinning,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('org/:orgId/con/:conId/games')
+  async getGames() {
+    return this.gameService.games(this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Put('org/:orgId/con/:conId/games/:gameId')
+  async updateGame(
+    @Param('gameId') gameId: number,
+    @Body()
+    game: {
+      title: string;
+    },
+  ) {
+    return this.gameService.updateGame(
+      {
+        where: {
+          id: Number(gameId),
+        },
+        data: {
+          name: game.title,
+        },
+      },
       this.ctx,
     );
   }

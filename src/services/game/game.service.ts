@@ -11,6 +11,10 @@ export class GameService {
     return ctx.prisma.game.findUnique({ where: gameWhereUniqueInput });
   }
 
+  async games(ctx: Context) {
+    return ctx.prisma.game.findMany();
+  }
+
   async createGame(
     data: Prisma.GameCreateInput,
     ctx: Context,
