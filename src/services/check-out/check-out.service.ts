@@ -210,6 +210,13 @@ export class CheckOutService {
             },
           },
           {
+            Copy: {
+              collection: {
+                allowWinning: true,
+              },
+            },
+          },
+          {
             checkIn: {
               not: null,
             },
