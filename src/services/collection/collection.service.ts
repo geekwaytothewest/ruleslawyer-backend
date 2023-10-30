@@ -50,6 +50,23 @@ export class CollectionService {
     });
   }
 
+  async updateCollection(
+    id: number,
+    name: string,
+    allowWinning: boolean,
+    ctx: Context,
+  ) {
+    return await ctx.prisma.collection.update({
+      where: {
+        id: id,
+      },
+      data: {
+        name: name,
+        allowWinning: allowWinning,
+      },
+    });
+  }
+
   async importCollection(
     orgId: number,
     fields: any,

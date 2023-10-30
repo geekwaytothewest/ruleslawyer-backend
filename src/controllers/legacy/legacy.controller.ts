@@ -59,6 +59,7 @@ export class LegacyController {
         return {
           ID: c.id,
           Name: c.name,
+          AllowWinning: c.allowWinning,
           Copies: c.copies.map((cp) => {
             const currentCheckout = cp.checkOuts.find(
               (co) => co.checkIn === null,
@@ -977,6 +978,25 @@ export class LegacyController {
   ) {
     return this.collectionService.createCollection(
       Number(orgId),
+      collection.name,
+      collection.allowWinning,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Post('org/:orgId/con/:conId/collection/:colId')
+  async updateCollection(
+    @Param('orgId') orgId: number,
+    @Param('colId') colId: number,
+    @Body()
+    collection: {
+      name: string;
+      allowWinning: boolean;
+    },
+  ) {
+    return this.collectionService.updateCollection(
+      Number(colId),
       collection.name,
       collection.allowWinning,
       this.ctx,
