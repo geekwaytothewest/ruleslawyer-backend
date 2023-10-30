@@ -35,6 +35,21 @@ export class CollectionService {
     });
   }
 
+  async createCollection(
+    orgId: number,
+    name: string,
+    allowWinning: boolean,
+    ctx: Context,
+  ) {
+    return ctx.prisma.collection.create({
+      data: {
+        name: name,
+        organizationId: Number(orgId),
+        allowWinning: allowWinning,
+      },
+    });
+  }
+
   async importCollection(
     orgId: number,
     fields: any,
@@ -66,6 +81,7 @@ export class CollectionService {
           data: {
             name: fields.name.value,
             organizationId: Number(orgId),
+            allowWinning: fields?.allowWinning?.value === 'true' ? true : false,
           },
         });
       } catch (ex) {

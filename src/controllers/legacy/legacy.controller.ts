@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Context } from '../../services/prisma/context';
@@ -24,6 +25,7 @@ import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 import { CheckOutService } from '../../services/check-out/check-out.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { OrganizationService } from '../../services/organization/organization.service';
+import fastify = require('fastify');
 
 @Controller()
 export class LegacyController {
@@ -936,6 +938,47 @@ export class LegacyController {
           wantToWin: p.wantsToWin,
         };
       }),
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Post('org/:orgId/con/:conId/importCollection')
+  async importCollection(
+    @Req() request: fastify.FastifyRequest,
+    @Param('orgId') orgId: number,
+  ) {
+    const file = await request.file();
+    const buffer = await file?.toBuffer();
+
+    if (buffer === undefined) {
+      return Promise.reject('missing file');
+    }
+
+    const fields = file?.fields as any;
+
+    return this.collectionService.importCollection(
+      Number(orgId),
+      fields,
+      buffer,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Post('org/:orgId/con/:conId/addCollection')
+  async addCollection(
+    @Param('orgId') orgId: number,
+    @Body()
+    collection: {
+      name: string;
+      allowWinning: boolean;
+    },
+  ) {
+    return this.collectionService.createCollection(
+      Number(orgId),
+      collection.name,
+      collection.allowWinning,
       this.ctx,
     );
   }
