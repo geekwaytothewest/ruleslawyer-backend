@@ -32,6 +32,9 @@ export class CollectionService {
           },
         },
       },
+      orderBy: {
+        name: 'asc',
+      },
     });
   }
 
