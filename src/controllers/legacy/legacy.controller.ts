@@ -90,6 +90,7 @@ export class LegacyController {
             return {
               ID: cp.barcodeLabel,
               Title: cp.game.name,
+              Winnable: cp.winnable,
               Collection: {
                 ID: c.id,
                 Name: c.name,
@@ -124,38 +125,33 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
-  @Put('org/:orgId/con/:conId/copies/:copyId')
+  @Put('org/:orgId/con/:conId/copies/:oldBarcodeLabel')
   async updateCopy(
-    @Param('copyId') copyId: number,
+    @Param('oldBarcodeLabel') oldBarcodeLabel: string,
+    @Param('orgId') orgId: number,
     @Body()
     copy: {
+      libraryId: string;
       collectionId: number;
-      libraryId: number;
-      title: string;
       winnable: boolean;
     },
   ) {
     return this.copyService.updateCopy(
       {
         where: {
-          id: Number(copyId),
+          organizationId_barcodeLabel: {
+            barcodeLabel: oldBarcodeLabel,
+            organizationId: Number(orgId),
+          },
         },
         data: {
           collection: {
             connect: {
-              id: copy.collectionId,
+              id: Number(copy.collectionId),
             },
           },
-          game: {
-            connectOrCreate: {
-              create: {
-                name: copy.title,
-              },
-              where: {
-                name: copy.title,
-              },
-            },
-          },
+          barcodeLabel: copy.libraryId,
+          barcode: '*' + copy.libraryId + '*',
           winnable: copy.winnable,
         },
       },

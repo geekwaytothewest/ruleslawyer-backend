@@ -26,12 +26,39 @@ export class CopyGuard implements CanActivate {
       copyId = context.getArgByIndex(0).params?.copyId;
     }
 
-    const copy = await this.copyService.copyWithCollection(
-      {
-        id: Number(copyId),
-      },
-      this.ctx,
-    );
+    let copy: any;
+
+    if (!copyId) {
+      const barcodeLabel = context.getArgByIndex(0).params?.oldBarcodeLabel;
+      const orgId = context.getArgByIndex(0).params?.orgId;
+
+      if (!barcodeLabel) {
+        return false;
+      }
+
+      if (!orgId) {
+        return false;
+      }
+
+      copy = await this.copyService.copyWithCollection(
+        {
+          organizationId_barcodeLabel: {
+            barcodeLabel: barcodeLabel,
+            organizationId: Number(orgId),
+          },
+        },
+        this.ctx,
+      );
+    }
+
+    if (!copy) {
+      copy = await this.copyService.copyWithCollection(
+        {
+          id: Number(copyId),
+        },
+        this.ctx,
+      );
+    }
 
     if (!copy) {
       return false;
