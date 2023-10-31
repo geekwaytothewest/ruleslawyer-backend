@@ -92,8 +92,6 @@ export class ConventionService {
 
   async importAttendees(userData, conventionId, ctx) {
     return new Promise(async (resolve, rejects) => {
-      await this.attendeeService.truncate(conventionId, ctx);
-
       const convention = await ctx.prisma.convention.findUnique({
         where: {
           id: Number(conventionId),
@@ -126,10 +124,23 @@ export class ConventionService {
         return rejects('no badge types found');
       }
 
-      const tteBadges = await this.tteService.getBadges(
-        convention.tteConventionId,
-        session,
-      );
+      let tteBadges: any[] = [];
+
+      if (userData.tteBadgeId) {
+        tteBadges.push(
+          await this.tteService.getBadge(
+            convention.tteConventionId,
+            userData.tteBadgeNumber,
+            userData.tteBadgeId,
+            session,
+          ),
+        );
+      } else {
+        tteBadges = await this.tteService.getBadges(
+          convention.tteConventionId,
+          session,
+        );
+      }
 
       if (tteBadges.length === 0) {
         return rejects('no badges found');
@@ -186,6 +197,7 @@ export class ConventionService {
             badgeNumber: badgeNumber,
             barcode: '*' + badgeNumber + '*',
             tteBadgeNumber: b.badge_number,
+            tteBadgeId: b.id,
             pronouns: {
               connectOrCreate: {
                 create: {
@@ -202,7 +214,7 @@ export class ConventionService {
       );
 
       for (const a of attendees) {
-        await this.attendeeService.createAttendee(a, ctx);
+        await this.attendeeService.syncAttendee(a, ctx);
       }
 
       return resolve(attendees.length);

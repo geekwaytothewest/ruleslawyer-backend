@@ -10,11 +10,16 @@ export class AttendeeService {
     return ctx.prisma.attendee.create({ data });
   }
 
-  async truncate(conventionId: number, ctx: Context) {
-    return ctx.prisma.attendee.deleteMany({
+  async syncAttendee(data: Prisma.AttendeeCreateInput, ctx: Context) {
+    return ctx.prisma.attendee.upsert({
       where: {
-        conventionId: Number(conventionId),
+        conventionId_tteBadgeNumber: {
+          conventionId: Number(data.convention.connect?.id),
+          tteBadgeNumber: Number(data.tteBadgeNumber),
+        },
       },
+      create: data,
+      update: data,
     });
   }
 

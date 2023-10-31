@@ -229,6 +229,8 @@ export class LegacyController {
             ID: a.id,
             Name: a.badgeName,
             Pronouns: a.pronouns?.pronouns,
+            TTEBadgeNumber: a.tteBadgeNumber,
+            TTEBadgeID: a.tteBadgeId,
           };
         }),
       },
@@ -1085,8 +1087,22 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
-  @Put('org/:orgId/con/:conId/attendees/syncTabletopEvents')
-  async syncTabletopEvents() {
-    return 'Not Yet Implemented';
+  @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
+  async syncTabletopEvents(
+    @Param('conId') conId: number,
+    @Body()
+    userData: {
+      userName: string;
+      password: string;
+      apiKey: string;
+      tteBadgeNumber: number;
+      tteBadgeId: string;
+    },
+  ) {
+    return this.conventionService.importAttendees(
+      userData,
+      Number(conId),
+      this.ctx,
+    );
   }
 }

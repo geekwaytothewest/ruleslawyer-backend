@@ -39,6 +39,7 @@ model Attendee {
   badgeType        BadgeType? @relation(fields: badgeTypeId, references: [id])
   badgeTypeId      Int?
   tteBadgeNumber   Int?
+  tteBadgeId       String?
   email            String?
   pronouns         Pronouns?  @relation(fields: pronounsId, references: [id])
   pronounsId       Int?
@@ -52,6 +53,7 @@ model Attendee {
 
   @@unique([conventionId, badgeNumber])
   @@unique([conventionId, barcode])
+  @@unique([conventionId, tteBadgeNumber])
 }
 
 model BadgeType {
