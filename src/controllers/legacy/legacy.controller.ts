@@ -206,10 +206,11 @@ export class LegacyController {
     @Param('conId') conId: number,
     @Query('search') search: string,
   ) {
-    let attendees = await this.attendeeService.attendees(
-      Number(conId),
-      this.ctx,
-    );
+    let attendees =
+      await this.attendeeService.attendeesWithPronounsAndBadgeTypes(
+        Number(conId),
+        this.ctx,
+      );
 
     if (search) {
       attendees = attendees.filter(
@@ -227,6 +228,7 @@ export class LegacyController {
             BadgeNumber: a.badgeNumber,
             ID: a.id,
             Name: a.badgeName,
+            Pronouns: a.pronouns?.pronouns,
           };
         }),
       },
@@ -237,15 +239,29 @@ export class LegacyController {
   @Post('org/:orgId/con/:conId/attendees')
   async addAttendee(
     @Param('conId') conId: number,
-    @Body() attendee: { badgeNumber: string; name: string },
+    @Body() attendee: { badgeNumber: string; name: string; pronouns: string },
   ) {
+    const nameSplit = attendee.name.split(' ');
+    const lastName = nameSplit.pop();
+    const firstName = nameSplit.join(' ');
+
     return this.attendeeService.createAttendee(
       {
         badgeName: attendee.name,
-        badgeFirstName: attendee.name.split(' ', 2)[0],
-        badgeLastName: attendee.name.split(' ', 2)[1],
+        badgeLastName: lastName ? lastName : '',
+        badgeFirstName: firstName,
         legalName: attendee.name,
         badgeNumber: attendee.badgeNumber,
+        pronouns: {
+          connectOrCreate: {
+            create: {
+              pronouns: attendee.pronouns,
+            },
+            where: {
+              pronouns: attendee.pronouns,
+            },
+          },
+        },
         barcode: '*' + attendee.badgeNumber.toString().padStart(6, '0') + '*',
         convention: {
           connect: {
@@ -262,8 +278,12 @@ export class LegacyController {
   async updateAttendee(
     @Param('badgeNumber') badgeNumber: string,
     @Param('conId') conId: number,
-    @Body() attendee: { badgeNumber: string; name: string },
+    @Body() attendee: { badgeNumber: string; name: string; pronouns: string },
   ) {
+    const nameSplit = attendee.name.split(' ');
+    const lastName = nameSplit.pop();
+    const firstName = nameSplit.join(' ');
+
     return this.attendeeService.updateAttendee(
       {
         where: {
@@ -274,7 +294,19 @@ export class LegacyController {
         },
         data: {
           badgeName: attendee.name,
+          badgeFirstName: firstName,
+          badgeLastName: lastName ? lastName : '',
           badgeNumber: attendee.badgeNumber,
+          pronouns: {
+            connectOrCreate: {
+              create: {
+                pronouns: attendee.pronouns,
+              },
+              where: {
+                pronouns: attendee.pronouns,
+              },
+            },
+          },
           barcode: '*' + attendee.badgeNumber.toString().padStart(6, '0') + '*',
         },
       },

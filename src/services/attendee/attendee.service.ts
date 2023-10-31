@@ -61,9 +61,6 @@ export class AttendeeService {
       },
       orderBy: [
         {
-          badgeTypeId: 'asc',
-        },
-        {
           badgeLastName: 'asc',
         },
         {
