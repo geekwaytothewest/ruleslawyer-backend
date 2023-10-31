@@ -1083,4 +1083,10 @@ export class LegacyController {
       this.ctx,
     );
   }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Put('org/:orgId/con/:conId/attendees/syncTabletopEvents')
+  async syncTabletopEvents() {
+    return 'Not Yet Implemented';
+  }
 }
