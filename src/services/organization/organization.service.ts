@@ -11,34 +11,46 @@ export class OrganizationService {
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
     ctx: Context,
   ): Promise<Organization | null> {
-    return ctx.prisma.organization.findUnique({
-      where: organizationWhereUniqueInput,
-    });
+    try {
+      return ctx.prisma.organization.findUnique({
+        where: organizationWhereUniqueInput,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async organizationWithUsers(
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
     ctx: Context,
   ): Promise<any> {
-    return ctx.prisma.organization.findUnique({
-      where: organizationWhereUniqueInput,
-      include: {
-        users: true,
-        owner: true,
-      },
-    });
+    try {
+      return ctx.prisma.organization.findUnique({
+        where: organizationWhereUniqueInput,
+        include: {
+          users: true,
+          owner: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async organizationWithCollections(
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
     ctx: Context,
   ): Promise<any> {
-    return ctx.prisma.organization.findUnique({
-      where: organizationWhereUniqueInput,
-      include: {
-        collections: true,
-      },
-    });
+    try {
+      return ctx.prisma.organization.findUnique({
+        where: organizationWhereUniqueInput,
+        include: {
+          collections: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async createOrganization(
@@ -46,11 +58,15 @@ export class OrganizationService {
     ownerId: number,
     ctx: Context,
   ): Promise<Organization> {
-    return ctx.prisma.organization.create({
-      data: {
-        name: name,
-        ownerId: ownerId,
-      },
-    });
+    try {
+      return ctx.prisma.organization.create({
+        data: {
+          name: name,
+          ownerId: ownerId,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

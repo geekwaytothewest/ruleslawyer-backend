@@ -10,8 +10,12 @@ export class UserOrganizationPermissionsService {
     data: Prisma.UserOrganizationPermissionsCreateInput,
     ctx: Context,
   ): Promise<UserOrganizationPermissions> {
-    return ctx.prisma.userOrganizationPermissions.create({
-      data,
-    });
+    try {
+      return ctx.prisma.userOrganizationPermissions.create({
+        data,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

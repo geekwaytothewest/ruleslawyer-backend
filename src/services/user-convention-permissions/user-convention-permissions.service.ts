@@ -10,8 +10,12 @@ export class UserConventionPermissionsService {
     data: Prisma.UserConventionPermissionsCreateInput,
     ctx: Context,
   ): Promise<UserConventionPermissions> {
-    return ctx.prisma.userConventionPermissions.create({
-      data,
-    });
+    try {
+      return ctx.prisma.userConventionPermissions.create({
+        data,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

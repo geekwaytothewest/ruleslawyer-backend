@@ -8,7 +8,11 @@ export class GameService {
     gameWhereUniqueInput: Prisma.GameWhereUniqueInput,
     ctx: Context,
   ): Promise<Game | null> {
-    return ctx.prisma.game.findUnique({ where: gameWhereUniqueInput });
+    try {
+      return ctx.prisma.game.findUnique({ where: gameWhereUniqueInput });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async games(ctx: Context) {
@@ -19,7 +23,11 @@ export class GameService {
     data: Prisma.GameCreateInput,
     ctx: Context,
   ): Promise<Game | null> {
-    return ctx.prisma.game.create({ data });
+    try {
+      return ctx.prisma.game.create({ data });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async updateGame(
@@ -30,6 +38,10 @@ export class GameService {
     ctx: Context,
   ) {
     const { where, data } = params;
-    return ctx.prisma.game.update({ data, where });
+    try {
+      return ctx.prisma.game.update({ data, where });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

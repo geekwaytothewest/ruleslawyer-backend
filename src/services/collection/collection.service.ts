@@ -59,15 +59,19 @@ export class CollectionService {
     allowWinning: boolean,
     ctx: Context,
   ) {
-    return await ctx.prisma.collection.update({
-      where: {
-        id: id,
-      },
-      data: {
-        name: name,
-        allowWinning: allowWinning,
-      },
-    });
+    try {
+      return await ctx.prisma.collection.update({
+        where: {
+          id: id,
+        },
+        data: {
+          name: name,
+          allowWinning: allowWinning,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async importCollection(
@@ -77,110 +81,119 @@ export class CollectionService {
     ctx: Context,
   ) {
     const promise = new Promise(async (resolve, reject) => {
-      if (!fields?.name) {
-        return reject('missing name');
-      }
-
-      if (fields?.type !== undefined) {
-        if (
-          fields?.type.value !== 'Door Prizes' &&
-          fields?.type.value !== 'Play and Win'
-        ) {
-          return reject('invalid type');
-        }
-
-        if (!fields?.conventionId) {
-          return reject('missing convention id');
-        }
-      }
-
-      let collection: Collection | null = null;
-
       try {
-        collection = await ctx.prisma.collection.create({
-          data: {
-            name: fields.name.value,
-            organizationId: Number(orgId),
-            allowWinning: fields?.allowWinning?.value === 'true' ? true : false,
-          },
-        });
-      } catch (ex) {
-        if (ex instanceof Prisma.PrismaClientKnownRequestError) {
-          switch (ex.code) {
-            case 'P2002':
-              return reject('a collection already exists with that name');
+        if (!fields?.name) {
+          return reject('missing name');
+        }
+
+        if (fields?.type !== undefined) {
+          if (
+            fields?.type.value !== 'Door Prizes' &&
+            fields?.type.value !== 'Play and Win'
+          ) {
+            return reject('invalid type');
+          }
+
+          if (!fields?.conventionId) {
+            return reject('missing convention id');
           }
         }
 
-        return reject(ex.message);
-      }
+        let collection: Collection | null = null;
 
-      if (fields?.type?.value === 'Door Prizes') {
-        await ctx.prisma.convention.update({
-          where: {
-            id: Number(fields.conventionId.value),
-            organizationId: Number(orgId),
-          },
-          data: {
-            doorPrizeCollectionId: Number(collection?.id),
-          },
-        });
-      } else if (fields?.type?.value === 'Play and Win') {
-        await ctx.prisma.convention.update({
-          where: {
-            id: Number(fields.conventionId.value),
-            organizationId: Number(orgId),
-          },
-          data: {
-            playAndWinCollectionId: Number(collection?.id),
-          },
-        });
-      }
+        try {
+          collection = await ctx.prisma.collection.create({
+            data: {
+              name: fields.name.value,
+              organizationId: Number(orgId),
+              allowWinning:
+                fields?.allowWinning?.value === 'true' ? true : false,
+            },
+          });
+        } catch (ex) {
+          if (ex instanceof Prisma.PrismaClientKnownRequestError) {
+            switch (ex.code) {
+              case 'P2002':
+                return reject('a collection already exists with that name');
+            }
+          }
 
-      return this.uploadCopies(orgId, collection.id, csvData, ctx);
+          return reject(ex.message);
+        }
+
+        if (fields?.type?.value === 'Door Prizes') {
+          await ctx.prisma.convention.update({
+            where: {
+              id: Number(fields.conventionId.value),
+              organizationId: Number(orgId),
+            },
+            data: {
+              doorPrizeCollectionId: Number(collection?.id),
+            },
+          });
+        } else if (fields?.type?.value === 'Play and Win') {
+          await ctx.prisma.convention.update({
+            where: {
+              id: Number(fields.conventionId.value),
+              organizationId: Number(orgId),
+            },
+            data: {
+              playAndWinCollectionId: Number(collection?.id),
+            },
+          });
+        }
+
+        return this.uploadCopies(orgId, collection.id, csvData, ctx);
+      } catch (ex) {
+        return reject(ex);
+      }
     });
 
     return promise;
   }
 
   async deleteCollection(id: number, ctx: Context) {
-    const conventions = await ctx.prisma.convention.count({
-      where: {
-        OR: [
-          { doorPrizeCollectionId: Number(id) },
-          { playAndWinCollectionId: Number(id) },
-        ],
-      },
-    });
-
-    if (conventions) {
-      return 'cannot delete a collection tied to a convention';
-    }
-
-    const copies = await ctx.prisma.copy.findMany({
-      where: {
-        collection: {
-          id: Number(id),
+    try {
+      const conventions = await ctx.prisma.convention.count({
+        where: {
+          OR: [
+            { doorPrizeCollectionId: Number(id) },
+            { playAndWinCollectionId: Number(id) },
+          ],
         },
-      },
-      include: {
-        collection: {},
-      },
-    });
+      });
 
-    if (copies) {
-      for (const c of copies) {
-        await ctx.prisma.copy.delete({
-          where: {
-            id: c.id,
-          },
-        });
+      if (conventions) {
+        return 'cannot delete a collection tied to a convention';
       }
+
+      const copies = await ctx.prisma.copy.findMany({
+        where: {
+          collection: {
+            id: Number(id),
+          },
+        },
+        include: {
+          collection: {},
+        },
+      });
+
+      if (copies) {
+        for (const c of copies) {
+          await ctx.prisma.copy.delete({
+            where: {
+              id: c.id,
+            },
+          });
+        }
+      }
+
+      await ctx.prisma.collection.delete({ where: { id: Number(id) } });
+
+      return 'deleted';
+    } catch (ex) {
+      return Promise.reject(ex);
     }
-
-    await ctx.prisma.collection.delete({ where: { id: Number(id) } });
-
-    return 'deleted';
   }
 
   async uploadCopies(
@@ -189,59 +202,63 @@ export class CollectionService {
     csvData: Buffer,
     ctx: Context,
   ) {
-    const collection = await ctx.prisma.collection.findUnique({
-      where: {
-        id: Number(collId),
-      },
-    });
-
-    let importCount = 0;
-
-    parse(csvData, { delimiter: ',' }, async (error, records) => {
-      if (error) {
-        return Promise.reject('invalid csv file');
-      }
-
-      for (const r of records) {
-        try {
-          await this.copyService.createCopy(
-            {
-              barcodeLabel: r[1],
-              barcode: '*' + r[1].padStart(5, '0') + '*',
-              game: {
-                connectOrCreate: {
-                  create: {
-                    name: r[0],
-                  },
-                  where: {
-                    name: r[0],
-                  },
-                },
-              },
-              dateAdded: new Date(),
-              winnable: collection?.allowWinning,
-              collection: {
-                connect: {
-                  id: Number(collection?.id),
-                },
-              },
-              organization: {
-                connect: {
-                  id: Number(orgId),
-                },
-              },
-            },
-            ctx,
-          );
-
-          importCount++;
-        } catch (ex) {}
-      }
-
-      return Promise.resolve({
-        collectionId: collection?.id,
-        importCount: importCount,
+    try {
+      const collection = await ctx.prisma.collection.findUnique({
+        where: {
+          id: Number(collId),
+        },
       });
-    });
+
+      let importCount = 0;
+
+      parse(csvData, { delimiter: ',' }, async (error, records) => {
+        if (error) {
+          return Promise.reject('invalid csv file');
+        }
+
+        for (const r of records) {
+          try {
+            await this.copyService.createCopy(
+              {
+                barcodeLabel: r[1],
+                barcode: '*' + r[1].padStart(5, '0') + '*',
+                game: {
+                  connectOrCreate: {
+                    create: {
+                      name: r[0],
+                    },
+                    where: {
+                      name: r[0],
+                    },
+                  },
+                },
+                dateAdded: new Date(),
+                winnable: collection?.allowWinning,
+                collection: {
+                  connect: {
+                    id: Number(collection?.id),
+                  },
+                },
+                organization: {
+                  connect: {
+                    id: Number(orgId),
+                  },
+                },
+              },
+              ctx,
+            );
+
+            importCount++;
+          } catch (ex) {}
+        }
+
+        return Promise.resolve({
+          collectionId: collection?.id,
+          importCount: importCount,
+        });
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

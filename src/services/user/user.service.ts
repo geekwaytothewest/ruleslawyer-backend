@@ -10,15 +10,23 @@ export class UserService {
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
     ctx: Context,
   ): Promise<User | null> {
-    return ctx.prisma.user.findUnique({
-      where: userWhereUniqueInput,
-    });
+    try {
+      return ctx.prisma.user.findUnique({
+        where: userWhereUniqueInput,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async createUser(data: Prisma.UserCreateInput, ctx: Context): Promise<User> {
-    return ctx.prisma.user.create({
-      data,
-    });
+    try {
+      return ctx.prisma.user.create({
+        data,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async updateUser(
@@ -29,10 +37,14 @@ export class UserService {
     ctx: Context,
   ): Promise<User> {
     const { where, data } = params;
-    return ctx.prisma.user.update({
-      data,
-      where,
-    });
+    try {
+      return ctx.prisma.user.update({
+        data,
+        where,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async getUserCount(ctx: Context) {

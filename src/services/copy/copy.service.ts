@@ -8,58 +8,78 @@ export class CopyService {
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
   ): Promise<Copy | null> {
-    return ctx.prisma.copy.findUnique({
-      where: copyWhereUniqueInput,
-    });
+    try {
+      return ctx.prisma.copy.findUnique({
+        where: copyWhereUniqueInput,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async copyWithCollection(
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
   ): Promise<any> {
-    return ctx.prisma.copy.findUnique({
-      where: copyWhereUniqueInput,
-      include: {
-        collection: true,
-      },
-    });
+    try {
+      return ctx.prisma.copy.findUnique({
+        where: copyWhereUniqueInput,
+        include: {
+          collection: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async copyWithCheckouts(
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
   ): Promise<any> {
-    return ctx.prisma.copy.findUnique({
-      where: copyWhereUniqueInput,
-      include: {
-        checkOuts: true,
-      },
-    });
+    try {
+      return ctx.prisma.copy.findUnique({
+        where: copyWhereUniqueInput,
+        include: {
+          checkOuts: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async copyWithCheckOutsGameAndCollection(
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
   ): Promise<any> {
-    return ctx.prisma.copy.findUnique({
-      where: copyWhereUniqueInput,
-      include: {
-        collection: true,
-        checkOuts: {
-          include: {
-            attendee: true,
+    try {
+      return ctx.prisma.copy.findUnique({
+        where: copyWhereUniqueInput,
+        include: {
+          collection: true,
+          checkOuts: {
+            include: {
+              attendee: true,
+            },
           },
+          game: true,
         },
-        game: true,
-      },
-    });
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async createCopy(
     data: Prisma.CopyCreateInput,
     ctx: Context,
   ): Promise<Copy | null> {
-    return ctx.prisma.copy.create({ data });
+    try {
+      return ctx.prisma.copy.create({ data });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async updateCopy(
@@ -70,25 +90,34 @@ export class CopyService {
     ctx: Context,
   ) {
     const { where, data } = params;
-    return ctx.prisma.copy.update({ data, where });
+
+    try {
+      return ctx.prisma.copy.update({ data, where });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async searchCopies(where: Prisma.CopyWhereInput, ctx: Context) {
-    return ctx.prisma.copy.findMany({
-      where: where,
-      include: {
-        collection: {
-          include: {
-            organization: true,
+    try {
+      return ctx.prisma.copy.findMany({
+        where: where,
+        include: {
+          collection: {
+            include: {
+              organization: true,
+            },
+          },
+          game: true,
+          checkOuts: {
+            include: {
+              attendee: true,
+            },
           },
         },
-        game: true,
-        checkOuts: {
-          include: {
-            attendee: true,
-          },
-        },
-      },
-    });
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

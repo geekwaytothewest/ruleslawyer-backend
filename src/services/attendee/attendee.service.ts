@@ -7,72 +7,96 @@ export class AttendeeService {
   constructor() {}
 
   async createAttendee(data: Prisma.AttendeeCreateInput, ctx: Context) {
-    return ctx.prisma.attendee.create({ data });
+    try {
+      return ctx.prisma.attendee.create({ data });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async syncAttendee(data: Prisma.AttendeeCreateInput, ctx: Context) {
-    return ctx.prisma.attendee.upsert({
-      where: {
-        conventionId_tteBadgeNumber: {
-          conventionId: Number(data.convention.connect?.id),
-          tteBadgeNumber: Number(data.tteBadgeNumber),
+    try {
+      return ctx.prisma.attendee.upsert({
+        where: {
+          conventionId_tteBadgeNumber: {
+            conventionId: Number(data.convention.connect?.id),
+            tteBadgeNumber: Number(data.tteBadgeNumber),
+          },
         },
-      },
-      create: data,
-      update: data,
-    });
+        create: data,
+        update: data,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async attendee(data: Prisma.AttendeeWhereUniqueInput, ctx: Context) {
-    return ctx.prisma.attendee.findUnique({ where: data });
+    try {
+      return ctx.prisma.attendee.findUnique({ where: data });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async attendeeWithCheckouts(
     data: Prisma.AttendeeWhereUniqueInput,
     ctx: Context,
   ) {
-    return ctx.prisma.attendee.findUnique({
-      where: data,
-      include: {
-        checkOuts: true,
-      },
-    });
+    try {
+      return ctx.prisma.attendee.findUnique({
+        where: data,
+        include: {
+          checkOuts: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async attendees(conventionId: number, ctx: Context) {
-    return ctx.prisma.attendee.findMany({
-      where: {
-        conventionId: conventionId,
-      },
-      orderBy: [
-        {
-          badgeLastName: 'asc',
+    try {
+      return ctx.prisma.attendee.findMany({
+        where: {
+          conventionId: conventionId,
         },
-        {
-          badgeFirstName: 'asc',
-        },
-      ],
-    });
+        orderBy: [
+          {
+            badgeLastName: 'asc',
+          },
+          {
+            badgeFirstName: 'asc',
+          },
+        ],
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async attendeesWithPronounsAndBadgeTypes(conventionId: number, ctx: Context) {
-    return ctx.prisma.attendee.findMany({
-      where: {
-        conventionId: conventionId,
-      },
-      include: {
-        pronouns: true,
-        badgeType: true,
-      },
-      orderBy: [
-        {
-          badgeLastName: 'asc',
+    try {
+      return ctx.prisma.attendee.findMany({
+        where: {
+          conventionId: conventionId,
         },
-        {
-          badgeFirstName: 'asc',
+        include: {
+          pronouns: true,
+          badgeType: true,
         },
-      ],
-    });
+        orderBy: [
+          {
+            badgeLastName: 'asc',
+          },
+          {
+            badgeFirstName: 'asc',
+          },
+        ],
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async updateAttendee(
@@ -83,6 +107,11 @@ export class AttendeeService {
     ctx: Context,
   ) {
     const { where, data } = params;
-    return ctx.prisma.attendee.update({ data, where });
+
+    try {
+      return ctx.prisma.attendee.update({ data, where });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

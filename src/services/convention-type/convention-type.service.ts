@@ -15,8 +15,12 @@ export class ConventionTypeService {
     conventionTypeWhereUniqueInput: Prisma.ConventionTypeWhereUniqueInput,
     ctx: Context,
   ): Promise<ConventionType | null> {
-    return ctx.prisma.conventionType.findUnique({
-      where: conventionTypeWhereUniqueInput,
-    });
+    try {
+      return ctx.prisma.conventionType.findUnique({
+        where: conventionTypeWhereUniqueInput,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }

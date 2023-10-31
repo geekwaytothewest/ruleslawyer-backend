@@ -12,45 +12,53 @@ export class CheckOutService {
   ) {}
 
   async getLongestCheckouts(conventionId: number, ctx: Context) {
-    return ctx.prisma.checkOut.findMany({
-      where: {
-        checkIn: null,
-      },
-      orderBy: {
-        checkOut: 'desc',
-      },
-      take: 10,
-      include: {
-        attendee: true,
-        Copy: {
-          include: {
-            collection: true,
-            game: true,
+    try {
+      return ctx.prisma.checkOut.findMany({
+        where: {
+          checkIn: null,
+        },
+        orderBy: {
+          checkOut: 'desc',
+        },
+        take: 10,
+        include: {
+          attendee: true,
+          Copy: {
+            include: {
+              collection: true,
+              game: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async getRecentCheckouts(conventionId: number, ctx: Context) {
-    return ctx.prisma.checkOut.findMany({
-      where: {
-        checkIn: null,
-      },
-      orderBy: {
-        checkOut: 'asc',
-      },
-      take: 10,
-      include: {
-        attendee: true,
-        Copy: {
-          include: {
-            collection: true,
-            game: true,
+    try {
+      return ctx.prisma.checkOut.findMany({
+        where: {
+          checkIn: null,
+        },
+        orderBy: {
+          checkOut: 'asc',
+        },
+        take: 10,
+        include: {
+          attendee: true,
+          Copy: {
+            include: {
+              collection: true,
+              game: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async checkOut(
@@ -61,85 +69,93 @@ export class CheckOutService {
     overrideLimit: boolean,
     ctx: Context,
   ) {
-    const copy = await this.copyService.copyWithCheckouts(
-      {
-        collectionId_barcode: {
-          collectionId: collectionId,
-          barcode: copyBarcode,
+    try {
+      const copy = await this.copyService.copyWithCheckouts(
+        {
+          collectionId_barcode: {
+            collectionId: collectionId,
+            barcode: copyBarcode,
+          },
         },
-      },
-      ctx,
-    );
+        ctx,
+      );
 
-    if (!copy) {
-      return Promise.reject('copy not found');
-    }
+      if (!copy) {
+        return Promise.reject('copy not found');
+      }
 
-    if (copy.checkOuts.filter((co) => !co.checkIn).length > 0) {
-      return Promise.reject('already checked out');
-    }
+      if (copy.checkOuts.filter((co) => !co.checkIn).length > 0) {
+        return Promise.reject('already checked out');
+      }
 
-    const attendee = await this.attendeeService.attendeeWithCheckouts(
-      {
-        conventionId_barcode: {
-          conventionId: conventionId,
-          barcode: attendeeBarcode,
+      const attendee = await this.attendeeService.attendeeWithCheckouts(
+        {
+          conventionId_barcode: {
+            conventionId: conventionId,
+            barcode: attendeeBarcode,
+          },
         },
-      },
-      ctx,
-    );
+        ctx,
+      );
 
-    if (!attendee) {
-      return Promise.reject('attendee not found');
+      if (!attendee) {
+        return Promise.reject('attendee not found');
+      }
+
+      if (
+        attendee.checkOuts.filter((co) => !co.checkIn).length > 0 &&
+        !overrideLimit
+      ) {
+        return Promise.reject('attendee already has a game checked out');
+      }
+
+      return await ctx.prisma.checkOut.create({
+        data: {
+          copyId: copy.id,
+          checkOut: new Date(),
+          attendeeId: attendee.id,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
     }
-
-    if (
-      attendee.checkOuts.filter((co) => !co.checkIn).length > 0 &&
-      !overrideLimit
-    ) {
-      return Promise.reject('attendee already has a game checked out');
-    }
-
-    return await ctx.prisma.checkOut.create({
-      data: {
-        copyId: copy.id,
-        checkOut: new Date(),
-        attendeeId: attendee.id,
-      },
-    });
   }
 
   async checkIn(collectionId: number, copyBarcode: string, ctx: Context) {
-    const copy = await this.copyService.copyWithCheckouts(
-      {
-        collectionId_barcode: {
-          collectionId: Number(collectionId),
-          barcode: copyBarcode,
+    try {
+      const copy = await this.copyService.copyWithCheckouts(
+        {
+          collectionId_barcode: {
+            collectionId: Number(collectionId),
+            barcode: copyBarcode,
+          },
         },
-      },
-      ctx,
-    );
+        ctx,
+      );
 
-    if (!copy) {
-      return Promise.reject('copy not found');
+      if (!copy) {
+        return Promise.reject('copy not found');
+      }
+
+      const checkOuts = copy.checkOuts.filter((co) => !co.checkIn);
+
+      if (checkOuts.length === 0) {
+        return Promise.reject('already checked in');
+      }
+
+      const checkOut = checkOuts[0];
+
+      return await ctx.prisma.checkOut.update({
+        where: {
+          id: checkOut.id,
+        },
+        data: {
+          checkIn: new Date(),
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
     }
-
-    const checkOuts = copy.checkOuts.filter((co) => !co.checkIn);
-
-    if (checkOuts.length === 0) {
-      return Promise.reject('already checked in');
-    }
-
-    const checkOut = checkOuts[0];
-
-    return await ctx.prisma.checkOut.update({
-      where: {
-        id: checkOut.id,
-      },
-      data: {
-        checkIn: new Date(),
-      },
-    });
   }
 
   async submitPrizeEntry(
@@ -147,85 +163,93 @@ export class CheckOutService {
     players: Prisma.PlayerCreateManyInput[],
     ctx: Context,
   ) {
-    const checkOut = await ctx.prisma.checkOut.findUnique({
-      where: {
-        id: checkOutId,
-      },
-    });
-
-    if (!checkOut?.checkIn) {
-      return Promise.reject('not checked in');
-    }
-
-    if (checkOut.submitted) {
-      return Promise.reject('already submitted');
-    }
-
-    if (!players.length) {
-      return Promise.reject('no players');
-    }
-
-    for (const p of players) {
-      p.checkOutId = checkOutId;
-
-      if (p.rating && p.rating > 5) {
-        return Promise.reject('invalid rating');
-      }
-    }
-
     try {
-      await ctx.prisma.player.createMany({
-        data: [...players],
+      const checkOut = await ctx.prisma.checkOut.findUnique({
+        where: {
+          id: checkOutId,
+        },
       });
-    } catch ({ name, message }) {
-      return Promise.reject('failed creating players');
-    }
 
-    return await ctx.prisma.checkOut.update({
-      where: {
-        id: checkOutId,
-      },
-      data: {
-        submitted: true,
-      },
-    });
+      if (!checkOut?.checkIn) {
+        return Promise.reject('not checked in');
+      }
+
+      if (checkOut.submitted) {
+        return Promise.reject('already submitted');
+      }
+
+      if (!players.length) {
+        return Promise.reject('no players');
+      }
+
+      for (const p of players) {
+        p.checkOutId = checkOutId;
+
+        if (p.rating && p.rating > 5) {
+          return Promise.reject('invalid rating');
+        }
+      }
+
+      try {
+        await ctx.prisma.player.createMany({
+          data: [...players],
+        });
+      } catch ({ name, message }) {
+        return Promise.reject('failed creating players');
+      }
+
+      return await ctx.prisma.checkOut.update({
+        where: {
+          id: checkOutId,
+        },
+        data: {
+          submitted: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 
   async getAttendeePrizeEntries(attendeeBadgeNumber: string, ctx: Context) {
-    return ctx.prisma.checkOut.findMany({
-      include: {
-        attendee: true,
-        Copy: {
-          include: {
-            collection: true,
-            game: true,
+    try {
+      return ctx.prisma.checkOut.findMany({
+        include: {
+          attendee: true,
+          Copy: {
+            include: {
+              collection: true,
+              game: true,
+            },
           },
         },
-      },
-      where: {
-        AND: [
-          {
-            attendee: {
-              badgeNumber: attendeeBadgeNumber,
-            },
-          },
-          {
-            Copy: {
-              collection: {
-                allowWinning: true,
+        where: {
+          AND: [
+            {
+              attendee: {
+                badgeNumber: attendeeBadgeNumber,
               },
             },
-          },
-          {
-            checkIn: {
-              not: null,
+            {
+              Copy: {
+                collection: {
+                  allowWinning: true,
+                },
+              },
             },
-          },
-          {
-            submitted: false,
-          },
-        ],
-      },
-    });
+            {
+              checkIn: {
+                not: null,
+              },
+            },
+            {
+              submitted: false,
+            },
+          ],
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
   }
 }
