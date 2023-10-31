@@ -1029,4 +1029,26 @@ export class LegacyController {
       this.ctx,
     );
   }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Post('org/:orgId/con/:conId/copycollections/:collId/copies/upload')
+  async uploadCopies(
+    @Req() request: fastify.FastifyRequest,
+    @Param('orgId') orgId: number,
+    @Param('collId') collId: number,
+  ) {
+    const file = await request.file();
+    const buffer = await file?.toBuffer();
+
+    if (buffer === undefined) {
+      return Promise.reject('missing file');
+    }
+
+    return this.collectionService.uploadCopies(
+      Number(orgId),
+      Number(collId),
+      buffer,
+      this.ctx,
+    );
+  }
 }

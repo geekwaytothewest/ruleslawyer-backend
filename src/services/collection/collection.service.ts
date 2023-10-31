@@ -137,52 +137,7 @@ export class CollectionService {
         });
       }
 
-      let importCount = 0;
-
-      parse(csvData, { delimiter: ',' }, async (error, records) => {
-        if (error) {
-          return reject('invalid csv file');
-        }
-
-        for (const r of records) {
-          await this.copyService.createCopy(
-            {
-              barcodeLabel: r[1],
-              barcode: '*' + r[1].padStart(5, '0') + '*',
-              game: {
-                connectOrCreate: {
-                  create: {
-                    name: r[0],
-                  },
-                  where: {
-                    name: r[0],
-                  },
-                },
-              },
-              dateAdded: new Date(),
-              winnable: false,
-              collection: {
-                connect: {
-                  id: Number(collection?.id),
-                },
-              },
-              organization: {
-                connect: {
-                  id: Number(orgId),
-                },
-              },
-            },
-            ctx,
-          );
-
-          importCount++;
-        }
-
-        return resolve({
-          collectionId: collection?.id,
-          importCount: importCount,
-        });
-      });
+      return this.uploadCopies(orgId, collection.id, csvData, ctx);
     });
 
     return promise;
@@ -226,5 +181,67 @@ export class CollectionService {
     await ctx.prisma.collection.delete({ where: { id: Number(id) } });
 
     return 'deleted';
+  }
+
+  async uploadCopies(
+    orgId: number,
+    collId: number,
+    csvData: Buffer,
+    ctx: Context,
+  ) {
+    const collection = await ctx.prisma.collection.findUnique({
+      where: {
+        id: Number(collId),
+      },
+    });
+
+    let importCount = 0;
+
+    parse(csvData, { delimiter: ',' }, async (error, records) => {
+      if (error) {
+        return Promise.reject('invalid csv file');
+      }
+
+      for (const r of records) {
+        try {
+          await this.copyService.createCopy(
+            {
+              barcodeLabel: r[1],
+              barcode: '*' + r[1].padStart(5, '0') + '*',
+              game: {
+                connectOrCreate: {
+                  create: {
+                    name: r[0],
+                  },
+                  where: {
+                    name: r[0],
+                  },
+                },
+              },
+              dateAdded: new Date(),
+              winnable: collection?.allowWinning,
+              collection: {
+                connect: {
+                  id: Number(collection?.id),
+                },
+              },
+              organization: {
+                connect: {
+                  id: Number(orgId),
+                },
+              },
+            },
+            ctx,
+          );
+
+          importCount++;
+        } catch (ex) {}
+      }
+
+      return Promise.resolve({
+        collectionId: collection?.id,
+        importCount: importCount,
+      });
+    });
   }
 }
