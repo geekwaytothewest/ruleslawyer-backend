@@ -100,6 +100,22 @@ describe('CollectionService', () => {
         weight: null,
       });
 
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
       const result = await service.importCollection(
         1,
         {
@@ -119,6 +135,22 @@ describe('CollectionService', () => {
 
     it('should create a play and win', async () => {
       mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
         id: 1,
         name: 'Test Collection',
         organizationId: 1,
@@ -151,6 +183,22 @@ describe('CollectionService', () => {
 
     it('should create door prizes', async () => {
       mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
         id: 1,
         name: 'Test Collection',
         organizationId: 1,
@@ -275,6 +323,14 @@ describe('CollectionService', () => {
 
     it('should fail the csv parse', async () => {
       mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
         id: 1,
         name: 'Test Collection',
         organizationId: 1,

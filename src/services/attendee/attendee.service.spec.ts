@@ -36,6 +36,7 @@ describe('AttendeeService', () => {
         badgeNumber: '1',
         badgeTypeId: 1,
         tteBadgeNumber: 1,
+        tteBadgeId: 'xxx',
         email: 'test@geekway.com',
         pronounsId: 1,
         checkedIn: false,
@@ -66,12 +67,6 @@ describe('AttendeeService', () => {
     });
   });
 
-  describe('truncate', () => {
-    it('should return', async () => {
-      service.truncate(1, ctx);
-    });
-  });
-
   describe('attendee', () => {
     it('should return an attendee', async () => {
       mockCtx.prisma.attendee.findUnique.mockResolvedValue({
@@ -86,6 +81,7 @@ describe('AttendeeService', () => {
         badgeNumber: '1',
         badgeTypeId: 1,
         tteBadgeNumber: 1,
+        tteBadgeId: 'xxx',
         email: 'test@geekway.com',
         pronounsId: 1,
         checkedIn: false,
@@ -112,6 +108,7 @@ describe('AttendeeService', () => {
           badgeNumber: '1',
           badgeTypeId: 1,
           tteBadgeNumber: 1,
+          tteBadgeId: 'xxx',
           email: 'test@geekway.com',
           pronounsId: 1,
           checkedIn: false,
@@ -141,6 +138,7 @@ describe('AttendeeService', () => {
         badgeNumber: '1',
         badgeTypeId: 1,
         tteBadgeNumber: 1,
+        tteBadgeId: 'xxx',
         email: 'test@geekway.com',
         pronounsId: 1,
         checkedIn: false,

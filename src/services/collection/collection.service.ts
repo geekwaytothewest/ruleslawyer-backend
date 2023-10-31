@@ -121,6 +121,10 @@ export class CollectionService {
           return reject(ex.message);
         }
 
+        if (!collection) {
+          return reject('could not create collection');
+        }
+
         if (fields?.type?.value === 'Door Prizes') {
           await ctx.prisma.convention.update({
             where: {
@@ -143,7 +147,14 @@ export class CollectionService {
           });
         }
 
-        return this.uploadCopies(orgId, collection.id, csvData, ctx);
+        const copies = await this.uploadCopies(
+          orgId,
+          collection.id,
+          csvData,
+          ctx,
+        );
+
+        return resolve(copies);
       } catch (ex) {
         return reject(ex);
       }
@@ -202,63 +213,67 @@ export class CollectionService {
     csvData: Buffer,
     ctx: Context,
   ) {
-    try {
-      const collection = await ctx.prisma.collection.findUnique({
-        where: {
-          id: Number(collId),
-        },
-      });
-
-      let importCount = 0;
-
-      parse(csvData, { delimiter: ',' }, async (error, records) => {
-        if (error) {
-          return Promise.reject('invalid csv file');
-        }
-
-        for (const r of records) {
-          try {
-            await this.copyService.createCopy(
-              {
-                barcodeLabel: r[1],
-                barcode: '*' + r[1].padStart(5, '0') + '*',
-                game: {
-                  connectOrCreate: {
-                    create: {
-                      name: r[0],
-                    },
-                    where: {
-                      name: r[0],
-                    },
-                  },
-                },
-                dateAdded: new Date(),
-                winnable: collection?.allowWinning,
-                collection: {
-                  connect: {
-                    id: Number(collection?.id),
-                  },
-                },
-                organization: {
-                  connect: {
-                    id: Number(orgId),
-                  },
-                },
-              },
-              ctx,
-            );
-
-            importCount++;
-          } catch (ex) {}
-        }
-
-        return Promise.resolve({
-          collectionId: collection?.id,
-          importCount: importCount,
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const collection = await ctx.prisma.collection.findUnique({
+          where: {
+            id: Number(collId),
+          },
         });
-      });
-    } catch (ex) {
-      return Promise.reject(ex);
-    }
+
+        let importCount = 0;
+
+        parse(csvData, { delimiter: ',' }, async (error, records) => {
+          if (error) {
+            return reject('invalid csv file');
+          }
+
+          for (const r of records) {
+            try {
+              await this.copyService.createCopy(
+                {
+                  barcodeLabel: r[1],
+                  barcode: '*' + r[1].padStart(5, '0') + '*',
+                  game: {
+                    connectOrCreate: {
+                      create: {
+                        name: r[0],
+                      },
+                      where: {
+                        name: r[0],
+                      },
+                    },
+                  },
+                  dateAdded: new Date(),
+                  winnable: collection?.allowWinning,
+                  collection: {
+                    connect: {
+                      id: Number(collection?.id),
+                    },
+                  },
+                  organization: {
+                    connect: {
+                      id: Number(orgId),
+                    },
+                  },
+                },
+                ctx,
+              );
+
+              importCount++;
+            } catch (ex) {}
+          }
+
+          return resolve({
+            collectionId: collection?.id,
+            importCount: importCount,
+          });
+        });
+      } catch (ex) {
+        return reject(ex);
+      }
+    });
+
+    return promise;
   }
 }

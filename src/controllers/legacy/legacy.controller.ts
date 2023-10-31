@@ -26,8 +26,8 @@ import { CheckOutService } from '../../services/check-out/check-out.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { OrganizationService } from '../../services/organization/organization.service';
 import fastify = require('fastify');
-import { GameService } from 'src/services/game/game.service';
-import { SuperAdminGuard } from 'src/guards/superAdmin/superAdmin.guard';
+import { GameService } from '../../services/game/game.service';
+import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 
 @Controller()
 export class LegacyController {

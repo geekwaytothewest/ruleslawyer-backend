@@ -189,9 +189,8 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.update.mockResolvedValue(copy);
 
-      const bigResponse = await controller.updateCopy(1, {
-        libraryId: 1,
-        title: 'Test Copy',
+      const bigResponse = await controller.updateCopy('1', 1, {
+        libraryId: '1',
         collectionId: 1,
         winnable: true,
       });
@@ -820,6 +819,7 @@ describe('LegacyController', () => {
           barcode: '*00001*',
           userId: null,
           tteBadgeNumber: null,
+          tteBadgeId: 'xxx',
           badgeTypeId: 1,
           email: 'test@geekway.com',
           pronounsId: 1,
@@ -850,6 +850,7 @@ describe('LegacyController', () => {
           barcode: '*00001*',
           userId: null,
           tteBadgeNumber: null,
+          tteBadgeId: 'xxx',
           badgeTypeId: 1,
           email: 'test@geekway.com',
           pronounsId: 1,
@@ -881,6 +882,7 @@ describe('LegacyController', () => {
         barcode: '*00001*',
         userId: null,
         tteBadgeNumber: null,
+        tteBadgeId: 'xxx',
         badgeTypeId: 1,
         email: 'test@geekway.com',
         pronounsId: 1,
@@ -895,6 +897,7 @@ describe('LegacyController', () => {
       const bigResponse = await controller.addAttendee(1, {
         badgeNumber: '1',
         name: 'asdf',
+        pronouns: 'She/Her',
       });
 
       expect(bigResponse.id).toBe(1);
@@ -914,6 +917,7 @@ describe('LegacyController', () => {
         barcode: '*00001*',
         userId: null,
         tteBadgeNumber: null,
+        tteBadgeId: 'xxx',
         badgeTypeId: 1,
         email: 'test@geekway.com',
         pronounsId: 1,
@@ -928,6 +932,7 @@ describe('LegacyController', () => {
       const bigResponse = await controller.updateAttendee('1', 1, {
         badgeNumber: '1',
         name: 'asdf',
+        pronouns: 'She/Her',
       });
 
       expect(bigResponse.id).toBe(1);
@@ -995,6 +1000,7 @@ describe('LegacyController', () => {
         badgeNumber: '1',
         barcode: '*00001*',
         tteBadgeNumber: null,
+        tteBadgeId: 'xxx',
         conventionId: 1,
         printed: false,
         checkedIn: false,
@@ -1119,6 +1125,7 @@ describe('LegacyController', () => {
         badgeNumber: '1',
         barcode: '*00001*',
         tteBadgeNumber: null,
+        tteBadgeId: 'xxx',
         conventionId: 1,
         printed: false,
         checkedIn: false,
@@ -1246,6 +1253,7 @@ describe('LegacyController', () => {
         badgeNumber: '1',
         barcode: '*00001*',
         tteBadgeNumber: null,
+        tteBadgeId: 'xxx',
         conventionId: 1,
         printed: false,
         checkedIn: false,

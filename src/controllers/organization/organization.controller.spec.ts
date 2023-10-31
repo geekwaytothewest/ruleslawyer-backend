@@ -302,6 +302,22 @@ describe('OrganizationController', () => {
 
       const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
 
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        name: 'test collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'test collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
       expect(controller.importCollection(req, 1)).rejects.toBe(
         'invalid csv file',
       );
@@ -340,6 +356,22 @@ describe('OrganizationController', () => {
         barcodeLabel: '1',
         collectionId: 1,
         organizationId: 1,
+      });
+
+      mockCtx.prisma.collection.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
       });
 
       const importResult = (await controller.importCollection(req, 1)) as any;
