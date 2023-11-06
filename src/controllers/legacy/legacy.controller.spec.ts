@@ -166,6 +166,8 @@ describe('LegacyController', () => {
       const bigResponse = await controller.addCopy(1, 1, {
         libraryId: 1,
         title: 'Test Title',
+        winnable: false,
+        comments: '',
       });
 
       expect(bigResponse?.winnable).toBeTruthy();
