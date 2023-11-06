@@ -91,6 +91,7 @@ export class LegacyController {
               ID: cp.barcodeLabel,
               Title: cp.game.name,
               Winnable: cp.winnable,
+              Comments: cp.comments,
               Collection: {
                 ID: c.id,
                 Name: c.name,
@@ -134,6 +135,7 @@ export class LegacyController {
       libraryId: string;
       collectionId: number;
       winnable: boolean;
+      comments: string;
     },
   ) {
     return this.copyService.updateCopy(
@@ -153,6 +155,7 @@ export class LegacyController {
           barcodeLabel: copy.libraryId,
           barcode: '*' + copy.libraryId + '*',
           winnable: copy.winnable,
+          comments: copy.comments,
         },
       },
       this.ctx,

@@ -167,6 +167,7 @@ model Copy {
   barcodeLabel     String
   barcode          String
   dateRetired      DateTime?
+  comments         String?
   winnable         Boolean      @default(true)
   winner           Attendee?    @relation(fields: winnerId, references: [id])
   winnerId         Int?

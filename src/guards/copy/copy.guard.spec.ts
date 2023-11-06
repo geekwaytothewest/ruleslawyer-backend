@@ -56,6 +56,7 @@ describe('CopyGuard', () => {
       barcode: '*00001*',
       barcodeLabel: '1',
       collectionId: 1,
+      comments: null,
       collection: {
         id: 1,
         name: 'Test Collection',
@@ -106,6 +107,7 @@ describe('CopyGuard', () => {
       barcode: '*00001*',
       barcodeLabel: '1',
       collectionId: 1,
+      comments: null,
       collection: {
         id: 1,
         name: 'Test Collection',
@@ -157,6 +159,7 @@ describe('CopyGuard', () => {
       barcode: '*00001*',
       barcodeLabel: '1',
       collectionId: 1,
+      comments: null,
       collection: {
         id: 1,
         name: 'Test Collection',
@@ -194,6 +197,7 @@ describe('CopyGuard', () => {
       barcode: '*00001*',
       barcodeLabel: '1',
       collectionId: 1,
+      comments: null,
       collection: {
         id: 1,
         name: 'Test Collection',

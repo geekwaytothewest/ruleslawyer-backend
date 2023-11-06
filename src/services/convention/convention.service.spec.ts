@@ -517,6 +517,7 @@ describe('ConventionService', () => {
         barcodeLabel: '1',
         barcode: '*000001*',
         collectionId: 1,
+        comments: null,
         winnerId: null,
         checkOuts: [
           {

@@ -35,6 +35,7 @@ describe('CopyService', () => {
         dateRetired: null,
         collectionId: 1,
         organizationId: 1,
+        comments: null,
       });
 
       const copy = await service.copy({ id: 1 }, ctx);
@@ -57,6 +58,7 @@ describe('CopyService', () => {
         dateRetired: null,
         collectionId: 1,
         organizationId: 1,
+        comments: null,
       });
 
       const copy = await service.createCopy(
@@ -100,6 +102,7 @@ describe('CopyService', () => {
         dateRetired: null,
         collectionId: 1,
         organizationId: 1,
+        comments: null,
       });
 
       const copy = await service.updateCopy(
@@ -136,6 +139,7 @@ describe('CopyService', () => {
         winnerId: null,
         coverArtOverride: Buffer.from(''),
         collectionId: 1,
+        comments: null,
         collection: {
           id: 1,
           name: 'Geekway Library',
@@ -163,6 +167,7 @@ describe('CopyService', () => {
         winnerId: null,
         coverArtOverride: Buffer.from(''),
         collectionId: 1,
+        comments: null,
         collection: {
           id: 1,
           name: 'Geekway Library',
@@ -203,6 +208,7 @@ describe('CopyService', () => {
           winnerId: null,
           coverArtOverride: Buffer.from(''),
           collectionId: 1,
+          comments: null,
           collection: {
             id: 1,
             name: 'Geekway Library',

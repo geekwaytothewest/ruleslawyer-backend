@@ -175,6 +175,7 @@ describe('OrganizationController', () => {
         barcodeLabel: '1',
         collectionId: 1,
         organizationId: 1,
+        comments: null,
       });
 
       const copy = await controller.createCopy(1, 1, {
@@ -348,6 +349,7 @@ describe('OrganizationController', () => {
         id: 1,
         gameId: 1,
         winnable: true,
+        comments: null,
         winnerId: null,
         coverArtOverride: null,
         dateAdded: new Date(),
