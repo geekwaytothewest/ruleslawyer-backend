@@ -171,6 +171,8 @@ export class LegacyController {
     copy: {
       libraryId: number;
       title: string;
+      winnable: boolean;
+      comments: string;
     },
   ) {
     return this.copyService.createCopy(
@@ -178,6 +180,8 @@ export class LegacyController {
         dateAdded: new Date(),
         barcode: copy.libraryId.toString(),
         barcodeLabel: copy.libraryId.toString(),
+        comments: copy.comments,
+        winnable: copy.winnable,
         collection: {
           connect: {
             id: Number(colId),
