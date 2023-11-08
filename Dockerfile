@@ -3,8 +3,8 @@ FROM node:20 AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npx prisma generate
 COPY prisma ./prisma/
+RUN npx prisma generate
 
 RUN npm install
 
