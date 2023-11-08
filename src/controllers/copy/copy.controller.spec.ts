@@ -33,6 +33,7 @@ describe('CopyController', () => {
         id: 1,
         gameId: 1,
         dateAdded: new Date(),
+        comments: null,
         dateRetired: new Date(),
         winnable: true,
         winnerId: null,
@@ -56,6 +57,7 @@ describe('CopyController', () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue({
         id: 1,
         gameId: 1,
+        comments: null,
         dateAdded: new Date(),
         dateRetired: null,
         winnable: false,

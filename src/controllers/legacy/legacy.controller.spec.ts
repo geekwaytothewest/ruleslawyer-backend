@@ -152,6 +152,7 @@ describe('LegacyController', () => {
         barcode: '*00001*',
         barcodeLabel: '1',
         dateAdded: new Date(),
+        comments: null,
         winnable: true,
         dateRetired: null,
         coverArtOverride: null,
@@ -165,6 +166,8 @@ describe('LegacyController', () => {
       const bigResponse = await controller.addCopy(1, 1, {
         libraryId: 1,
         title: 'Test Title',
+        winnable: false,
+        comments: '',
       });
 
       expect(bigResponse?.winnable).toBeTruthy();
@@ -180,6 +183,7 @@ describe('LegacyController', () => {
         barcodeLabel: '1',
         dateAdded: new Date(),
         winnable: true,
+        comments: null,
         dateRetired: null,
         coverArtOverride: null,
         winnerId: null,
@@ -193,6 +197,7 @@ describe('LegacyController', () => {
         libraryId: '1',
         collectionId: 1,
         winnable: true,
+        comments: '',
       });
 
       expect(bigResponse?.winnable).toBeTruthy();
@@ -251,6 +256,7 @@ describe('LegacyController', () => {
         dateRetired: null,
         coverArtOverride: null,
         winnerId: null,
+        comments: null,
         collectionId: 1,
         game: {
           id: 1,
@@ -334,6 +340,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -405,6 +412,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -476,6 +484,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -606,6 +615,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -690,6 +700,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -774,6 +785,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1072,6 +1084,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1197,6 +1210,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1325,6 +1339,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: null,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1416,6 +1431,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: null,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1509,6 +1525,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1600,6 +1617,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1691,6 +1709,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1782,6 +1801,7 @@ describe('LegacyController', () => {
         coverArtOverride: null,
         winnerId: null,
         collectionId: 1,
+        comments: null,
         game: {
           id: 1,
           name: 'Test Game',
@@ -1884,6 +1904,7 @@ describe('LegacyController', () => {
           coverArtOverride: null,
           winnerId: null,
           collectionId: 1,
+          comments: null,
           game: {
             id: 1,
             name: 'Test Game',
@@ -1922,6 +1943,7 @@ describe('LegacyController', () => {
           gameId: 1,
           barcode: '*00001*',
           barcodeLabel: '1',
+          comments: null,
           dateAdded: new Date(),
           winnable: true,
           dateRetired: null,
@@ -1961,6 +1983,7 @@ describe('LegacyController', () => {
           coverArtOverride: null,
           winnerId: null,
           collectionId: 1,
+          comments: null,
           game: {
             id: 1,
             name: 'Test Game',
@@ -1999,6 +2022,7 @@ describe('LegacyController', () => {
           gameId: 1,
           barcode: '*00001*',
           barcodeLabel: '1',
+          comments: null,
           dateAdded: new Date(),
           winnable: true,
           dateRetired: null,

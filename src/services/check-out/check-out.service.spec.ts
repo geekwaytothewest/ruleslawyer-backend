@@ -36,6 +36,7 @@ describe('CheckOutService', () => {
         barcode: '*000001*',
         collectionId: 1,
         winnerId: null,
+        comments: null,
         checkOuts: [
           {
             id: 1,
@@ -147,6 +148,7 @@ describe('CheckOutService', () => {
         barcode: '*000001*',
         collectionId: 1,
         winnerId: null,
+        comments: null,
         checkOuts: [
           {
             id: 1,
@@ -207,6 +209,7 @@ describe('CheckOutService', () => {
         barcodeLabel: '1',
         barcode: '*000001*',
         collectionId: 1,
+        comments: null,
         winnerId: null,
         checkOuts: [
           {
@@ -240,6 +243,7 @@ describe('CheckOutService', () => {
         barcode: '*000001*',
         collectionId: 1,
         winnerId: null,
+        comments: null,
         checkOuts: [
           {
             id: 1,
@@ -302,6 +306,7 @@ describe('CheckOutService', () => {
         barcode: '*000001*',
         collectionId: 1,
         winnerId: null,
+        comments: null,
         checkOuts: [
           {
             id: 1,
@@ -336,6 +341,7 @@ describe('CheckOutService', () => {
         barcodeLabel: '1',
         barcode: '*000001*',
         collectionId: 1,
+        comments: null,
         winnerId: null,
         checkOuts: [
           {
@@ -389,6 +395,7 @@ describe('CheckOutService', () => {
         winnerId: null,
         checkOuts: [],
         organizationId: 1,
+        comments: null,
       };
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
