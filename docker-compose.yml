@@ -12,7 +12,7 @@ services:
       - .env
 
   postgres:
-    image: postgres:15.3
+    image: postgres:14.9
     container_name: ruleslawyer-db
     restart: always
     ports:
