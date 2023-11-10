@@ -42,8 +42,6 @@ $ npm install
 $ npx prisma migrate dev
 ```
 
-Join the Geekway Postman
-
 ## Running the app
 
 ```bash
