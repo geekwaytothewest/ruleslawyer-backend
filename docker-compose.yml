@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: ruleslawyer-service
+    container_name: ruleslawyer-backend
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,6 +10,15 @@ services:
       - postgres
     env_file:
       - .env
+
+  admin:
+    container_name: ruleslawyer-admin
+    build:
+      context: ../frontends/board-game-admin
+    ports:
+      - 8081:80
+    env_file:
+      - ../frontends/board-game-admin/.env
 
   postgres:
     image: postgres:14.9
