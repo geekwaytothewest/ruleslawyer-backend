@@ -24,28 +24,25 @@ DATABASE_URL=
 AUTH0_ISSUER_URL=
 AUTH0_AUDIENCE=
 FASTIFY_PORT=
-ORIGIN_URL1=
-ORIGIN_URL2=
+ADMIN_CLIENT_ORIGIN=
+LIBRARIAN_CLIENT_ORIGIN=
+PLAY_AND_WIN_CLIENT_ORIGIN=
 ```
 
 Set the Database URL based on your PostgreSQL connection string
 
 Set your Auth0 API data in Issuer URL and Audience
 
-Choose a port to run Fastify on (Ex: 3000)
+Choose a port to run Fastify on (Ex: 8080)
 
-Set the Origin URLs to match the front ends (Ex: http://localhost:3000)
+Set the Origin URLs to match the front ends (Ex: http://localhost:8081)
 
 ```bash
 $ npm install
 $ npx prisma migrate dev
 ```
 
-Import the Postman collection
-
-Set auth variables in ruleslawyer-backend
-
-Set TTE login in Import Attendees
+Join the Geekway Postman
 
 ## Running the app
 
@@ -65,7 +62,7 @@ $ npm run start:prod
 
 Postman:
 
-Authenticate using ruleslawyer-backend Authorization tab
+Authenticate using ruleslawyer backend Authorization tab
 
 Get Status
 
@@ -73,11 +70,9 @@ Get User
 
 Create Organization
 
+Create ConventionType
+
 Create Convention
-
-Import Attendees
-
-Import Collections
 
 ???
 
