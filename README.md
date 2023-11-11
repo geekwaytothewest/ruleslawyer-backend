@@ -6,7 +6,7 @@ Geekawy to the West Rules Lawyer is the premier play and win convention backend.
 Requirements:
 
   - Docker/Docker Compose
-  - Auth 0
+  - Auth0
 
 ## Installation
 
