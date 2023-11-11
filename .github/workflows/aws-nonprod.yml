@@ -46,15 +46,21 @@ permissions:
 
 jobs:
   check:
-    name: Check Branch
     runs-on: ubuntu-latest
     steps:
-      - name: Exit if not on main branch
-        if: github.base_ref != 'refs/heads/main'
-        uses: actions/github-script@v6
-        with:
-          script: |
-              core.setFailed('Not main branch!')
+    - name: checkout source code
+      uses: actions/checkout@v1
+    - name: Get Branch
+      run: |
+        raw=$(git branch -r --contains ${{ github.ref }})
+        branch=${raw/origin\/}
+        echo ::set-env name=BRANCH::$branch
+    - name: Exit if not on main branch
+      if: ${{ env.BRANCH }} != 'refs/heads/main'
+      uses: actions/github-script@v6
+      with:
+        script: |
+            core.setFailed('Not main branch!')
 
   deploy:
     needs: check
