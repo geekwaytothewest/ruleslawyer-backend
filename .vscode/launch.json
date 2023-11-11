@@ -12,7 +12,8 @@
         "port": 9229,
         "restart": true,
         "stopOnEntry": false,
-        "protocol": "inspector"
+        "protocol": "inspector",
+        "remoteRoot": "/usr/src/app",
       },
       {
         "name": "Debug Jest Tests",

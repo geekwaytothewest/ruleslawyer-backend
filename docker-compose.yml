@@ -1,15 +1,51 @@
 services:
-  app:
-    container_name: ruleslawyer-service
+  backend:
+    container_name: ruleslawyer-backend
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - 8080:8080
+      - 9229:9229
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    working_dir: /usr/src/app
+    command: npm run start:migate:debug
+
+  admin:
+    container_name: ruleslawyer-admin
+    build:
+      context: ../frontends/board-game-admin
+    ports:
+      - 8081:80
+    env_file:
+      - ../frontends/board-game-admin/.env
+
+  librarian:
+    container_name: ruleslawyer-librarian
+    build:
+      context: ../frontends/librarian
+    ports:
+      - 8082:80
+    env_file:
+      - ../frontends/librarian/.env
+
+  play:
+    container_name: ruleslawyer-play
+    build:
+      context: ../frontends/play-prize-entry
+    ports:
+      - 8083:80
+    env_file:
+      - ../frontends/play-prize-entry/.env
 
   postgres:
     image: postgres:14.9
@@ -21,6 +57,11 @@ services:
       - .env
     volumes:
       - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U geekway"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres:
