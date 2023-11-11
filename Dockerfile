@@ -1,14 +1,10 @@
 FROM node:20 AS builder
 
-WORKDIR /app
-
-COPY package*.json ./
-COPY prisma ./prisma/
-RUN npx prisma generate
-
-RUN npm install
+WORKDIR /usr/src/app
 
 COPY . .
+
+RUN npm install
 
 RUN npm run build
 

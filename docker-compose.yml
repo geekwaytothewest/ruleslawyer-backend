@@ -3,6 +3,7 @@ services:
     container_name: ruleslawyer-backend
     build:
       context: .
+      target: development
       dockerfile: Dockerfile
     ports:
       - 8080:8080
@@ -15,12 +16,10 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - "/app/node_modules"
-      - "./:/app"
-    command:
-     - npm
-     - run
-     - start:debug
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    working_dir: /usr/src/app
+    command: npm run start:migate:debug
 
   admin:
     container_name: ruleslawyer-admin
