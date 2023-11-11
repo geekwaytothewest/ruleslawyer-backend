@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Exit if not on main branch
-        if: github.ref != 'refs/heads/main'
+        if: github.base_ref != 'refs/heads/main'
         uses: actions/github-script@v6
         with:
           script: |
