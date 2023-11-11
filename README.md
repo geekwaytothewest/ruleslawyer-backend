@@ -5,11 +5,8 @@ Geekawy to the West Rules Lawyer is the premier play and win convention backend.
 
 Requirements:
 
-  Node v18.18.0
-
-  PostgreSQL 14.9
-
-  Auth0
+  - Docker/Docker Compose
+  - Auth0
 
 ## Installation
 
