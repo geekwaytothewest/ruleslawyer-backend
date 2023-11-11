@@ -13,68 +13,16 @@ Requirements:
 
 ## Installation
 
-Setup PostgreSQL
+Git clone/pull this repository as well as the frontends repository into the same directory
 
-Git clone/pull repository
+Ex: ./git/ruleslawyer-backend
+    ./git/frontends
 
-Create .env file with the following contents:
-
-```
-DATABASE_URL=
-AUTH0_ISSUER_URL=
-AUTH0_AUDIENCE=
-FASTIFY_PORT=
-ADMIN_CLIENT_ORIGIN=
-LIBRARIAN_CLIENT_ORIGIN=
-PLAY_AND_WIN_CLIENT_ORIGIN=
-```
-
-Set the Database URL based on your PostgreSQL connection string
-
-Set your Auth0 API data in Issuer URL and Audience
-
-Choose a port to run Fastify on (Ex: 8080)
-
-Set the Origin URLs to match the front ends (Ex: http://localhost:8081)
+Create .env file based on .env.template in each project (backend + frontend x 3)
 
 ```bash
-$ npm install
-$ npx prisma migrate dev
+$ docker compose up
 ```
-
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# debug mode
-$ npm run start:debug
-
-# production mode
-$ npm run start:prod
-```
-
-Postman:
-
-Authenticate using ruleslawyer backend Authorization tab
-
-Get Status
-
-Get User
-
-Create Organization
-
-Create ConventionType
-
-Create Convention
-
-???
-
-Profit
 
 ## Test
 
@@ -91,7 +39,9 @@ $ npm run test:cov
 
 ## Stay in touch
 
-- Author - [Mattie Schraeder](mailto:mattie@geekway.com)
+- Contributors
+  - [Mattie Schraeder](mailto:mattie@geekway.com)
+  - [Libby Swanger](mailto:libby.swanger@gmail.com)
 - Website - [https://geekway.com](https://geekway.com/)
 
 ## License
