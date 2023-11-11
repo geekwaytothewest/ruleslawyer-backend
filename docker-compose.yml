@@ -6,11 +6,21 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
+      - 9229:9229
     depends_on:
       postgres:
         condition: service_healthy
     env_file:
       - .env
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - "/app/node_modules"
+      - "./:/app"
+    command:
+     - npm
+     - run
+     - start:debug
 
   admin:
     container_name: ruleslawyer-admin
