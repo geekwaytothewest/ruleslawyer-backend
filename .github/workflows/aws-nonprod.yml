@@ -51,7 +51,7 @@ jobs:
     steps:
       - name: Exit if not on main branch
         if: github.ref != 'refs/heads/main'
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         with:
           script: |
               core.setFailed('Not main branch!')
