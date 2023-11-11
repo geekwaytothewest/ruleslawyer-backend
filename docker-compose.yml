@@ -7,7 +7,8 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
 
@@ -30,6 +31,11 @@ services:
       - .env
     volumes:
       - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres:
