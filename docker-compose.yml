@@ -19,6 +19,8 @@ services:
       - /usr/src/app/node_modules
     working_dir: /usr/src/app
     command: npm run start:migate:debug
+    stdin_open: true
+    tty: true
 
   admin:
     container_name: ruleslawyer-admin
