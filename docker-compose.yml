@@ -1,9 +1,8 @@
 services:
-  app:
+  backend:
     container_name: ruleslawyer-backend
     build:
       context: .
-      target: development
       dockerfile: Dockerfile
     ports:
       - 8080:8080
