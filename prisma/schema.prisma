@@ -114,6 +114,8 @@ model ConventionType {
   organization   Organization @relation(fields: organizationId, references: [id])
   organizationId Int
   Convention     Convention[]
+
+  @@unique([name, organizationId])
 }
 
 model RegistrationDate {
@@ -235,4 +237,6 @@ model Convention {
   users                      UserConventionPermissions[]
   attendees                  Attendee[]
   tteConventionId            String?
+
+  @@unique([name, organizationId])
 }
