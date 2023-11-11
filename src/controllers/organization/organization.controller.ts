@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Req,
@@ -188,5 +189,19 @@ export class OrganizationController {
       conventionTypeData,
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Get(':id/conventionType')
+  async getConventionTypes(
+    @Param('id') id: number,
+  ): Promise<ConventionType[] | void> {
+    return this.conventionTypeService.conventionTypes(Number(id), this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Get(':id/conventions')
+  async getConventions(@Param('id') id: number): Promise<Convention[] | void> {
+    return this.conventionService.conventions(Number(id), this.ctx);
   }
 }
