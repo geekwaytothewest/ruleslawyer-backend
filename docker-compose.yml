@@ -30,6 +30,15 @@ services:
     env_file:
       - ../frontends/librarian/.env
 
+  play:
+    container_name: ruleslawyer-play
+    build:
+      context: ../frontends/play-prize-entry
+    ports:
+      - 8083:80
+    env_file:
+      - ../frontends/play-prize-entry/.env
+
   postgres:
     image: postgres:14.9
     container_name: ruleslawyer-db
