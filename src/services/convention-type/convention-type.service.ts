@@ -23,4 +23,19 @@ export class ConventionTypeService {
       return Promise.reject(ex);
     }
   }
+
+  async conventionTypes(
+    organizationId: number,
+    ctx: Context,
+  ): Promise<ConventionType[]> {
+    try {
+      return ctx.prisma.conventionType.findMany({
+        where: {
+          organizationId: organizationId,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
 }

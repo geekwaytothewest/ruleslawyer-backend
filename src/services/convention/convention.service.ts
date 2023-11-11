@@ -281,7 +281,7 @@ export class ConventionService {
     ctx: Context,
   ) {
     try {
-      return await this.checkOutService.checkOut(
+      return this.checkOutService.checkOut(
         collectionId,
         copyBarcode,
         id,
@@ -289,6 +289,18 @@ export class ConventionService {
         false,
         ctx,
       );
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async conventions(organizationId: number, ctx: Context) {
+    try {
+      return ctx.prisma.convention.findMany({
+        where: {
+          organizationId: organizationId,
+        },
+      });
     } catch (ex) {
       return Promise.reject(ex);
     }

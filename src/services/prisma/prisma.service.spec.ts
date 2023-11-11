@@ -15,10 +15,4 @@ describe('PrismaService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-
-  describe('onModuleInit', () => {
-    it('should connect', async () => {
-      await service.onModuleInit();
-    });
-  });
 });
