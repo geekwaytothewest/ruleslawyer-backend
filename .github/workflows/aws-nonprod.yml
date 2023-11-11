@@ -45,17 +45,19 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  check:
     name: Check Branch
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
       - name: Exit if not on main branch
         if: github.ref != 'refs/heads/main'
-        run: exit 1
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('Not main branch!')
 
   deploy:
-    needs: build
+    needs: check
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
