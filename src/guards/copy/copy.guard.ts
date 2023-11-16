@@ -76,7 +76,7 @@ export class CopyGuard implements CanActivate {
     }
 
     const users = organization?.users?.filter(
-      (u) => u.id === user.id && u.admin,
+      (u) => u.userId === user.id && u.admin,
     );
 
     if (!users) {

@@ -52,7 +52,7 @@ export class OrganizationGuard implements CanActivate {
       return true;
     }
 
-    if (org?.users?.filter((u) => u.id === user.id && u.admin).length > 0) {
+    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
       return true;
     }
 

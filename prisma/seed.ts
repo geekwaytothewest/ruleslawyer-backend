@@ -48,6 +48,29 @@ async function main() {
     },
   });
 
+  const kellie = await prisma.user.upsert({
+    where: {
+      email: 'kelliedlynch@gmail.com',
+    },
+    update: {},
+    create: {
+      email: 'kelliedlynch@gmail.com',
+      name: 'Kellie Lynch',
+      username: 'kelliedlynch',
+      superAdmin: true,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'They/Them',
+          },
+          where: {
+            pronouns: 'They/Them',
+          },
+        },
+      },
+    },
+  });
+
   const geekway = await prisma.organization.upsert({
     where: {
       name: 'Geekway to the West',
@@ -57,11 +80,21 @@ async function main() {
       name: 'Geekway to the West',
       ownerId: mattie.id,
       users: {
-        create: {
-          userId: libby.id,
-          admin: true,
-          geekGuide: false,
-          readOnly: false,
+        createMany: {
+          data: [
+            {
+              userId: libby.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+            {
+              userId: kellie.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+          ],
         },
       },
     },
@@ -164,6 +197,12 @@ async function main() {
             },
             {
               userId: libby.id,
+              admin: true,
+              geekGuide: false,
+              attendee: true,
+            },
+            {
+              userId: kellie.id,
               admin: true,
               geekGuide: false,
               attendee: true,
