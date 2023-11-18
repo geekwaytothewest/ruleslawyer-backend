@@ -17,6 +17,7 @@ COPY --from=builder /usr/src/app/prisma ./prisma/
 
 RUN echo $(ls)
 RUN cd dist && echo $(ls)
+RUN cd src && echo $(ls)
 
 EXPOSE 3000
 CMD ["npm", "run", "start:migrate:prod"]
