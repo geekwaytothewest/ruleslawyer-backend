@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 env:
   ECR_REPOSITORY: ruleslawyer-backend
-  ECS_SERVICE: rules-lawyer-backend
+  ECS_SERVICE: ruleslawyer-backend
   ECS_CLUSTER: geekway-nonprod
   ECS_TASK_DEFINITION: .aws/taskdefinition-nonprod.json
   CONTAINER_NAME: ruleslawyer-backend
