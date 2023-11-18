@@ -15,8 +15,6 @@ Git clone/pull this repository as well as the frontends repository into the same
 Ex: ./git/ruleslawyer-backend
     ./git/frontends
 
-Switch the frontends branch to New-Backend
-
 Create .env file based on .env.template in each project (backend + frontend x 3)
 
 If you haven't already, add yourself to prisma/seed.ts
