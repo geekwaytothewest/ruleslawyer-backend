@@ -27,7 +27,7 @@ services:
       context: ../frontends/board-game-admin
       dockerfile: Dockerfile
     ports:
-      - 8081:80
+      - 8081:8081
     env_file:
       - ../frontends/board-game-admin/.env
 
@@ -37,7 +37,7 @@ services:
       context: ../frontends/librarian
       dockerfile: Dockerfile
     ports:
-      - 8082:80
+      - 8082:8082
     env_file:
       - ../frontends/librarian/.env
 
@@ -47,7 +47,7 @@ services:
       context: ../frontends/play-prize-entry
       dockerfile: Dockerfile
     ports:
-      - 8083:80
+      - 8083:8083
     env_file:
       - ../frontends/play-prize-entry/.env
 
