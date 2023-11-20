@@ -19,5 +19,5 @@ RUN echo $(ls)
 RUN cd dist && echo $(ls)
 RUN cd dist/src && echo $(ls)
 
-EXPOSE 3000
+EXPOSE 8080
 CMD ["npm", "run", "start:migrate:prod"]
