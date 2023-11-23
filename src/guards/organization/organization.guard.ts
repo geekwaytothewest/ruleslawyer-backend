@@ -25,7 +25,6 @@ export class OrganizationGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
-    this.logger.log(context);
     const user = context.getArgByIndex(0).user?.user;
     let orgId = context.getArgByIndex(0).params?.id;
 
