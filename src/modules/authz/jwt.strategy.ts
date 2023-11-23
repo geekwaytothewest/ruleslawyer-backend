@@ -1,6 +1,6 @@
 // src/authz/jwt.strategy.ts
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
@@ -14,6 +14,7 @@ dotenv.config();
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
   ctx: Context;
+  private readonly logger = new Logger('jwtAuth');
 
   constructor(
     private readonly userService: UserService,
@@ -39,6 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
   }
 
   async validate(payload: any) {
+    this.logger.log(payload.user_email);
     if (!payload.user_email) {
       throw new UnauthorizedException();
     }
