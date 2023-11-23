@@ -33,14 +33,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
       issuer: `${process.env.AUTH0_ISSUER_URL}`,
       algorithms: ['RS256'],
     });
-
+    this.logger.log(`${process.env.AUTH0_ISSUER_URL}`);
     this.ctx = {
       prisma: prismaService,
     };
   }
 
   async validate(payload: any) {
-    this.logger.log(payload.user_email);
     if (!payload.user_email) {
       throw new UnauthorizedException();
     }
