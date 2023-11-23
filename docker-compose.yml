@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8080:80
+      - 8080:8080
       - 9229:9229
     depends_on:
       postgres:
@@ -47,7 +47,7 @@ services:
       context: ../frontends/play-prize-entry
       dockerfile: Dockerfile
     ports:
-      - 8083:8083
+      - 8083:80
     env_file:
       - ../frontends/play-prize-entry/.env
 
