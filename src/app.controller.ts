@@ -3,7 +3,7 @@ import { UserService } from './services/user/user.service';
 import { Context } from './services/prisma/context';
 import { PrismaService } from './services/prisma/prisma.service';
 
-@Controller()
+@Controller('api')
 export class AppController {
   ctx: Context;
 
@@ -16,7 +16,7 @@ export class AppController {
     };
   }
 
-  @Get('/api/status')
+  @Get('status')
   async status() {
     try {
       const userCount = await this.userService.getUserCount(this.ctx);
