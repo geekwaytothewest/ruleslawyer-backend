@@ -56,7 +56,7 @@ export class PrizeEntryGuard implements CanActivate {
       convention?.playAndWinCollectionId === Number(collectionId)
     ) {
       const users = convention?.users?.filter(
-        (u) => u.id === user.id && (u.admin || u.geekGuide || u.attendee),
+        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.attendee),
       );
 
       if (users && users.length > 0) {
@@ -66,7 +66,7 @@ export class PrizeEntryGuard implements CanActivate {
 
     if (!collectionId && convention?.playAndWinCollectionId === null) {
       const users = convention?.users?.filter(
-        (u) => u.id === user.id && (u.admin || u.geekGuide || u.attendee),
+        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.attendee),
       );
 
       if (users && users.length > 0) {
