@@ -6,7 +6,12 @@ import {
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ExecutionContext,
+  NotFoundException,
+} from '@nestjs/common';
+import { createMock } from '@golevelup/ts-jest';
 
 describe('LegacyController', () => {
   let controller: LegacyController;
@@ -844,7 +849,23 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
 
-      const bigResponse = await controller.getAttendees(1, '');
+      const mockExecutionContext = createMock<ExecutionContext>({
+        getArgByIndex() {
+          return {
+            user: {
+              user: {
+                id: 1,
+              },
+            },
+          };
+        },
+      });
+
+      const bigResponse = await controller.getAttendees(
+        1,
+        '',
+        mockExecutionContext,
+      );
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
     });
@@ -875,7 +896,23 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
 
-      const bigResponse = await controller.getAttendees(1, 'asdf');
+      const mockExecutionContext = createMock<ExecutionContext>({
+        getArgByIndex() {
+          return {
+            user: {
+              user: {
+                id: 1,
+              },
+            },
+          };
+        },
+      });
+
+      const bigResponse = await controller.getAttendees(
+        1,
+        'asdf',
+        mockExecutionContext,
+      );
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
     });

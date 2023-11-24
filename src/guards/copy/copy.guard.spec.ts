@@ -70,7 +70,8 @@ describe('CopyGuard', () => {
       ownerId: 1,
       users: [
         {
-          id: 2,
+          id: 1,
+          userId: 2,
           admin: true,
         },
       ],
@@ -122,7 +123,8 @@ describe('CopyGuard', () => {
       ownerId: 1,
       users: [
         {
-          id: 2,
+          id: 1,
+          userId: 2,
           admin: true,
         },
       ],
@@ -211,7 +213,8 @@ describe('CopyGuard', () => {
       ownerId: 1,
       users: [
         {
-          id: 2,
+          id: 1,
+          userId: 1,
           admin: true,
         },
       ],

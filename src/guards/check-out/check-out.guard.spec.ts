@@ -143,6 +143,7 @@ describe('CheckOutGuard', () => {
         users: [
           {
             id: 1,
+            userId: 2,
             admin: true,
           },
         ],
@@ -236,6 +237,7 @@ describe('CheckOutGuard', () => {
         users: [
           {
             id: 1,
+            userId: 2,
             geekGuide: true,
           },
         ],
@@ -285,6 +287,7 @@ describe('CheckOutGuard', () => {
         users: [
           {
             id: 1,
+            userId: 2,
             geekGuide: true,
           },
         ],
@@ -333,7 +336,8 @@ describe('CheckOutGuard', () => {
         tteConventionId: 'not real',
         users: [
           {
-            id: 2,
+            id: 1,
+            userId: 2,
             geekGuide: true,
           },
         ],
@@ -409,7 +413,8 @@ describe('CheckOutGuard', () => {
         name: 'Geekway to the Test',
         users: [
           {
-            id: 2,
+            id: 1,
+            userId: 2,
             geekGuide: true,
           },
         ],
@@ -471,7 +476,8 @@ describe('CheckOutGuard', () => {
         name: 'Geekway to the Test',
         users: [
           {
-            id: 2,
+            id: 1,
+            userId: 2,
             admin: true,
           },
         ],

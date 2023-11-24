@@ -70,6 +70,7 @@ describe('ConventionGuard', () => {
       users: [
         {
           id: 1,
+          userId: 1,
           admin: true,
         },
       ],
@@ -118,6 +119,7 @@ describe('ConventionGuard', () => {
       users: [
         {
           id: 1,
+          userId: 1,
           admin: true,
         },
       ],
