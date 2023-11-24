@@ -1,0 +1,17 @@
+name: Run Unit Tests before Merge
+
+on:
+  pull_request:
+  merge_group:
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: NPM Install
+        run: npm install
+
+      - name: Unit Test
+        run: npm run test
