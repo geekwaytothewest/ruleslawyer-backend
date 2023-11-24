@@ -12,8 +12,8 @@ Requirements:
 
 Git clone/pull this repository as well as the frontends repository into the same directory
 
-Ex: ./git/ruleslawyer-backend
-    ./git/frontends
+Ex: ./git/geekway/ruleslawyer-backend
+    ./git/geekway/frontends
 
 Create .env file based on .env.template in each project (backend + frontend x 3)
 
