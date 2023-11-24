@@ -28,9 +28,9 @@ $ docker compose up
 The backend will be listening on: localhost:8080
 
 The frontends will be listening on:
-  - admin: localhost:8081
-  - librarian: localhost:8082
-  - play and win: localhost:8083
+  - admin: http://localhost:8081/admin
+  - librarian: http://localhost:8082/librarian
+  - play and win: http://localhost:8083/playandwin
 
 The database will be listening on: localhost:5432
 
