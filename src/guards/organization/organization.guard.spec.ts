@@ -55,6 +55,7 @@ describe('OrganizationGuard', () => {
       users: [
         {
           id: 1,
+          userId: 1,
           admin: true,
         },
       ],
@@ -87,7 +88,8 @@ describe('OrganizationGuard', () => {
       name: 'Geekway to the Test',
       users: [
         {
-          id: 2,
+          id: 1,
+          userId: 2,
           admin: true,
         },
       ],

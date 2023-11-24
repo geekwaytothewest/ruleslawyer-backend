@@ -99,6 +99,7 @@ describe('CollectionGuard', () => {
       users: [
         {
           id: 1,
+          userId: 1,
           admin: true,
         },
       ],
@@ -137,7 +138,8 @@ describe('CollectionGuard', () => {
       name: 'Geekway to the Test',
       users: [
         {
-          id: 2,
+          id: 1,
+          userId: 2,
           admin: true,
         },
       ],
@@ -177,6 +179,7 @@ describe('CollectionGuard', () => {
       users: [
         {
           id: 1,
+          userId: 2,
           admin: true,
         },
       ],
@@ -216,7 +219,8 @@ describe('CollectionGuard', () => {
       name: 'Geekway to the Test',
       users: [
         {
-          id: 2,
+          id: 1,
+          userId: 2,
           admin: true,
         },
       ],
