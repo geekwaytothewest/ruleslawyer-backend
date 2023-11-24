@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ExecutionContext,
   Get,
   NotFoundException,
   Param,
@@ -29,6 +30,7 @@ import fastify = require('fastify');
 import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { PrizeEntryGuard } from 'src/guards/prize-entry/prize-entry.guard';
+import { UserConventionPermissionsService } from 'src/services/user-convention-permissions/user-convention-permissions.service';
 
 @Controller()
 export class LegacyController {
@@ -43,6 +45,7 @@ export class LegacyController {
     private readonly conventionService: ConventionService,
     private readonly organizationService: OrganizationService,
     private readonly gameService: GameService,
+    private readonly userConventionPermissionsService: UserConventionPermissionsService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -213,6 +216,7 @@ export class LegacyController {
   async getAttendees(
     @Param('conId') conId: number,
     @Query('search') search: string,
+    context: ExecutionContext,
   ) {
     let attendees =
       await this.attendeeService.attendeesWithPronounsAndBadgeTypes(
@@ -226,6 +230,23 @@ export class LegacyController {
           a.badgeName.toLowerCase().includes(search.toLowerCase()) ||
           a.badgeNumber === search,
       );
+    } else {
+      const user = context.getArgByIndex(0).user?.user;
+
+      const permissions =
+        await this.userConventionPermissionsService.getPermission(
+          {
+            userId_conventionId: {
+              userId: user.id,
+              conventionId: conId,
+            },
+          },
+          this.ctx,
+        );
+
+      if (permissions?.attendee) {
+        attendees = [];
+      }
     }
 
     return {

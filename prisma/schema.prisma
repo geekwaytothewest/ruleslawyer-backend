@@ -89,6 +89,8 @@ model UserConventionPermissions {
   admin        Boolean
   geekGuide    Boolean
   attendee     Boolean
+
+  @@unique([userId, conventionId])
 }
 
 model Organization {

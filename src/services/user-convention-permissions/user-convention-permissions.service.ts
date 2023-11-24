@@ -18,4 +18,17 @@ export class UserConventionPermissionsService {
       return Promise.reject(ex);
     }
   }
+
+  async getPermission(
+    where: Prisma.UserConventionPermissionsWhereUniqueInput,
+    ctx: Context,
+  ) {
+    try {
+      return ctx.prisma.userConventionPermissions.findUnique({
+        where: where,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
 }
