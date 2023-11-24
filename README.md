@@ -22,7 +22,7 @@ If you haven't already, add yourself to prisma/seed.ts
 ## Running the app
 
 ```bash
-$ docker compose up
+$ docker compose --profile all up
 ```
 
 The backend will be listening on: localhost:8080

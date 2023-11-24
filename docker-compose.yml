@@ -1,7 +1,6 @@
 services:
   backend:
-    profiles:
-      - backend
+    profiles: ["backend", "all"]
     container_name: ruleslawyer-backend
     build:
       context: .
@@ -24,7 +23,7 @@ services:
     tty: true
 
   admin:
-    profiles: ["frontends", "admin"]
+    profiles: ["frontends", "admin", "all"]
     container_name: ruleslawyer-admin
     build:
       context: ../frontends/board-game-admin
@@ -35,7 +34,7 @@ services:
       - ../frontends/board-game-admin/.env
 
   librarian:
-    profiles: ["frontends", "librarian"]
+    profiles: ["frontends", "librarian", "all"]
     container_name: ruleslawyer-librarian
     build:
       context: ../frontends/librarian
@@ -46,7 +45,7 @@ services:
       - ../frontends/librarian/.env
 
   playandwin:
-    profiles: ["frontends", "playandwin"]
+    profiles: ["frontends", "playandwin", "all"]
     container_name: ruleslawyer-playandwin
     build:
       context: ../frontends/play-prize-entry
@@ -57,7 +56,7 @@ services:
       - ../frontends/play-prize-entry/.env
 
   postgres:
-    profiles: ["backend", "db"]
+    profiles: ["backend", "db", "all"]
     image: postgres:14.9
     container_name: ruleslawyer-db
     restart: always
