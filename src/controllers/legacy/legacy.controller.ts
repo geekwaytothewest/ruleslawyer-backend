@@ -28,6 +28,7 @@ import { OrganizationService } from '../../services/organization/organization.se
 import fastify = require('fastify');
 import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
+import { PrizeEntryGuard } from 'src/guards/prize-entry/prize-entry.guard';
 
 @Controller()
 export class LegacyController {
@@ -207,7 +208,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @Get('org/:orgId/con/:conId/attendees')
   async getAttendees(
     @Param('conId') conId: number,
@@ -918,7 +919,7 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @Get('org/:orgId/con/:conId/checkouts')
   async getPrizeEntries(@Query('badgeId') badgeId: string) {
     const prizeEntries = await this.checkOutService.getAttendeePrizeEntries(
@@ -955,7 +956,7 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @Post('org/:orgId/con/:conId/plays')
   async submitPrizeEntry(
     @Body()

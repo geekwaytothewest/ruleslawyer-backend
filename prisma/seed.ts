@@ -71,11 +71,95 @@ async function main() {
     },
   });
 
+  const guide = await prisma.user.upsert({
+    where: {
+      email: 'guide@geekway.com',
+    },
+    update: {},
+    create: {
+      email: 'guide@geekway.com',
+      name: 'Geek Guide',
+      username: 'guide',
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'They/Them',
+          },
+          where: {
+            pronouns: 'They/Them',
+          },
+        },
+      },
+    },
+  });
+
+  const kiosk = await prisma.user.upsert({
+    where: {
+      email: 'kiosk@geekway.com',
+    },
+    update: {},
+    create: {
+      email: 'kiosk@geekway.com',
+      name: 'P&N Kiosk',
+      username: 'kiosk',
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'They/Them',
+          },
+          where: {
+            pronouns: 'They/Them',
+          },
+        },
+      },
+    },
+  });
+
   const geekway = await prisma.organization.upsert({
     where: {
       name: 'Geekway to the West',
     },
-    update: {},
+    update: {
+      users: {
+        connectOrCreate: [
+          {
+            where: {
+              id: libby.id,
+            },
+            create: {
+              userId: libby.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+          },
+          {
+            where: {
+              id: kellie.id,
+            },
+            create: {
+              userId: kellie.id,
+              admin: false,
+              geekGuide: true,
+              readOnly: false,
+            },
+          },
+          {
+            where: {
+              id: guide.id,
+            },
+            create: {
+              userId: guide.id,
+              admin: false,
+              geekGuide: true,
+              readOnly: false,
+            },
+          },
+        ],
+      },
+    },
     create: {
       name: 'Geekway to the West',
       ownerId: mattie.id,
@@ -92,6 +176,12 @@ async function main() {
               userId: kellie.id,
               admin: true,
               geekGuide: false,
+              readOnly: false,
+            },
+            {
+              userId: guide.id,
+              admin: false,
+              geekGuide: true,
               readOnly: false,
             },
           ],
@@ -177,7 +267,56 @@ async function main() {
         organizationId: geekway.id,
       },
     },
-    update: {},
+    update: {
+      users: {
+        connectOrCreate: [
+          {
+            where: {
+              id: libby.id,
+            },
+            create: {
+              userId: libby.id,
+              admin: true,
+              geekGuide: false,
+              attendee: true,
+            },
+          },
+          {
+            where: {
+              id: kellie.id,
+            },
+            create: {
+              userId: kellie.id,
+              admin: false,
+              geekGuide: true,
+              attendee: true,
+            },
+          },
+          {
+            where: {
+              id: guide.id,
+            },
+            create: {
+              userId: guide.id,
+              admin: false,
+              geekGuide: true,
+              attendee: false,
+            },
+          },
+          {
+            where: {
+              id: kiosk.id,
+            },
+            create: {
+              userId: guide.id,
+              admin: false,
+              geekGuide: false,
+              attendee: true,
+            },
+          },
+        ],
+      },
+    },
     create: {
       name: 'Geekway Mini 2024',
       organizationId: geekway.id,
@@ -204,6 +343,18 @@ async function main() {
             {
               userId: kellie.id,
               admin: true,
+              geekGuide: false,
+              attendee: true,
+            },
+            {
+              userId: guide.id,
+              admin: false,
+              geekGuide: true,
+              attendee: true,
+            },
+            {
+              userId: kiosk.id,
+              admin: false,
               geekGuide: false,
               attendee: true,
             },

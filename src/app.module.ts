@@ -19,35 +19,35 @@ import { LegacyModule } from './modules/legacy/legacy.module';
 
 const routes = [
   {
-    path: 'user',
+    path: '/api/user',
     module: UserModule,
   },
   {
-    path: 'org',
+    path: '/api/org',
     module: OrganizationModule,
   },
   {
-    path: 'con',
+    path: '/api/con',
     module: ConventionModule,
   },
   {
-    path: 'userOrgPerm',
+    path: '/api/userOrgPerm',
     module: UserOrganizationPermissionsModule,
   },
   {
-    path: 'userConPerm',
+    path: '/api/userConPerm',
     module: UserConventionPermissionsModule,
   },
   {
-    path: 'game',
+    path: '/api/game',
     module: GameModule,
   },
   {
-    path: 'copy',
+    path: '/api/copy',
     module: CopyModule,
   },
   {
-    path: 'legacy',
+    path: '/api/legacy',
     module: LegacyModule,
   },
 ];

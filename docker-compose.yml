@@ -1,5 +1,6 @@
 services:
   backend:
+    profiles: ["backend", "all"]
     container_name: ruleslawyer-backend
     build:
       context: .
@@ -17,41 +18,45 @@ services:
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app
-    command: npm run start:migate:debug
+    command: npm run start:migate:seed:debug
     stdin_open: true
     tty: true
 
   admin:
+    profiles: ["frontends", "admin", "all"]
     container_name: ruleslawyer-admin
     build:
       context: ../frontends/board-game-admin
       dockerfile: Dockerfile
     ports:
-      - 8081:8081
+      - 8081:80
     env_file:
       - ../frontends/board-game-admin/.env
 
   librarian:
+    profiles: ["frontends", "librarian", "all"]
     container_name: ruleslawyer-librarian
     build:
       context: ../frontends/librarian
       dockerfile: Dockerfile
     ports:
-      - 8082:8082
+      - 8082:80
     env_file:
       - ../frontends/librarian/.env
 
-  play:
-    container_name: ruleslawyer-play
+  playandwin:
+    profiles: ["frontends", "playandwin", "all"]
+    container_name: ruleslawyer-playandwin
     build:
       context: ../frontends/play-prize-entry
       dockerfile: Dockerfile
     ports:
-      - 8083:8083
+      - 8083:80
     env_file:
       - ../frontends/play-prize-entry/.env
 
   postgres:
+    profiles: ["backend", "db", "all"]
     image: postgres:14.9
     container_name: ruleslawyer-db
     restart: always
