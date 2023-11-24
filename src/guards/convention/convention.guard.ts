@@ -43,7 +43,7 @@ export class ConventionGuard implements CanActivate {
       this.ctx,
     );
 
-    if (con?.users?.filter((u) => u.id === user.id && u.admin).length > 0) {
+    if (con?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
       return true;
     }
 
