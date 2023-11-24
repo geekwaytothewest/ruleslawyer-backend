@@ -34,6 +34,16 @@ The frontends will be listening on:
 
 The database will be listening on: localhost:5432
 
+## Using compose profiles
+
+Profiles available: backend, db, frontends, admin, librarian, playandwin
+
+Ex: only boot the requirements for the backend and admin
+
+```bash
+$ docker compose --profile backend --profile admin up
+```
+
 ## Test
 
 ```bash
