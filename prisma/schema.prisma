@@ -78,6 +78,8 @@ model UserOrganizationPermissions {
   admin          Boolean
   geekGuide      Boolean
   readOnly       Boolean
+
+  @@unique([userId, organizationId])
 }
 
 model UserConventionPermissions {

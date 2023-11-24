@@ -117,49 +117,34 @@ async function main() {
     },
   });
 
+  const mm = await prisma.user.upsert({
+    where: {
+      email: 'stu@miniaturemarket.com',
+    },
+    update: {},
+    create: {
+      email: 'stu@miniaturemarket.com',
+      name: 'Minature Market',
+      username: 'miniaturemarket',
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'They/Them',
+          },
+          where: {
+            pronouns: 'They/Them',
+          },
+        },
+      },
+    },
+  });
+
   const geekway = await prisma.organization.upsert({
     where: {
       name: 'Geekway to the West',
     },
-    update: {
-      users: {
-        connectOrCreate: [
-          {
-            where: {
-              id: libby.id,
-            },
-            create: {
-              userId: libby.id,
-              admin: true,
-              geekGuide: false,
-              readOnly: false,
-            },
-          },
-          {
-            where: {
-              id: kellie.id,
-            },
-            create: {
-              userId: kellie.id,
-              admin: false,
-              geekGuide: true,
-              readOnly: false,
-            },
-          },
-          {
-            where: {
-              id: guide.id,
-            },
-            create: {
-              userId: guide.id,
-              admin: false,
-              geekGuide: true,
-              readOnly: false,
-            },
-          },
-        ],
-      },
-    },
+    update: {},
     create: {
       name: 'Geekway to the West',
       ownerId: mattie.id,
@@ -180,6 +165,12 @@ async function main() {
             },
             {
               userId: guide.id,
+              admin: false,
+              geekGuide: true,
+              readOnly: false,
+            },
+            {
+              userId: mm.id,
               admin: false,
               geekGuide: true,
               readOnly: false,
@@ -309,9 +300,100 @@ async function main() {
               geekGuide: false,
               attendee: true,
             },
+            {
+              userId: mm.id,
+              admin: false,
+              geekGuide: false,
+              attendee: true,
+            },
           ],
         },
       },
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
+        userId: mattie.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mattie.id,
+      organizationId: geekway.id,
+      admin: true,
+      geekGuide: false,
+      readOnly: false,
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
+        userId: libby.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: libby.id,
+      organizationId: geekway.id,
+      admin: true,
+      geekGuide: false,
+      readOnly: false,
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
+        userId: kellie.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: kellie.id,
+      organizationId: geekway.id,
+      admin: true,
+      geekGuide: false,
+      readOnly: false,
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
+        userId: guide.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: guide.id,
+      organizationId: geekway.id,
+      admin: false,
+      geekGuide: true,
+      readOnly: false,
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
+        userId: mm.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mm.id,
+      organizationId: geekway.id,
+      admin: false,
+      geekGuide: true,
+      readOnly: false,
     },
   });
 
@@ -397,6 +479,23 @@ async function main() {
       admin: false,
       geekGuide: false,
       attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: mm.id,
+        conventionId: geekwayMini2024.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mm.id,
+      conventionId: geekwayMini2024.id,
+      admin: false,
+      geekGuide: true,
+      attendee: false,
     },
   });
 }
