@@ -29,8 +29,8 @@ import { OrganizationService } from '../../services/organization/organization.se
 import fastify = require('fastify');
 import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
-import { PrizeEntryGuard } from 'src/guards/prize-entry/prize-entry.guard';
-import { UserConventionPermissionsService } from 'src/services/user-convention-permissions/user-convention-permissions.service';
+import { PrizeEntryGuard } from '../../guards/prize-entry/prize-entry.guard';
+import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 
 @Controller()
 export class LegacyController {
