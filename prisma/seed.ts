@@ -24,6 +24,28 @@ async function main() {
       },
     },
   });
+  const matt = await prisma.user.upsert({
+    where: {
+      email: 'matt.dimmic@gmail.com',
+    },
+    update: {},
+    create: {
+      email: 'matt.dimmic@gmail.com',
+      name: 'Matt Dimmic',
+      username: 'matt.dimmic',
+      superAdmin: true,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'He/Him',
+          },
+          where: {
+            pronouns: 'He/Him',
+          },
+        },
+      },
+    },
+  });
 
   const libby = await prisma.user.upsert({
     where: {
@@ -140,6 +162,29 @@ async function main() {
     },
   });
 
+  const mark = await prisma.user.upsert({
+    where: {
+      email: 'maffoe@gmail.com',
+    },
+    update: {},
+    create: {
+      email: 'maffoe@gmail.com',
+      name: 'Mark Finefield',
+      username: 'mark.finefield',
+      superAdmin: true,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'He/Him',
+          },
+          where: {
+            pronouns: 'He/Him',
+          },
+        },
+      },
+    },
+  });
+
   const geekway = await prisma.organization.upsert({
     where: {
       name: 'Geekway to the West',
@@ -173,6 +218,18 @@ async function main() {
               userId: mm.id,
               admin: false,
               geekGuide: true,
+              readOnly: false,
+            },
+            {
+              userId: mark.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+            {
+              userId: matt.id,
+              admin: true,
+              geekGuide: false,
               readOnly: false,
             },
           ],
@@ -306,6 +363,18 @@ async function main() {
               geekGuide: false,
               attendee: true,
             },
+            {
+              userId: mark.id,
+              admin: true,
+              geekGuide: false,
+              attendee: true,
+            },
+            {
+              userId: matt.id,
+              admin: true,
+              geekGuide: false,
+              attendee: true,
+            },
           ],
         },
       },
@@ -322,6 +391,40 @@ async function main() {
     update: {},
     create: {
       userId: mattie.id,
+      organizationId: geekway.id,
+      admin: true,
+      geekGuide: false,
+      readOnly: false,
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
+        userId: matt.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: matt.id,
+      organizationId: geekway.id,
+      admin: true,
+      geekGuide: false,
+      readOnly: false,
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
+        userId: mark.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mark.id,
       organizationId: geekway.id,
       admin: true,
       geekGuide: false,
@@ -407,6 +510,40 @@ async function main() {
     update: {},
     create: {
       userId: mattie.id,
+      conventionId: geekwayMini2024.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: matt.id,
+        conventionId: geekwayMini2024.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: matt.id,
+      conventionId: geekwayMini2024.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: mark.id,
+        conventionId: geekwayMini2024.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mark.id,
       conventionId: geekwayMini2024.id,
       admin: true,
       geekGuide: false,
