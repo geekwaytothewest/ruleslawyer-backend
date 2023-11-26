@@ -232,23 +232,25 @@ export class LegacyController {
     } else {
       const user = request?.user?.user;
 
-      const permissions =
-        await this.userConventionPermissionsService.getPermission(
-          {
-            userId_conventionId: {
-              userId: Number(user.id),
-              conventionId: Number(conId),
+      if (user) {
+        const permissions =
+          await this.userConventionPermissionsService.getPermission(
+            {
+              userId_conventionId: {
+                userId: Number(user.id),
+                conventionId: Number(conId),
+              },
             },
-          },
-          this.ctx,
-        );
+            this.ctx,
+          );
 
-      if (
-        permissions?.attendee &&
-        !permissions.geekGuide &&
-        !permissions.admin
-      ) {
-        attendees = [];
+        if (
+          permissions?.attendee &&
+          !permissions.geekGuide &&
+          !permissions.admin
+        ) {
+          attendees = [];
+        }
       }
     }
 
