@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LegacyController } from './legacy.controller';
-import { LegacyModule } from '../../modules/legacy/legacy.module';
+import { LegacyModule } from modules/legacy/legacy.module';
 import {
   Context,
   MockContext,
