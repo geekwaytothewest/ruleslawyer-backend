@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  ExecutionContext,
   Get,
   NotFoundException,
   Param,
@@ -216,7 +215,7 @@ export class LegacyController {
   async getAttendees(
     @Param('conId') conId: number,
     @Query('search') search: string,
-    context: ExecutionContext,
+    @Req() request: any,
   ) {
     let attendees =
       await this.attendeeService.attendeesWithPronounsAndBadgeTypes(
@@ -231,20 +230,24 @@ export class LegacyController {
           a.badgeNumber === search,
       );
     } else {
-      const user = context.getArgByIndex(0).user?.user;
+      const user = request?.user?.user;
 
       const permissions =
         await this.userConventionPermissionsService.getPermission(
           {
             userId_conventionId: {
-              userId: user.id,
-              conventionId: conId,
+              userId: Number(user.id),
+              conventionId: Number(conId),
             },
           },
           this.ctx,
         );
 
-      if (permissions?.attendee) {
+      if (
+        permissions?.attendee &&
+        !permissions.geekGuide &&
+        !permissions.admin
+      ) {
         attendees = [];
       }
     }
