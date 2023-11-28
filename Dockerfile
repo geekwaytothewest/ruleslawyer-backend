@@ -1,4 +1,4 @@
-FROM node:20 AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /usr/src/app
 
@@ -8,7 +8,7 @@ RUN npm install
 
 RUN npm run build
 
-FROM node:20
+FROM node:20-slim
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
