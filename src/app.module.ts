@@ -78,6 +78,9 @@ export class AppModule implements NestModule {
 			.apply(LoggerMiddleware)
 			.forRoutes(
 				{
+					// TODO: UPDATE THIS!!!!!
+					// this will include the healthcheck endpoint, which gets pinged by the load balancer every couple seconds
+					// logging those would be expensive
 					path: '*',
 					method: RequestMethod.ALL
 				}
