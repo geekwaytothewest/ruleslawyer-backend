@@ -32,6 +32,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-fastify": "^10.2.6",
     "@prisma/client": "^5.3.1",
+    "ajv": "^6.9.1",
     "axios": "^1.5.1",
     "cloc": "^1.98.0-cloc",
     "csv": "^6.3.4",
@@ -42,7 +43,8 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.4.0",
