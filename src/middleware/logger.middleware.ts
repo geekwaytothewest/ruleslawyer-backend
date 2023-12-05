@@ -1,24 +1,29 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
-import { FastifyRequest, FastifyReply } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
+import { MiddlewareRequest, MiddlewareResponse } from './request.middleware';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-	use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {
-		const requestId = uuidv4();
+	private readonly logger = new Logger(LoggerMiddleware.name);
+	use(req: MiddlewareRequest, res: MiddlewareResponse['raw'], next: () => void) {
+		const traceId = uuidv4();
+		req.traceId = traceId;
+
 		const requestPayload = {
-			message: 'request',
-			urL: req.url,
-			requestId: requestId
+			message: 'application request',
+			url: req.originalUrl,
+			requestId: req.id,
+			traceId: traceId
 		};
 		const responsePayload = {
-			message: 'response',
-			requestId: requestId,
-			status: res.statusCode
+			message: 'application request',
+			requestId: req.id,
+			traceId: traceId,
+			statusCode: res.statusCode
 		};
 
-		Logger.log(requestPayload);
-		Logger.log(responsePayload);
+		this.logger.log(requestPayload);
+		this.logger.log(responsePayload);
     next();
   }
 }
