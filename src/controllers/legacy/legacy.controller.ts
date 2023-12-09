@@ -1111,7 +1111,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard)
   @Get('org/:orgId/con/:conId/games')
-  async getGames(@Param(':orgId') orgId: number) {
+  async getGames(@Param('orgId') orgId: number) {
     const games = await this.gameService.games(this.ctx);
     const copies = await this.copyService.searchCopies(
       {
