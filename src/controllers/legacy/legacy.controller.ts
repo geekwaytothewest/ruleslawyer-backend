@@ -1110,8 +1110,59 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('org/:orgId/con/:conId/games')
+  async getGames(@Param(':orgId') orgId: number) {
+    const games = await this.gameService.games(this.ctx);
+    const copies = await this.copyService.searchCopies(
+      {
+        organizationId: Number(orgId),
+      },
+      this.ctx,
+    );
+
+    return {
+      Errors: [],
+      Result: {
+        Games: games.map((m) => {
+          return {
+            ID: m.id,
+            Name: m.name,
+            Copies: copies
+              .filter((m) => m.gameId === m.id)
+              .map((c) => {
+                return {
+                  ID: c.barcodeLabel,
+                  IsCheckedOut:
+                    c.checkOuts.filter((co) => co.checkOut !== null).length > 0,
+                  Title: c.game.name,
+                  Winnable: c.winnable,
+                  Collection: {
+                    ID: c.collection?.id,
+                    Name: c.collection?.name,
+                    AllowWinning: c.collection?.allowWinning,
+                    Color: null,
+                  },
+                  CurrentCheckout: c.checkOuts.filter(
+                    (co) => co.checkOut === null,
+                  )[0],
+                  Game: {
+                    ID: c.game.id,
+                    Name: c.game.name,
+                    Copies: null,
+                  },
+                };
+              }),
+          };
+        }),
+      },
+    };
+  }
+
+  //This route is used by the legacy admin app's games page
+  //It was renamed to gameList to not interfere with the pnwpicker code which uses 'games' as its route
+  @UseGuards(JwtAuthGuard)
   @Get('org/:orgId/con/:conId/gameList')
-  async getGames() {
+  async getGameList() {
     return this.gameService.games(this.ctx);
   }
 
