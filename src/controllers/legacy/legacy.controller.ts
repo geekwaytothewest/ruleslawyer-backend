@@ -982,6 +982,45 @@ export class LegacyController {
     };
   }
 
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Get('org/:orgId/con/:conId/plays')
+  async getPlays(@Param('conId') conId: number) {
+    const plays = await this.checkOutService.getCheckOuts(conId, this.ctx);
+
+    return {
+      Errors: [],
+      Result: {
+        Plays: plays.map((p) => {
+          return {
+            ID: p.id,
+            CheckOutID: p.id,
+            GameID: p.Copy?.barcodeLabel,
+            GameName: p.Copy?.game.name,
+            Collection: {
+              ID: p.Copy?.collection?.id,
+              Name: p.Copy?.collection?.name,
+              AllowWinning: p.Copy?.collection?.allowWinning,
+              Color: null,
+            },
+            CheckOut: {
+              ID: p.id,
+              TimeOut: p.checkOut,
+              TimeIn: p.checkIn,
+            },
+            Players: p.players?.map((player) => {
+              return {
+                ID: player.attendeeId.toString(),
+                Name: player.attendee.badgeName,
+                WantsToWin: player.wantToWin,
+                Rating: player.rating,
+              };
+            }),
+          };
+        }),
+      },
+    };
+  }
+
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @Post('org/:orgId/con/:conId/plays')
   async submitPrizeEntry(

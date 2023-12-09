@@ -61,6 +61,28 @@ export class CheckOutService {
     }
   }
 
+  getCheckOuts(conId: number, ctx: Context) {
+    try {
+      return ctx.prisma.checkOut.findMany({
+        include: {
+          Copy: {
+            include: {
+              collection: true,
+              game: true,
+            },
+          },
+          players: {
+            include: {
+              attendee: true,
+            },
+          },
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
   async checkOut(
     collectionId: number,
     copyBarcode: string,
