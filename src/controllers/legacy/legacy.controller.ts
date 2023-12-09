@@ -1110,13 +1110,13 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('org/:orgId/con/:conId/games')
+  @Get('org/:orgId/con/:conId/gameList')
   async getGames() {
     return this.gameService.games(this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
-  @Put('org/:orgId/con/:conId/games/:gameId')
+  @Put('org/:orgId/con/:conId/gameList/:gameId')
   async updateGame(
     @Param('gameId') gameId: number,
     @Body()
