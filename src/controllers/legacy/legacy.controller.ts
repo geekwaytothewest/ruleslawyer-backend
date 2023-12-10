@@ -1123,12 +1123,12 @@ export class LegacyController {
     return {
       Errors: [],
       Result: {
-        Games: games.map((m) => {
+        Games: games.map((g) => {
           return {
-            ID: m.id,
-            Name: m.name,
+            ID: g.id,
+            Name: g.name,
             Copies: copies
-              .filter((m) => m.gameId === m.id)
+              .filter((c) => c.gameId === g.id)
               .map((c) => {
                 return {
                   ID: c.barcodeLabel,
