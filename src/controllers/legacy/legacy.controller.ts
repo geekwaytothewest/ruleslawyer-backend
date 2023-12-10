@@ -1002,7 +1002,7 @@ export class LegacyController {
               AllowWinning: p.Copy?.collection?.allowWinning,
               Color: null,
             },
-            CheckOut: {
+            Checkout: {
               ID: p.id,
               TimeOut: p.checkOut,
               TimeIn: p.checkIn,
