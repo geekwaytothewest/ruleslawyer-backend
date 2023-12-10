@@ -1009,7 +1009,7 @@ export class LegacyController {
             },
             Players: p.players?.map((player) => {
               return {
-                ID: player.attendeeId.toString(),
+                ID: player.attendee.badgeNumber.toString(),
                 Name: player.attendee.badgeName,
                 WantsToWin: player.wantToWin,
                 Rating: player.rating,
