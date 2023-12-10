@@ -994,7 +994,7 @@ export class LegacyController {
           return {
             ID: p.id,
             CheckoutID: p.id,
-            GameID: p.Copy?.barcodeLabel,
+            GameID: p.Copy?.gameId,
             GameName: p.Copy?.game.name,
             Collection: {
               ID: p.Copy?.collection?.id,
