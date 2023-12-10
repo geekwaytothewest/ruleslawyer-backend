@@ -993,7 +993,7 @@ export class LegacyController {
         Plays: plays.map((p) => {
           return {
             ID: p.id,
-            CheckOutID: p.id,
+            CheckoutID: p.id,
             GameID: p.Copy?.barcodeLabel,
             GameName: p.Copy?.game.name,
             Collection: {
