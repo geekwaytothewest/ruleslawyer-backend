@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
@@ -7,14 +7,15 @@ import { CopyService } from '../copy/copy.service';
 @Injectable()
 export class CollectionService {
   constructor(private readonly copyService: CopyService) {}
-
+	private readonly logger = new Logger(CollectionService.name);
   async collection(id: number, ctx: Context) {
     return await ctx.prisma.collection.findUnique({
       where: { id: Number(id) },
     });
   }
 
-  async collectionsByOrg(orgId: number, ctx: Context) {
+	async collectionsByOrg(orgId: number, ctx: Context) {
+		this.logger.log(`Getting collections for orgId=${orgId}`);
     return await ctx.prisma.collection.findMany({
       where: {
         organizationId: orgId,

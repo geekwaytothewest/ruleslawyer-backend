@@ -74,16 +74,17 @@ const routes = [
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer
-			.apply(LoggerMiddleware)
-			.forRoutes(
-				{
-					// TODO: UPDATE THIS!!!!!
-					// this will include the healthcheck endpoint, which gets pinged by the load balancer every couple seconds
-					// logging those would be expensive
-					path: '*',
-					method: RequestMethod.ALL
-				}
-			)
+		// consumer
+		// 	.apply(LoggerMiddleware)
+		// 	// don't log healthchecks
+		// 	.exclude(
+		// 		{path: 'api/status', method: RequestMethod.GET}
+		// 	)
+		// 	.forRoutes(
+		// 		{
+		// 			path: '*',
+		// 			method: RequestMethod.ALL
+		// 		}
+		// 	)
 	}
 }

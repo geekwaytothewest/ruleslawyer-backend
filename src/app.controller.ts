@@ -1,10 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { UserService } from './services/user/user.service';
 import { Context } from './services/prisma/context';
 import { PrismaService } from './services/prisma/prisma.service';
 
 @Controller('api')
 export class AppController {
+	private readonly logger = new Logger(AppController.name);
   ctx: Context;
 
   constructor(
@@ -17,7 +18,8 @@ export class AppController {
   }
 
   @Get('status')
-  async status() {
+	async status() {
+		this.logger.log(`Getting status`);
     try {
       const userCount = await this.userService.getUserCount(this.ctx);
 

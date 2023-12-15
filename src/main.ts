@@ -8,9 +8,13 @@ import multipart from '@fastify/multipart';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
+	const logger = new Logger();
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({logger: true}),
+    AppModule, 
+		new FastifyAdapter({ logger: true }),
+		{
+			logger: ['debug', 'error', 'fatal', 'log', 'warn']
+		}
   );
   await app.register(multipart);
   app.enableCors({
@@ -21,6 +25,6 @@ async function bootstrap() {
     ],
   });
   await app.listen(`${process.env.FASTIFY_PORT}`, '0.0.0.0');
-  Logger.log(`listening on: ${process.env.FASTIFY_PORT}`);
+  logger.log(`listening on: ${process.env.FASTIFY_PORT}`);
 }
 bootstrap();
