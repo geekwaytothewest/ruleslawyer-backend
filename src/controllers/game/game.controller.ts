@@ -33,6 +33,12 @@ export class GameController {
     return this.gameService.createGame(game, this.ctx);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getGames() {
+    return this.gameService.games(this.ctx);
+  }
+
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Put(':id')
   async updateGame(

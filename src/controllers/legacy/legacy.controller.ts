@@ -1064,6 +1064,45 @@ export class LegacyController {
     };
   }
 
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Get('org/:orgId/con/:conId/plays')
+  async getPlays(@Param('conId') conId: number) {
+    const plays = await this.checkOutService.getCheckOuts(conId, this.ctx);
+
+    return {
+      Errors: [],
+      Result: {
+        Plays: plays.map((p) => {
+          return {
+            ID: p.id,
+            CheckoutID: p.id,
+            GameID: p.Copy?.gameId,
+            GameName: p.Copy?.game.name,
+            Collection: {
+              ID: p.Copy?.collection?.id,
+              Name: p.Copy?.collection?.name,
+              AllowWinning: p.Copy?.collection?.allowWinning,
+              Color: null,
+            },
+            Checkout: {
+              ID: p.id,
+              TimeOut: p.checkOut,
+              TimeIn: p.checkIn,
+            },
+            Players: p.players?.map((player) => {
+              return {
+                ID: player.attendee.badgeNumber.toString(),
+                Name: player.attendee.badgeName,
+                WantsToWin: player.wantToWin,
+                Rating: player.rating,
+              };
+            }),
+          };
+        }),
+      },
+    };
+  }
+
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @Post('org/:orgId/con/:conId/plays')
   async submitPrizeEntry(
@@ -1162,13 +1201,68 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard)
   @Get('org/:orgId/con/:conId/games')
-	async getGames(@Req() request: any) {
-		this.logger.log(`Getting games; request.id=${request.id}`);
+	async getGames(@Param('orgId') orgId: number, @Req() request: any) {
+		this.logger.log(`Getting games for orgId=${orgId}; request.id=${request.id}`);
+		const games = await this.gameService.games(this.ctx);
+		this.logger.log(`${games?.length} games found for orgId=${orgId}; request.id=${request.id}`);
+		this.logger.log(`Getting copies for orgId=${orgId}`);
+    const copies = await this.copyService.searchCopies(
+      {
+        organizationId: Number(orgId),
+      },
+      this.ctx,
+		);
+		this.logger.log(`${copies?.length} copies found for orgId=${orgId}; request.id=${request.id}`);
+
+    return {
+      Errors: [],
+      Result: {
+        Games: games.map((g) => {
+          return {
+            ID: g.id,
+            Name: g.name,
+            Copies: copies
+              .filter((c) => c.gameId === g.id)
+              .map((c) => {
+                return {
+                  ID: c.barcodeLabel,
+                  IsCheckedOut:
+                    c.checkOuts.filter((co) => co.checkOut !== null).length > 0,
+                  Title: c.game.name,
+                  Winnable: c.winnable,
+                  Collection: {
+                    ID: c.collection?.id,
+                    Name: c.collection?.name,
+                    AllowWinning: c.collection?.allowWinning,
+                    Color: null,
+                  },
+                  CurrentCheckout: c.checkOuts.filter(
+                    (co) => co.checkOut === null,
+                  )[0],
+                  Game: {
+                    ID: c.game.id,
+                    Name: c.game.name,
+                    Copies: null,
+                  },
+                };
+              }),
+          };
+        }),
+      },
+    };
+  }
+
+  //This route is used by the legacy admin app's games page
+  //It was renamed to gameList to not interfere with the pnwpicker code which uses 'games' as its route
+  @UseGuards(JwtAuthGuard)
+  @Get('org/:orgId/con/:conId/gameList')
+	async getGameList(@Req() request: any) {
+		this.logger.log(`Getting game list; request.id=${request.id}`);
     return this.gameService.games(this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
-  @Put('org/:orgId/con/:conId/games/:gameId')
+  @Put('org/:orgId/con/:conId/gameList/:gameId')
   async updateGame(
     @Param('gameId') gameId: number,
     @Body()
