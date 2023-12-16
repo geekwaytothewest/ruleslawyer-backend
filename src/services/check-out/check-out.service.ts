@@ -3,7 +3,7 @@ import { CopyService } from '../copy/copy.service';
 import { Context } from '../prisma/context';
 import { AttendeeService } from '../attendee/attendee.service';
 import { Prisma } from '@prisma/client';
-import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
+import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 
 @Injectable()
 export class CheckOutService {

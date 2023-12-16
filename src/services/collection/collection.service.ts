@@ -3,7 +3,7 @@ import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
 import { CopyService } from '../copy/copy.service';
-import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
+import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger'
 
 @Injectable()
 export class CollectionService {
