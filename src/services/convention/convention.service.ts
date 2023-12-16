@@ -243,8 +243,8 @@ export class ConventionService {
           }),
         );
 
+				this.logger.log(`Syncing ${attendees?.length} attendees`);
 				for (const a of attendees) {
-					this.logger.log(`Syncing ${attendees?.length} attendees`);
           await this.attendeeService.syncAttendee(a, ctx);
         }
 				
