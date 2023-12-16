@@ -1,6 +1,6 @@
 import { HttpService } from 'nestjs-http-promise';
 import { Injectable } from '@nestjs/common';
-import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
+import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 
 @Injectable()
 export class TabletopeventsService {

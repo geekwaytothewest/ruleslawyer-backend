@@ -11,7 +11,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
+import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';

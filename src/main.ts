@@ -5,7 +5,6 @@ import {
   FastifyAdapter,
 } from '@nestjs/platform-fastify';
 import multipart from '@fastify/multipart';
-import { Logger } from '@nestjs/common';
 import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 
 async function bootstrap() {

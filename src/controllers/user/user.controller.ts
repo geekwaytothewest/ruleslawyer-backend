@@ -4,7 +4,6 @@ import {
   Param,
   UseGuards,
   NotFoundException,
-	Logger,
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { User as UserModel } from '@prisma/client';
@@ -16,7 +15,6 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 @Controller()
 export class UserController {
 	ctx: Context;
-	private readonly logger = new Logger(UserController.name);
 
   constructor(
     private readonly userService: UserService,
@@ -31,12 +29,7 @@ export class UserController {
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
 		let user: UserModel | null;
-
-		console.log(`getting user with id=${id}`)
-		this.logger.log(`Getting user with id=${id}`)
-
 		if (!isNaN(Number(id))) {
-			this.logger.debug(`${id} is a number`);
       user = await this.userService.user(
         {
           id: Number(id),
@@ -44,8 +37,6 @@ export class UserController {
         this.ctx,
 			);
 		} else {
-			// TODO: mask; email is PII
-			this.logger.debug(`${id} is an email`);
       user = await this.userService.user(
 				{
 					email: id,
@@ -55,10 +46,8 @@ export class UserController {
 			}
 			
 			if (!user) {
-				this.logger.error((`User with id=${id} not found`))
 				return Promise.reject(new NotFoundException());
 			}
-		this.logger.log(`Got user with id=${user.id}}`)
 
     return {
       id: user.id,

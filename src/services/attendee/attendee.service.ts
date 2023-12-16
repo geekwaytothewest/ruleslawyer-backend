@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
-import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
+import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger'
 
 @Injectable()
 export class AttendeeService {
