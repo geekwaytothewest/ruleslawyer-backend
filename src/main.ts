@@ -6,14 +6,15 @@ import {
 } from '@nestjs/platform-fastify';
 import multipart from '@fastify/multipart';
 import { Logger } from '@nestjs/common';
+import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 
 async function bootstrap() {
-	const logger = new Logger();
+	const logger = new RuleslawyerLogger('NESTJS');
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule, 
 		new FastifyAdapter({ logger: true }),
 		{
-			logger: ['debug', 'error', 'fatal', 'log', 'warn']
+			logger: logger
 		}
   );
   await app.register(multipart);
