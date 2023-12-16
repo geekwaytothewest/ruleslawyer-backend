@@ -35,7 +35,7 @@ import { UserConventionPermissionsService } from '../../services/user-convention
 @Controller()
 export class LegacyController {
 	ctx: Context;
-	private logger: RuleslawyerLogger;
+	private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(LegacyController.name);
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -51,7 +51,6 @@ export class LegacyController {
     this.ctx = {
       prisma: prismaService,
 		};
-		this.logger = new RuleslawyerLogger(LegacyController.name);
   }
 
   @UseGuards(JwtAuthGuard, OrganizationGuard)
