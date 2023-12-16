@@ -556,8 +556,7 @@ export class LegacyController {
       },
       this.ctx,
 		);
-		this.logger.log(`Retrieved copy with copyBarcode=${copyBarcode}, copyId=${copy.id}; request.id=${request.id}`);
-
+		
 		if (!copy) {
 			this.logger.log(`Copy not found with copyBarcode=${copyBarcode}, searching with barcodeLabel=${copyBarcode}; request.id=${request.id}`);
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
@@ -569,17 +568,17 @@ export class LegacyController {
         },
         this.ctx,
 				);
-			this.logger.log(`Retrieved copy with barcodeLabel=${copyBarcode}, copyId=${copy.id}; request.id=${request.id}`);
-    }
-
+		}
+		
 		if (!copy) {
 			this.logger.error(`Copy not found with copyBarcode=${copyBarcode} or barcodeLabel=${copyBarcode}; request.id=${request.id}`);
       throw new NotFoundException({
-        Errors: ['Could not find a copy with that ID'],
+				Errors: ['Could not find a copy with that ID'],
         Result: null,
       });
     }
-
+		
+		this.logger.log(`Retrieved copy with copyBarcode=${copyBarcode}, copyId=${copy.id}; request.id=${request.id}`);
 		this.logger.log(`Getting current checkout for copyId=${copy.id}; request.id=${request.id}`);
     const currentCheckout = copy.checkOuts.find((co) => co.checkIn === null);
 		
