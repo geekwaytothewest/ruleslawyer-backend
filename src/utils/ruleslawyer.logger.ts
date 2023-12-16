@@ -1,7 +1,6 @@
 import { Injectable, LogLevel, LoggerService, Logger } from "@nestjs/common";
 import { ClsService, ClsServiceManager } from "nestjs-cls";
 
-@Injectable()
 export class RuleslawyerLogger implements LoggerService {
 	private logger: Logger;
 	private cls: ClsService;
