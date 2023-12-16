@@ -1,9 +1,11 @@
 import { HttpService } from 'nestjs-http-promise';
 import { Injectable } from '@nestjs/common';
+import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
 
 @Injectable()
 export class TabletopeventsService {
-  tteApiUrl = 'https://tabletop.events/api/';
+	tteApiUrl = 'https://tabletop.events/api/';
+	private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(TabletopeventsService.name);
   sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
   constructor(private readonly httpService: HttpService) {}
@@ -12,7 +14,8 @@ export class TabletopeventsService {
     userName: string,
     password: string,
     apiKey: string,
-  ): Promise<any> {
+	): Promise<any> {
+		this.logger.log(`Getting TTE session for userName=${userName}`);
     return new Promise(async (resolve) => {
       const session = await this.httpService.post(this.tteApiUrl + `session`, {
         username: userName,
@@ -33,7 +36,8 @@ export class TabletopeventsService {
     session: any,
   ) {
     return new Promise(async (resolve, reject) => {
-      try {
+			try {
+				this.logger.log(`Getting badge with tteBadgeId=${tteBadgeId}, tteBadgeNumber=${tteBadgeNumber}, tteConventionId=${tteConventionId}`);
         const badge = await this.httpService.get(
           this.tteApiUrl + `badge/${tteBadgeId}?session_id=${session}`,
         );
@@ -41,12 +45,15 @@ export class TabletopeventsService {
         if (
           badge.data.result.badge_number === tteBadgeNumber &&
           badge.data.result.convention_id === tteConventionId
-        ) {
+				) {
+					this.logger.log(`Got badge with tteBadgeId=${tteBadgeId}, tteBadgeNumber=${tteBadgeNumber}, tteConventionId=${tteConventionId}`);
           return resolve(badge.data.result);
         } else {
-          return resolve(null);
+					this.logger.error(`Failed to get badge with tteBadgeId=${tteBadgeId}, tteBadgeNumber=${tteBadgeNumber}, tteConventionId=${tteConventionId}`);
+					return resolve(null);
         }
       } catch (ex) {
+				this.logger.error(`Failed to get badge with tteBadgeId=${tteBadgeId}, tteBadgeNumber=${tteBadgeNumber}, tteConventionId=${tteConventionId}, ex=${ex}`);
         return reject(ex);
       }
     });

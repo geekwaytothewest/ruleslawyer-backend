@@ -232,13 +232,11 @@ export class LegacyController {
 		this.logger.log(`Retrieved ${attendees?.length} attendees for conId=${conId}`);
 
 		if (search) {
-			this.logger.log(`Searching attendees for ${search}`);
       attendees = attendees.filter(
         (a) =>
           a.badgeName.toLowerCase().includes(search.toLowerCase()) ||
           a.badgeNumber === search,
 			);
-			this.logger.log(`Retrieved ${attendees.length} attendees matching search=${search}`);
     } else {
       const user = request?.user?.user;
 
@@ -455,12 +453,12 @@ export class LegacyController {
     @Param('orgId') orgId: number,
 		@Param('conId') conId: number
 	) {
-		this.logger.log(`Getting recent checkouts for orgId=${orgId}, conId=${conId}`);
+		this.logger.log(`Getting recent checkouts for conId=${conId}`);
     const checkouts = await this.checkOutService.getRecentCheckouts(
       Number(conId),
       this.ctx,
 		);
-		this.logger.log(`Retrieved ${checkouts?.length} recent checkouts for orgId=${orgId}, conId=${conId}`);
+		this.logger.log(`Retrieved ${checkouts?.length} recent checkouts for conId=${conId}`);
 
     return {
       Errors: [],
@@ -629,7 +627,7 @@ export class LegacyController {
       };
     }
 
-		this.logger.log(`Current checkout does not exist, returning copy`);
+		this.logger.log(`No current checkout, returning copy`);
     return {
       Errors: [],
       Result: {
@@ -1054,8 +1052,10 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
   @Get('org/:orgId/con/:conId/plays')
-  async getPlays(@Param('conId') conId: number) {
-    const plays = await this.checkOutService.getCheckOuts(conId, this.ctx);
+	async getPlays(@Param('conId') conId: number) {
+		this.logger.log(`Getting plays for conId=${conId}`);
+		const plays = await this.checkOutService.getCheckOuts(conId, this.ctx);
+		this.logger.log(`Got ${plays.length} plays for conId=${conId}`);
 
     return {
       Errors: [],
@@ -1127,15 +1127,17 @@ export class LegacyController {
     @Param('orgId') orgId: number,
 	) {
 		this.logger.log(`Importing collection for orgId=${orgId}`);
+		this.logger.log(`Validating file input`);
     const file = await request.file();
     const buffer = await file?.toBuffer();
-
+		
 		if (buffer === undefined) {
 			this.logger.error(`Missing file`);
       return Promise.reject('missing file');
     }
-
+		
     const fields = file?.fields as any;
+		this.logger.log(`File input validated; importing collection for orgId=${orgId}, fields=${fields}`);
 
     return this.collectionService.importCollection(
       Number(orgId),
@@ -1277,14 +1279,16 @@ export class LegacyController {
 		@Param('collId') collId: number
 	) {
 		this.logger.log(`Uploading copies with orgId=${orgId}, collId=${collId}`);
+		this.logger.log(`Validating file input`);
     const file = await request.file();
     const buffer = await file?.toBuffer();
-
+		
 		if (buffer === undefined) {
 			this.logger.error(`Missing file`);
       return Promise.reject('missing file');
     }
-
+		this.logger.log(`Validated file input; uploading copies`);
+		
     return this.collectionService.uploadCopies(
       Number(orgId),
       Number(collId),

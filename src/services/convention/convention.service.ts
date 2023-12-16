@@ -7,9 +7,11 @@ import * as crypto from 'crypto';
 import { Context } from '../prisma/context';
 import { CheckOutService } from '../check-out/check-out.service';
 import { stringify } from 'csv-stringify';
+import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
 
 @Injectable()
 export class ConventionService {
+	private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(ConventionService.name);
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly attendeeService: AttendeeService,
@@ -108,61 +110,72 @@ export class ConventionService {
 
   async importAttendees(userData, conventionId, ctx) {
     return new Promise(async (resolve, reject) => {
-      try {
+			try {
+				this.logger.log(`Importing attendees for conventionId=${conventionId}`);
+				this.logger.log(`Getting convention with conventionId=${conventionId}`);
         const convention = await ctx.prisma.convention.findUnique({
-          where: {
-            id: Number(conventionId),
+					where: {
+						id: Number(conventionId),
           },
           include: {
-            type: true,
+						type: true,
           },
         });
-
-        if (!convention?.tteConventionId) {
+				
+				if (!convention?.tteConventionId) {
+					this.logger.error(`Failed to get convention with conventionId=${conventionId}`);
           return reject('Convention missing tteConventionId.');
         }
-
+				
+				this.logger.log(`Getting TTE session for user=${userData.userName}`);
         const session = await this.tteService.getSession(
-          userData.userName,
+					userData.userName,
           userData.password,
           userData.apiKey,
-        );
-
-        if (!session) {
+					);
+					
+					if (!session) {
+					this.logger.error(`Failed to get TTE session for user=${userData.userName}`);
           return reject('invalid tte session');
         }
 
+				this.logger.log(`Getting badge types for convention with tteConventionId=${convention.tteConventionId}`);
         const tteBadgeTypes = await this.tteService.getBadgeTypes(
-          convention.tteConventionId,
+					convention.tteConventionId,
           session,
-        );
-
-        if (tteBadgeTypes.length === 0) {
+					);
+					
+					if (tteBadgeTypes.length === 0) {
+					this.logger.error(`No badge types found for convention with tteConventionId=${convention.tteConventionId}`);
           return reject('no badge types found');
         }
 
         let tteBadges: any[] = [];
 
-        if (userData.tteBadgeId) {
+				if (userData.tteBadgeId) {
+					this.logger.log(`Getting badge for tteBadgeId=${userData.tteBadgeId}`);
           tteBadges.push(
-            await this.tteService.getBadge(
-              convention.tteConventionId,
+						await this.tteService.getBadge(
+							convention.tteConventionId,
               userData.tteBadgeNumber,
               userData.tteBadgeId,
               session,
-            ),
-          );
-        } else {
+							),
+							);
+						} else {
+					this.logger.log(`Getting badge for tteConventionId=${convention.tteConventionId}`);
           tteBadges = await this.tteService.getBadges(
             convention.tteConventionId,
             session,
           );
         }
 
-        if (tteBadges.length === 0) {
+				if (tteBadges.length === 0) {
+					this.logger.error(`No badges found for tteBadgeId=${userData.tteBadgeId}, tteConventionId=${convention.tteConventionId}`)
           return reject('no badges found');
         }
 
+				this.logger.log(`Getting attendees for ${tteBadges.length} badges`);
         const attendees = await Promise.all(
           tteBadges.map(async (b) => {
             const badgeNumber =
@@ -230,12 +243,15 @@ export class ConventionService {
           }),
         );
 
-        for (const a of attendees) {
+				for (const a of attendees) {
+					this.logger.log(`Syncing ${attendees?.length} attendees`);
           await this.attendeeService.syncAttendee(a, ctx);
         }
-
+				
+				this.logger.log(`Synced ${attendees?.length} attendees`);
         return resolve(attendees.length);
       } catch (ex) {
+				this.logger.error(`Failed to import attendees for conventionId=${conventionId}`);
         return reject(ex);
       }
     });

@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Copy, Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
+import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
 
 @Injectable()
 export class CopyService {
+	private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(CopyService.name);
   async copy(
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
   ): Promise<Copy | null> {
-    try {
+		try {
       return ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
       });
@@ -37,14 +39,16 @@ export class CopyService {
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
   ): Promise<any> {
-    try {
+		try {
+			this.logger.log(`Getting copy with checkouts with copy=${copyWhereUniqueInput}`);
       return ctx.prisma.copy.findUnique({
-        where: copyWhereUniqueInput,
+				where: copyWhereUniqueInput,
         include: {
-          checkOuts: true,
+					checkOuts: true,
         },
       });
     } catch (ex) {
+			this.logger.error(`Failed to get copy with checkouts with copy=${copyWhereUniqueInput}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -53,20 +57,22 @@ export class CopyService {
     copyWhereUniqueInput: Prisma.CopyWhereUniqueInput,
     ctx: Context,
   ): Promise<any> {
-    try {
+		try {
+			this.logger.log(`Getting copy with checkouts, game, collection with copy=${copyWhereUniqueInput}`);
       return ctx.prisma.copy.findUnique({
-        where: copyWhereUniqueInput,
+				where: copyWhereUniqueInput,
         include: {
-          collection: true,
+					collection: true,
           checkOuts: {
-            include: {
-              attendee: true,
+						include: {
+							attendee: true,
             },
           },
           game: true,
         },
       });
     } catch (ex) {
+			this.logger.error(`Failed to get copy with checkouts, game, collection with copy=${copyWhereUniqueInput}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -75,9 +81,11 @@ export class CopyService {
     data: Prisma.CopyCreateInput,
     ctx: Context,
   ): Promise<Copy | null> {
-    try {
+		try {
+			this.logger.log(`Creating copy with data=${data}`);
       return ctx.prisma.copy.create({ data });
     } catch (ex) {
+			this.logger.error(`Failed to create copy with data=${data}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -91,32 +99,36 @@ export class CopyService {
   ) {
     const { where, data } = params;
 
-    try {
+		try {
+			this.logger.log(`Updating copy with data=${data}, where=${where}`)
       return ctx.prisma.copy.update({ data, where });
     } catch (ex) {
+			this.logger.error(`Failed to update copy with data=${data}, where=${where}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
 
   async searchCopies(where: Prisma.CopyWhereInput, ctx: Context) {
-    try {
+		try {
+			this.logger.log(`Searching copies with where=${where}`)
       return ctx.prisma.copy.findMany({
-        where: where,
+				where: where,
         include: {
-          collection: {
-            include: {
-              organization: true,
+					collection: {
+						include: {
+							organization: true,
             },
           },
           game: true,
           checkOuts: {
-            include: {
-              attendee: true,
+						include: {
+							attendee: true,
             },
           },
         },
       });
     } catch (ex) {
+			this.logger.log(`Failed to search copies with where=${where}, ex=${ex}`)
       return Promise.reject(ex);
     }
   }
