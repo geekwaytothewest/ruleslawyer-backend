@@ -5,7 +5,6 @@ import { PrismaService } from './services/prisma/prisma.service';
 
 @Controller('api')
 export class AppController {
-	private readonly logger = new Logger(AppController.name);
   ctx: Context;
 
   constructor(
@@ -19,7 +18,6 @@ export class AppController {
 
   @Get('status')
 	async status() {
-		this.logger.log(`Getting status`);
     try {
       const userCount = await this.userService.getUserCount(this.ctx);
 
