@@ -46,7 +46,7 @@ export class LegacyController {
     private readonly conventionService: ConventionService,
     private readonly organizationService: OrganizationService,
     private readonly gameService: GameService,
-    private readonly userConventionPermissionsService: UserConventionPermissionsService,
+		private readonly userConventionPermissionsService: UserConventionPermissionsService,
   ) {
     this.ctx = {
       prisma: prismaService,

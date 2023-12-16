@@ -9,7 +9,6 @@ import { AttendeeModule } from '../attendee/attendee.module';
 import { CheckOutModule } from '../check-out/check-out.module';
 import { GameModule } from '../game/game.module';
 import { UserConventionPermissionsModule } from '../user-convention-permissions/user-convention-permissions.module';
-import { LoggingModule } from '../logging/logging.module';
 
 @Module({
   controllers: [LegacyController],
@@ -24,7 +23,6 @@ import { LoggingModule } from '../logging/logging.module';
     CheckOutModule,
     GameModule,
 		UserConventionPermissionsModule,
-		LoggingModule,
   ],
 })
 export class LegacyModule {}
