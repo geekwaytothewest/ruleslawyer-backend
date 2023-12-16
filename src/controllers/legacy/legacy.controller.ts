@@ -546,7 +546,7 @@ export class LegacyController {
 		@Param('copyBarcode') copyBarcode: string,
 		@Req() request: any,
 	) {
-		this.logger.log(`Getting copy with copyBarcode=${copyBarcode}; request.id=${request.id}`);
+		this.logger.log(`Getting copy with organizationId_barcode=${copyBarcode}; request.id=${request.id}`);
     let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
       {
         organizationId_barcode: {
@@ -558,7 +558,7 @@ export class LegacyController {
 		);
 		
 		if (!copy) {
-			this.logger.log(`Copy not found with copyBarcode=${copyBarcode}, searching with barcodeLabel=${copyBarcode}; request.id=${request.id}`);
+			this.logger.log(`Copy not found with organizationId_barcode=${copyBarcode}, searching with organizationId_barcodeLabel=${copyBarcode}; request.id=${request.id}`);
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
 				{
 					organizationId_barcodeLabel: {
@@ -571,7 +571,7 @@ export class LegacyController {
 		}
 		
 		if (!copy) {
-			this.logger.error(`Copy not found with copyBarcode=${copyBarcode} or barcodeLabel=${copyBarcode}; request.id=${request.id}`);
+			this.logger.error(`Copy not found with organizationId_barcode=${copyBarcode} or organizationId_barcodeLabel=${copyBarcode}; request.id=${request.id}`);
       throw new NotFoundException({
 				Errors: ['Could not find a copy with that ID'],
         Result: null,
