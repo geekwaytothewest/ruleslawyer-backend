@@ -3,11 +3,12 @@ import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
 import { CopyService } from '../copy/copy.service';
+import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
 
 @Injectable()
 export class CollectionService {
   constructor(private readonly copyService: CopyService) {}
-	private readonly logger = new Logger(CollectionService.name);
+	private readonly logger = new RuleslawyerLogger(CollectionService.name);
   async collection(id: number, ctx: Context) {
     return await ctx.prisma.collection.findUnique({
       where: { id: Number(id) },

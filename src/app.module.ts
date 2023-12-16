@@ -16,7 +16,9 @@ import { CopyModule } from './modules/copy/copy.module';
 import { CollectionModule } from './modules/collection/collection.module';
 import { AttendeeModule } from './modules/attendee/attendee.module';
 import { LegacyModule } from './modules/legacy/legacy.module';
-import { LoggerMiddleware } from './middleware/logger.middleware';
+import { ClsModule } from 'nestjs-cls';
+import { FastifyRequest } from 'fastify';
+import { v4 as uuidv4 } from 'uuid';
 
 const routes = [
   {
@@ -67,24 +69,19 @@ const routes = [
     CopyModule,
     CollectionModule,
     AttendeeModule,
-    LegacyModule,
+		LegacyModule,
+		ClsModule.forRoot({
+			global: true,
+			middleware: {
+				mount: true,
+				generateId: true,
+				idGenerator: (req: FastifyRequest) => req.headers['X-Request-Id'] ?? uuidv4()
+			}
+		}),
   ],
   controllers: [AppController],
   providers: [AppService, UserService, PrismaService],
 })
 export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		// consumer
-		// 	.apply(LoggerMiddleware)
-		// 	// don't log healthchecks
-		// 	.exclude(
-		// 		{path: 'api/status', method: RequestMethod.GET}
-		// 	)
-		// 	.forRoutes(
-		// 		{
-		// 			path: '*',
-		// 			method: RequestMethod.ALL
-		// 		}
-		// 	)
-	}
+	configure(consumer: MiddlewareConsumer) {}
 }

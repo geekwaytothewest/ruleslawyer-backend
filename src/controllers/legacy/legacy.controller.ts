@@ -3,8 +3,6 @@ import {
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
-  Logger,
   NotFoundException,
   Param,
   Post,
@@ -13,6 +11,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -36,7 +35,7 @@ import { UserConventionPermissionsService } from '../../services/user-convention
 @Controller()
 export class LegacyController {
 	ctx: Context;
-	private readonly logger = new Logger(LegacyController.name);
+	private readonly logger = new RuleslawyerLogger(LegacyController.name);
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -56,13 +55,13 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, OrganizationGuard)
   @Get('org/:orgId/con/:conId/copycollections')
-  async getCopyCollections(@Param('orgId') orgId: number, @Req() request: any) {
-		this.logger.log(`Getting collections for orgId=${orgId}, request.id=${request.id}`);
+  async getCopyCollections(@Param('orgId') orgId: number) {
+		this.logger.log(`Getting collections for orgId=${orgId}`);
     const collections = await this.collectionService.collectionsByOrg(
       Number(orgId),
       this.ctx,
 		);
-		this.logger.log(`Retrieved ${collections?.length} collections for orgId=${orgId}; request.id=${request.id}`);
+		this.logger.log(`Retrieved ${collections?.length} collections for orgId=${orgId}`);
 
     return {
       Errors: [],
@@ -144,10 +143,9 @@ export class LegacyController {
       collectionId: number;
       winnable: boolean;
       comments: string;
-		},
-		@Req() request: any
+		}
 	) {
-		this.logger.log(`Updating copy with libraryId=${copy.libraryId}; request.id=${request.id}`);
+		this.logger.log(`Updating copy with libraryId=${copy.libraryId}`);
     return this.copyService.updateCopy(
       {
         where: {
@@ -183,10 +181,9 @@ export class LegacyController {
       title: string;
       winnable: boolean;
       comments: string;
-		},
-		@Req() request: any
+		}
 	) {
-		this.logger.log(`Creating copy with libraryId=${copy.libraryId}, title=${copy.title}; request.id=${request.id}`);
+		this.logger.log(`Creating copy with libraryId=${copy.libraryId}, title=${copy.title}`);
     return this.copyService.createCopy(
       {
         dateAdded: new Date(),
@@ -226,22 +223,22 @@ export class LegacyController {
     @Query('search') search: string,
     @Req() request: any,
 	) {
-		this.logger.log(`Getting attendees for conId=${conId}, search=${search}; request.id=${request.id}`);
+		this.logger.log(`Getting attendees for conId=${conId}, search=${search}`);
     let attendees =
       await this.attendeeService.attendeesWithPronounsAndBadgeTypes(
         Number(conId),
         this.ctx,
 			);
-		this.logger.log(`Retrieved ${attendees?.length} attendees for conId=${conId}; request.id=${request.id}`);
+		this.logger.log(`Retrieved ${attendees?.length} attendees for conId=${conId}`);
 
 		if (search) {
-			this.logger.log(`Searching attendees for ${search}; request.id=${request.id}`);
+			this.logger.log(`Searching attendees for ${search}`);
       attendees = attendees.filter(
         (a) =>
           a.badgeName.toLowerCase().includes(search.toLowerCase()) ||
           a.badgeNumber === search,
 			);
-			this.logger.log(`Retrieved ${attendees.length} attendees matching search=${search}; request.id=${request.id}`);
+			this.logger.log(`Retrieved ${attendees.length} attendees matching search=${search}`);
     } else {
       const user = request?.user?.user;
 
@@ -264,7 +261,7 @@ export class LegacyController {
           !permissions.geekGuide &&
           !permissions.admin
 				) {
-					this.logger.warn(`user ${user.id} does not have permission to view attendees; request.id=${request.id}`);
+					this.logger.warn(`user ${user.id} does not have permission to view attendees`);
           attendees = [];
         }
       }
@@ -291,14 +288,13 @@ export class LegacyController {
   @Post('org/:orgId/con/:conId/attendees')
   async addAttendee(
     @Param('conId') conId: number,
-		@Body() attendee: { badgeNumber: string; name: string; pronouns: string },
-		@Req() request: any,
+		@Body() attendee: { badgeNumber: string; name: string; pronouns: string }
 	) {
-		this.logger.log(`Creating attendee for conId=${conId}, badgeNumber=${attendee.badgeNumber}; request.id=${request.id}`);
+		this.logger.log(`Creating attendee for conId=${conId}, badgeNumber=${attendee.badgeNumber}`);
     const nameSplit = attendee.name.split(' ');
     const lastName = nameSplit.pop();
 		const firstName = nameSplit.join(' ');
-		this.logger.log(`Attendee name parsed as lastName=${lastName}, firstName=${firstName}; request.id=${request.id}`);
+		this.logger.log(`Attendee name parsed as lastName=${lastName}, firstName=${firstName}`);
 
     return this.attendeeService.createAttendee(
       {
@@ -333,14 +329,13 @@ export class LegacyController {
   async updateAttendee(
     @Param('badgeNumber') badgeNumber: string,
     @Param('conId') conId: number,
-		@Body() attendee: { badgeNumber: string; name: string; pronouns: string },
-		@Req() request: any,
+		@Body() attendee: { badgeNumber: string; name: string; pronouns: string }
 	) {
-		this.logger.log(`Updating attendee with badgeNumber=${attendee.badgeNumber}; request.id=${request.id}`);
+		this.logger.log(`Updating attendee with badgeNumber=${attendee.badgeNumber}`);
     const nameSplit = attendee.name.split(' ');
     const lastName = nameSplit.pop();
     const firstName = nameSplit.join(' ');
-		this.logger.log(`Attendee name parsed as lastName=${lastName}, firstName=${firstName}; request.id=${request.id}`);
+		this.logger.log(`Attendee name parsed as lastName=${lastName}, firstName=${firstName}`);
 
     return this.attendeeService.updateAttendee(
       {
@@ -376,15 +371,14 @@ export class LegacyController {
   @Get('org/:orgId/con/:conId/checkouts/checkedOutLongest')
   async getLongestCheckouts(
     @Param('orgId') orgId: number,
-		@Param('conId') conId: number,
-		@Req() request: any,
+		@Param('conId') conId: number
 	) {
-		this.logger.log(`Getting longest checkouts for orgId=${orgId}, conId=${conId}; request.id=${request.id}`);
+		this.logger.log(`Getting longest checkouts for orgId=${orgId}, conId=${conId}`);
     const checkouts = await this.checkOutService.getLongestCheckouts(
 			Number(conId),
       this.ctx,
 		);
-		this.logger.log(`Retrieved ${checkouts?.length} longest checkouts for orgId=${orgId}, conId=${conId}; request.id=${request.id}`);
+		this.logger.log(`Retrieved ${checkouts?.length} longest checkouts for orgId=${orgId}, conId=${conId}`);
 			
     return {
       Errors: [],
@@ -459,15 +453,14 @@ export class LegacyController {
   @Get('org/:orgId/con/:conId/checkouts/recentCheckouts')
   async getRecentCheckouts(
     @Param('orgId') orgId: number,
-		@Param('conId') conId: number,
-		@Req() request: any,
+		@Param('conId') conId: number
 	) {
-		this.logger.log(`Getting recent checkouts for orgId=${orgId}, conId=${conId}; request.id=${request.id}`);
+		this.logger.log(`Getting recent checkouts for orgId=${orgId}, conId=${conId}`);
     const checkouts = await this.checkOutService.getRecentCheckouts(
       Number(conId),
       this.ctx,
 		);
-		this.logger.log(`Retrieved ${checkouts?.length} recent checkouts for orgId=${orgId}, conId=${conId}; request.id=${request.id}`);
+		this.logger.log(`Retrieved ${checkouts?.length} recent checkouts for orgId=${orgId}, conId=${conId}`);
 
     return {
       Errors: [],
@@ -543,10 +536,9 @@ export class LegacyController {
   async getCopy(
     @Param('orgId') orgId: number,
     @Param('conId') conId: number,
-		@Param('copyBarcode') copyBarcode: string,
-		@Req() request: any,
+		@Param('copyBarcode') copyBarcode: string
 	) {
-		this.logger.log(`Getting copy with organizationId_barcode=${copyBarcode}; request.id=${request.id}`);
+		this.logger.log(`Getting copy with organizationId_barcode=${copyBarcode}`);
     let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
       {
         organizationId_barcode: {
@@ -558,7 +550,7 @@ export class LegacyController {
 		);
 		
 		if (!copy) {
-			this.logger.log(`Copy not found with organizationId_barcode=${copyBarcode}, searching with organizationId_barcodeLabel=${copyBarcode}; request.id=${request.id}`);
+			this.logger.log(`Copy not found with organizationId_barcode=${copyBarcode}, searching with organizationId_barcodeLabel=${copyBarcode}`);
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
 				{
 					organizationId_barcodeLabel: {
@@ -571,15 +563,15 @@ export class LegacyController {
 		}
 		
 		if (!copy) {
-			this.logger.error(`Copy not found with organizationId_barcode=${copyBarcode} or organizationId_barcodeLabel=${copyBarcode}; request.id=${request.id}`);
+			this.logger.error(`Copy not found with organizationId_barcode=${copyBarcode} or organizationId_barcodeLabel=${copyBarcode}`);
       throw new NotFoundException({
 				Errors: ['Could not find a copy with that ID'],
         Result: null,
       });
     }
 		
-		this.logger.log(`Retrieved copy with copyBarcode=${copyBarcode}, copyId=${copy.id}; request.id=${request.id}`);
-		this.logger.log(`Getting current checkout for copyId=${copy.id}; request.id=${request.id}`);
+		this.logger.log(`Retrieved copy with copyBarcode=${copyBarcode}, copyId=${copy.id}`);
+		this.logger.log(`Getting current checkout for copyId=${copy.id}`);
     const currentCheckout = copy.checkOuts.find((co) => co.checkIn === null);
 		
     let currentCheckoutLength = 0;
@@ -589,7 +581,7 @@ export class LegacyController {
 			(currentCheckout.checkIn
 				? currentCheckout.checkIn.getTime()
 				: new Date().getTime()) - currentCheckout.checkOut.getTime();
-			this.logger.log(`Retrieved current checkout for copyId=${copy.id}, checkoutId=${currentCheckout.id}, checkout length=${currentCheckoutLength}; request.id=${request.id}`);
+			this.logger.log(`Retrieved current checkout for copyId=${copy.id}, checkoutId=${currentCheckout.id}, checkout length=${currentCheckoutLength}`);
 		}
 
     const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
@@ -601,7 +593,7 @@ export class LegacyController {
     const seconds = Math.floor(diff / 1000);
 
 		if (currentCheckout) {
-			this.logger.log(`Current checkout exists, returning current checkout; request.id=${request.id}`);
+			this.logger.log(`Current checkout exists, returning current checkout`);
       return {
         Errors: [],
         Result: {
@@ -637,7 +629,7 @@ export class LegacyController {
       };
     }
 
-		this.logger.log(`Current checkout does not exist, returning copy; request.id=${request.id}`);
+		this.logger.log(`Current checkout does not exist, returning copy`);
     return {
       Errors: [],
       Result: {
@@ -662,10 +654,9 @@ export class LegacyController {
   @Get('org/:orgId/con/:conId/copies')
   async searchCopies(
     @Query('query') query: string,
-		@Param('orgId') orgId: number,
-		@Req() request: any,
+		@Param('orgId') orgId: number
 	) {
-		this.logger.log(`Searching copies for orgId=${orgId}, query=${query}; request.id=${request.id}`);
+		this.logger.log(`Searching copies for orgId=${orgId}, query=${query}`);
     const copies = await this.copyService.searchCopies(
       {
         AND: [
@@ -693,7 +684,7 @@ export class LegacyController {
       },
       this.ctx,
 		);
-		this.logger.log(`Found ${copies.length} copies for orgId=${orgId}, query=${query}; request.id=${request.id}`);
+		this.logger.log(`Found ${copies.length} copies for orgId=${orgId}, query=${query}`);
 
     return {
       Errors: [],
@@ -761,11 +752,10 @@ export class LegacyController {
 			overrideLimit: boolean;
 		},
 		@Param('orgId') orgId: number,
-		@Param('conId') conId: number,
-		@Req() request: any,
+		@Param('conId') conId: number
 	) {
-		this.logger.log(`Checking out copy with libraryId=${body.libraryId} to attendeeBadgeNumber=${body.attendeeBadgeNumber}, overrideLimit=${body.overrideLimit}; request.id=${request.id}`);
-		this.logger.log(`Getting attendee with conventionId_barcode=${body.attendeeBadgeNumber}, conId=${conId}; request.id=${request.id}`);
+		this.logger.log(`Checking out copy with libraryId=${body.libraryId} to attendeeBadgeNumber=${body.attendeeBadgeNumber}, overrideLimit=${body.overrideLimit}`);
+		this.logger.log(`Getting attendee with conventionId_barcode=${body.attendeeBadgeNumber}, conId=${conId}`);
 		let attendee = await this.attendeeService.attendeeWithCheckouts(
 			{
 				conventionId_barcode: {
@@ -777,7 +767,7 @@ export class LegacyController {
 		);
 
 		if (!attendee) {
-			this.logger.log(`Attendee not found with conventionId_barcode=${body.attendeeBadgeNumber}, conId=${conId}, getting attendee with conventionId_badgeNumber=${body.attendeeBadgeNumber}; request.id=${request.id}`);
+			this.logger.log(`Attendee not found with conventionId_barcode=${body.attendeeBadgeNumber}, conId=${conId}, getting attendee with conventionId_badgeNumber=${body.attendeeBadgeNumber}`);
 			attendee = await this.attendeeService.attendeeWithCheckouts(
 				{
 					conventionId_badgeNumber: {
@@ -790,27 +780,27 @@ export class LegacyController {
 		}
 
 		if (!attendee) {
-			this.logger.error(`Attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber} not found; request.id=${request.id}`);
+			this.logger.error(`Attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber} not found`);
 			throw new BadRequestException({
 				Errors: ['Attendee not found.'],
 				Result: null,
 			});
 		}
 		
-		this.logger.log(`Attendee found with attendeeBadgeNumber=${body.attendeeBadgeNumber}, conId=${conId}; request.id=${request.id}`);
+		this.logger.log(`Attendee found with attendeeBadgeNumber=${body.attendeeBadgeNumber}, conId=${conId}`);
 
 		if (
 			attendee.checkOuts.filter((co) => co.checkIn === null).length > 0 &&
 			!body.overrideLimit
 		) {
-			this.logger.error(`Attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber} already has a game checked out; request.id=${request.id}`);
+			this.logger.error(`Attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber} already has a game checked out`);
 			throw new BadRequestException({
 				Errors: ['Attendee already has a game checked out.'],
 				Result: null,
 			});
 		}
 		
-		this.logger.log(`Getting copy with organizationId_barcode=${body.libraryId}; request.id=${request.id}`);
+		this.logger.log(`Getting copy with organizationId_barcode=${body.libraryId}`);
 
 		let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
 			{
@@ -823,7 +813,7 @@ export class LegacyController {
 		);
 
 		if (!copy) {
-			this.logger.log(`Copy not found with organizationId_barcode=${body.libraryId}, getting copy with organizationId_barcodeLabel=${body.libraryId}; request.id=${request.id}`);
+			this.logger.log(`Copy not found with organizationId_barcode=${body.libraryId}, getting copy with organizationId_barcodeLabel=${body.libraryId}`);
 			copy = await this.copyService.copyWithCheckOutsGameAndCollection(
 				{
 					organizationId_barcodeLabel: {
@@ -836,15 +826,15 @@ export class LegacyController {
 		}
 		
 		if (!copy) {
-			this.logger.error(`Copy not found with libraryId=${body.libraryId}; request.id=${request.id}`);
+			this.logger.error(`Copy not found with libraryId=${body.libraryId}`);
 			throw new NotFoundException({
 				Errors: ['Copy not found.'],
 				Result: null,
 			});
 		}
 
-		this.logger.log(`Copy found with libraryId=${body.libraryId}, copy.id=${copy.id}; request.id=${request.id}`);
-		this.logger.log(`Checking out copy with libraryId=${body.libraryId} to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}; request.id=${request.id}`);
+		this.logger.log(`Copy found with libraryId=${body.libraryId}, copy.id=${copy.id}`);
+		this.logger.log(`Checking out copy with libraryId=${body.libraryId} to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}`);
     const checkOut = await this.checkOutService.checkOut(
 			copy?.collectionId,
       copy?.barcode,
@@ -853,7 +843,7 @@ export class LegacyController {
       body.overrideLimit,
       this.ctx,
 			);
-		this.logger.log(`Copy with libraryId=${body.libraryId}, copy.id=${copy.id} successfully checked out to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}, checkout.id=${checkOut.id}; request.id=${request.id}`);
+		this.logger.log(`Copy with libraryId=${body.libraryId}, copy.id=${copy.id} successfully checked out to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}, checkout.id=${checkOut.id}`);
 			
     return {
       Errors: [],
@@ -911,11 +901,10 @@ export class LegacyController {
   async checkinCopy(
     @Param('orgId') orgId: number,
     @Param('conId') conId: number,
-		@Param('copyBarcode') copyBarcode: string,
-		@Req() request: any,
+		@Param('copyBarcode') copyBarcode: string
 	) {
-		this.logger.log(`Checking in copy with copyBarcode=${copyBarcode}; request.id=${request.id}`);
-		this.logger.log(`Getting copy with organizationId_barcode=${copyBarcode}; request.id=${request.id}`);
+		this.logger.log(`Checking in copy with copyBarcode=${copyBarcode}`);
+		this.logger.log(`Getting copy with organizationId_barcode=${copyBarcode}`);
     let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
 			{
 				organizationId_barcode: {
@@ -927,7 +916,7 @@ export class LegacyController {
 		);
 		
     if (!copy) {
-			this.logger.log(`Copy not found with organizationId_barcode=${copyBarcode}, getting copy with organizationId_barcodeLabel=${copyBarcode}; request.id=${request.id}`);
+			this.logger.log(`Copy not found with organizationId_barcode=${copyBarcode}, getting copy with organizationId_barcodeLabel=${copyBarcode}`);
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
           organizationId_barcodeLabel: {
@@ -940,16 +929,16 @@ export class LegacyController {
     }
 
 		if (!copy) {
-			this.logger.error(`Copy not found with organizationId_barcode=${copyBarcode} or organizationId_barcodeLabel=${copyBarcode}; request.id=${request.id}`);
+			this.logger.error(`Copy not found with organizationId_barcode=${copyBarcode} or organizationId_barcodeLabel=${copyBarcode}`);
       throw new NotFoundException({
 				Errors: ['Could not find a copy with that ID.'],
         Result: null,
       });
 		}
 
-		this.logger.log(`Copy found with copyBarcode=${copyBarcode}, copy.id=${copy.id}; request.id=${request.id}`);
+		this.logger.log(`Copy found with copyBarcode=${copyBarcode}, copy.id=${copy.id}`);
 		
-		this.logger.log(`Checking in copy with copyBarcode=${copyBarcode}, copy.id=${copy.id}; request.id=${request.id}`);
+		this.logger.log(`Checking in copy with copyBarcode=${copyBarcode}, copy.id=${copy.id}`);
 		let currentCheckoutLength = 0;
     const checkIn = await this.checkOutService.checkIn(
       copy.collectionId,
@@ -958,13 +947,13 @@ export class LegacyController {
 		);
 		let attendee;
 		if (!checkIn) {
-			this.logger.error(`Failed to check in copy with copyBarcode=${copyBarcode}, copy.id=${copy.id}; request.id=${request.id}`);
+			this.logger.error(`Failed to check in copy with copyBarcode=${copyBarcode}, copy.id=${copy.id}`);
 		}
 		else {
 			currentCheckoutLength =
 				(checkIn.checkIn ? checkIn.checkIn.getTime() : new Date().getTime()) -
 				checkIn.checkOut.getTime();
-			this.logger.log(`Copy with copyBarcode=${copyBarcode}, copy.id=${copy.id} checked in, checkout length=${currentCheckoutLength}; request.id=${request.id}`);
+			this.logger.log(`Copy with copyBarcode=${copyBarcode}, copy.id=${copy.id} checked in, checkout length=${currentCheckoutLength}`);
 			this.logger.log(`Getting attendee with attendeeId=${checkIn?.attendeeId}`)
 			attendee = await this.attendeeService.attendee(
 				{
@@ -973,10 +962,10 @@ export class LegacyController {
 				this.ctx,
 				);
 				if (!attendee) {
-					this.logger.error(`Attendee not found with attendeeId=${checkIn.attendeeId}; request.id=${request.id}`);
+					this.logger.error(`Attendee not found with attendeeId=${checkIn.attendeeId}`);
 				}
 				else {
-					this.logger.log(`Attendee found with attendee.id=${attendee.id}; request.id=${request.id}`);
+					this.logger.log(`Attendee found with attendee.id=${attendee.id}`);
 				}
 		}
 
@@ -1026,13 +1015,13 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @Get('org/:orgId/con/:conId/checkouts')
-	async getPrizeEntries(@Query('badgeId') badgeId: string, @Req() request: any) {
-		this.logger.log(`Getting prize entries for badgeId=${badgeId}; request.id=${request.id}`);
+	async getPrizeEntries(@Query('badgeId') badgeId: string) {
+		this.logger.log(`Getting prize entries for badgeId=${badgeId}`);
     const prizeEntries = await this.checkOutService.getAttendeePrizeEntries(
 			badgeId,
       this.ctx,
 			);
-		this.logger.log(`${prizeEntries?.length} prize entries found for badgeId=${badgeId}; request.id=${request.id}`);
+		this.logger.log(`${prizeEntries?.length} prize entries found for badgeId=${badgeId}`);
 			
     return {
       Errors: [],
@@ -1114,10 +1103,9 @@ export class LegacyController {
         rating: number | null;
         wantsToWin: boolean;
       }[];
-		},
-		@Req() request: any,
+		}
 	) {
-		this.logger.log(`Submitting prize entry for ${entry.checkoutId}; request.id=${request.id}`);
+		this.logger.log(`Submitting prize entry for ${entry.checkoutId}`);
     return this.checkOutService.submitPrizeEntry(
       entry.checkoutId,
       entry.players.map((p) => {
@@ -1138,12 +1126,12 @@ export class LegacyController {
     @Req() request: fastify.FastifyRequest,
     @Param('orgId') orgId: number,
 	) {
-		this.logger.log(`Importing collection for orgId=${orgId}; request.id=${request.id}`);
+		this.logger.log(`Importing collection for orgId=${orgId}`);
     const file = await request.file();
     const buffer = await file?.toBuffer();
 
 		if (buffer === undefined) {
-			this.logger.error(`Missing file; request.id=${request.id}`);
+			this.logger.error(`Missing file`);
       return Promise.reject('missing file');
     }
 
@@ -1165,10 +1153,9 @@ export class LegacyController {
     collection: {
       name: string;
       allowWinning: boolean;
-		},
-		@Req() request: any,
+		}
 	) {
-		this.logger.log(`Creating collection with name=${collection.name}, allowWinning=${collection.allowWinning}; request.id=${request.id}`);
+		this.logger.log(`Creating collection with name=${collection.name}, allowWinning=${collection.allowWinning}`);
     return this.collectionService.createCollection(
       Number(orgId),
       collection.name,
@@ -1186,10 +1173,9 @@ export class LegacyController {
     collection: {
       name: string;
       allowWinning: boolean;
-		},
-		@Req() request: any,
+		}
 	) {
-		this.logger.log(`Updating collection with orgId=${orgId}, colId=${colId}; request.id=${request.id}`);
+		this.logger.log(`Updating collection with orgId=${orgId}, colId=${colId}`);
     return this.collectionService.updateCollection(
       Number(colId),
       collection.name,
@@ -1200,10 +1186,10 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard)
   @Get('org/:orgId/con/:conId/games')
-	async getGames(@Param('orgId') orgId: number, @Req() request: any) {
-		this.logger.log(`Getting games for orgId=${orgId}; request.id=${request.id}`);
+	async getGames(@Param('orgId') orgId: number) {
+		this.logger.log(`Getting games for orgId=${orgId}`);
 		const games = await this.gameService.games(this.ctx);
-		this.logger.log(`${games?.length} games found for orgId=${orgId}; request.id=${request.id}`);
+		this.logger.log(`${games?.length} games found for orgId=${orgId}`);
 		this.logger.log(`Getting copies for orgId=${orgId}`);
     const copies = await this.copyService.searchCopies(
       {
@@ -1211,7 +1197,7 @@ export class LegacyController {
       },
       this.ctx,
 		);
-		this.logger.log(`${copies?.length} copies found for orgId=${orgId}; request.id=${request.id}`);
+		this.logger.log(`${copies?.length} copies found for orgId=${orgId}`);
 
     return {
       Errors: [],
@@ -1255,8 +1241,8 @@ export class LegacyController {
   //It was renamed to gameList to not interfere with the pnwpicker code which uses 'games' as its route
   @UseGuards(JwtAuthGuard)
   @Get('org/:orgId/con/:conId/gameList')
-	async getGameList(@Req() request: any) {
-		this.logger.log(`Getting game list; request.id=${request.id}`);
+	async getGameList() {
+		this.logger.log(`Getting game list`);
     return this.gameService.games(this.ctx);
   }
 
@@ -1267,10 +1253,9 @@ export class LegacyController {
     @Body()
     game: {
       title: string;
-		},
-		@Req() request: any
+		}
 	) {
-		this.logger.log(`Updating game with gameId=${gameId}, title=${game.title}; request.id=${request.id}`);
+		this.logger.log(`Updating game with gameId=${gameId}, title=${game.title}`);
     return this.gameService.updateGame(
       {
         where: {
@@ -1291,12 +1276,12 @@ export class LegacyController {
     @Param('orgId') orgId: number,
 		@Param('collId') collId: number
 	) {
-		this.logger.log(`Uploading copies with orgId=${orgId}, collId=${collId}; request.id=${request.id}`);
+		this.logger.log(`Uploading copies with orgId=${orgId}, collId=${collId}`);
     const file = await request.file();
     const buffer = await file?.toBuffer();
 
 		if (buffer === undefined) {
-			this.logger.error(`Missing file; request.id=${request.id}`);
+			this.logger.error(`Missing file`);
       return Promise.reject('missing file');
     }
 
@@ -1319,10 +1304,9 @@ export class LegacyController {
       apiKey: string;
       tteBadgeNumber: number;
       tteBadgeId: string;
-		},
-		@Req() request: any
+		}
 	) {
-		this.logger.log(`Syncing attendees with Tabletop Events for conId=${conId}, username=${userData.userName}; request.id=${request.id}`);
+		this.logger.log(`Syncing attendees with Tabletop Events for conId=${conId}, username=${userData.userName}`);
     return this.conventionService.importAttendees(
       userData,
       Number(conId),

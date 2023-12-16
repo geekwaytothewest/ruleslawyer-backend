@@ -17,12 +17,10 @@ describe('LegacyController', () => {
   let controller: LegacyController;
   let mockCtx: MockContext;
 	let ctx: Context;
-	let mockReq: any;
 
   beforeEach(async () => {
     mockCtx = createMockContext();
 		ctx = mockCtx as unknown as Context;
-		mockReq = { id: 'mock-req-1' };
     const module: TestingModule = await Test.createTestingModule({
       imports: [LegacyModule],
     }).compile();
@@ -69,7 +67,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
 
-      const bigResponse = await controller.getCopyCollections(1, mockReq);
+      const bigResponse = await controller.getCopyCollections(1);
 
       expect(bigResponse.Result.length).toBe(1);
     });
@@ -107,7 +105,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
 
-      const bigResponse = await controller.getCopyCollections(1, mockReq);
+      const bigResponse = await controller.getCopyCollections(1);
 
       expect(bigResponse.Result.length).toBe(1);
     });
@@ -145,7 +143,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
 
-      const bigResponse = await controller.getCopyCollections(1, mockReq);
+      const bigResponse = await controller.getCopyCollections(1);
 
       expect(bigResponse.Result.length).toBe(1);
     });
@@ -176,7 +174,6 @@ describe('LegacyController', () => {
         winnable: false,
         comments: '',
 			},
-				mockReq
 			);
 
       expect(bigResponse?.winnable).toBeTruthy();
@@ -208,7 +205,6 @@ describe('LegacyController', () => {
         winnable: true,
         comments: '',
 			},
-				mockReq,
 			);
 
       expect(bigResponse?.winnable).toBeTruthy();
@@ -294,7 +290,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      const bigResponse = await controller.getCopy(1, 1, '*00001*', mockReq);
+      const bigResponse = await controller.getCopy(1, 1, '*00001*');
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
@@ -366,7 +362,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      const bigResponse = await controller.getCopy(1, 1, '*00001*', mockReq);
+      const bigResponse = await controller.getCopy(1, 1, '*00001*');
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
@@ -438,7 +434,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      const bigResponse = await controller.getCopy(1, 1, '*00001*', mockReq);
+      const bigResponse = await controller.getCopy(1, 1, '*00001*');
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
@@ -521,7 +517,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      const bigResponse = await controller.getCopy(1, 1, '*00001*', mockReq);
+      const bigResponse = await controller.getCopy(1, 1, '*00001*');
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
@@ -569,7 +565,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
 
-      expect(controller.getCopy(1, 1, '*00001*', mockReq)).rejects.toThrow(
+      expect(controller.getCopy(1, 1, '*00001*')).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -654,7 +650,7 @@ describe('LegacyController', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValue(copy);
 
-      const bigResponse = await controller.getCopy(1, 1, '1', mockReq);
+      const bigResponse = await controller.getCopy(1, 1, '1');
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
@@ -739,7 +735,7 @@ describe('LegacyController', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValue(copy);
 
-      const bigResponse = await controller.getCopy(1, 1, '1', mockReq);
+      const bigResponse = await controller.getCopy(1, 1, '1');
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
@@ -822,7 +818,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
-      const bigResponse = await controller.getCopy(1, 1, '1', mockReq);
+      const bigResponse = await controller.getCopy(1, 1, '1');
 
       expect(bigResponse?.Result.Winnable).toBeTruthy();
     });
@@ -954,7 +950,6 @@ describe('LegacyController', () => {
         name: 'asdf',
         pronouns: 'She/Her',
 			},
-				mockReq
 			);
 
       expect(bigResponse.id).toBe(1);
@@ -991,7 +986,6 @@ describe('LegacyController', () => {
         name: 'asdf',
         pronouns: 'She/Her',
 			},
-				mockReq
 			);
 
       expect(bigResponse.id).toBe(1);
@@ -1017,7 +1011,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.checkOut.findMany.mockResolvedValue(checkOuts);
 
-      const bigResponse = await controller.getLongestCheckouts(1, 1, mockReq);
+      const bigResponse = await controller.getLongestCheckouts(1, 1);
 
       expect(bigResponse.Result.length).toBe(1);
     });
@@ -1042,7 +1036,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.checkOut.findMany.mockResolvedValue(checkOuts);
 
-      const bigResponse = await controller.getRecentCheckouts(1, 1, mockReq);
+      const bigResponse = await controller.getRecentCheckouts(1, 1);
 
       expect(bigResponse.Result.length).toBe(1);
     });
@@ -1170,7 +1164,6 @@ describe('LegacyController', () => {
         { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
         1,
 				1,
-				mockReq,
       );
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
@@ -1300,7 +1293,6 @@ describe('LegacyController', () => {
         { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
         1,
 				1,
-				mockReq,
       );
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
@@ -1424,7 +1416,6 @@ describe('LegacyController', () => {
           { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
           1,
 					1,
-					mockReq,
         ),
       ).rejects.toThrow(BadRequestException);
     });
@@ -1517,7 +1508,6 @@ describe('LegacyController', () => {
           { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
           1,
 					1,
-					mockReq,
         ),
       ).rejects.toThrow(BadRequestException);
     });
@@ -1611,7 +1601,7 @@ describe('LegacyController', () => {
         submitted: false,
       });
 
-      const bigResponse = await controller.checkinCopy(1, 1, '1', mockReq);
+      const bigResponse = await controller.checkinCopy(1, 1, '1');
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
     });
@@ -1703,7 +1693,7 @@ describe('LegacyController', () => {
         submitted: false,
       });
 
-      const bigResponse = await controller.checkinCopy(1, 1, '1', mockReq);
+      const bigResponse = await controller.checkinCopy(1, 1, '1');
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
     });
@@ -1797,7 +1787,7 @@ describe('LegacyController', () => {
         submitted: false,
       });
 
-      expect(controller.checkinCopy(1, 1, '1', mockReq)).rejects.toBe('copy not found');
+      expect(controller.checkinCopy(1, 1, '1')).rejects.toBe('copy not found');
     });
 
     it('should fail to check in a copy', async () => {
@@ -1887,7 +1877,7 @@ describe('LegacyController', () => {
         submitted: false,
       });
 
-      expect(controller.checkinCopy(1, 1, '*00001*', mockReq)).rejects.toBe(
+      expect(controller.checkinCopy(1, 1, '*00001*')).rejects.toBe(
         'copy not found',
       );
     });
@@ -1935,7 +1925,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
 
-      expect(controller.checkinCopy(1, 1, '123123', mockReq)).rejects.toThrow(
+      expect(controller.checkinCopy(1, 1, '123123')).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -1982,7 +1972,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, mockReq);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
@@ -2016,7 +2006,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, mockReq);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
@@ -2061,7 +2051,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, mockReq);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
@@ -2106,7 +2096,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findMany.mockResolvedValue(copies);
 
-      const expectedCopies = await controller.searchCopies('test', 1, mockReq);
+      const expectedCopies = await controller.searchCopies('test', 1);
 
       expect(expectedCopies.Result.length).toBe(1);
     });
@@ -2146,7 +2136,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.checkOut.findMany.mockResolvedValue(many);
 
-      expect(controller.getPrizeEntries('1', mockReq)).resolves.toBeTruthy();
+      expect(controller.getPrizeEntries('1')).resolves.toBeTruthy();
     });
   });
 
@@ -2178,8 +2168,7 @@ describe('LegacyController', () => {
               wantsToWin: true,
             },
           ],
-				},
-				mockReq),
+				}),
       ).toBeTruthy();
     });
   });
