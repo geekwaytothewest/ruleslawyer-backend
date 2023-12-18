@@ -6,12 +6,19 @@ import {
 } from '@nestjs/platform-fastify';
 import multipart from '@fastify/multipart';
 import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
+import * as fastify from 'fastify';
 
 async function bootstrap() {
+	const fastifyInstance = fastify({logger: true});
+	fastifyInstance.addHook('onRoute', opts => {
+		if (opts.path === '/api/status') {
+			opts.logLevel = 'silent';
+		}
+	});
 	const logger = new RuleslawyerLogger('NESTJS');
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule, 
-		new FastifyAdapter({ logger: true }),
+		new FastifyAdapter(fastifyInstance),
 		{
 			logger: ['debug', 'error', 'fatal', 'log', 'verbose', 'warn']
 		}
