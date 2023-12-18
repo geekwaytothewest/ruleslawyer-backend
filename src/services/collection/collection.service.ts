@@ -95,7 +95,7 @@ export class CollectionService {
 			try {
 				this.logger.log(`Importing collection for orgId=${orgId}`);
         if (!fields?.name) {
-					this.logger.error(`Missing name, ${fields}`);
+					this.logger.error(`Missing name, ${JSON.stringify(fields)}`);
           return reject('missing name');
         }
 
@@ -105,12 +105,12 @@ export class CollectionService {
             fields?.type.value !== 'Door Prizes' &&
             fields?.type.value !== 'Play and Win'
 					) {
-						this.logger.error(`Invalid collection type, ${fields}`);
+						this.logger.error(`Invalid collection type, ${JSON.stringify(fields)}`);
             return reject('invalid type');
           }
 					
           if (!fields?.conventionId) {
-						this.logger.error(`Missing conventionId, ${fields}`);
+						this.logger.error(`Missing conventionId, ${JSON.stringify(fields)}`);
             return reject('missing convention id');
           }
         }

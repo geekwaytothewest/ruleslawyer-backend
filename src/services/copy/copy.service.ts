@@ -40,7 +40,7 @@ export class CopyService {
     ctx: Context,
   ): Promise<any> {
 		try {
-			this.logger.log(`Getting copy with checkouts with copy=${copyWhereUniqueInput}`);
+			this.logger.log(`Getting copy with checkouts with copy=${JSON.stringify(copyWhereUniqueInput)}`);
       return ctx.prisma.copy.findUnique({
 				where: copyWhereUniqueInput,
         include: {
@@ -48,7 +48,7 @@ export class CopyService {
         },
       });
     } catch (ex) {
-			this.logger.error(`Failed to get copy with checkouts with copy=${copyWhereUniqueInput}, ex=${ex}`);
+			this.logger.error(`Failed to get copy with checkouts with copy=${JSON.stringify(copyWhereUniqueInput)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -58,7 +58,7 @@ export class CopyService {
     ctx: Context,
   ): Promise<any> {
 		try {
-			this.logger.log(`Getting copy with checkouts, game, collection with copy=${copyWhereUniqueInput}`);
+			this.logger.log(`Getting copy with checkouts, game, collection with copy=${JSON.stringify(copyWhereUniqueInput)}`);
       return ctx.prisma.copy.findUnique({
 				where: copyWhereUniqueInput,
         include: {
@@ -72,7 +72,7 @@ export class CopyService {
         },
       });
     } catch (ex) {
-			this.logger.error(`Failed to get copy with checkouts, game, collection with copy=${copyWhereUniqueInput}, ex=${ex}`);
+			this.logger.error(`Failed to get copy with checkouts, game, collection with copy=${JSON.stringify(copyWhereUniqueInput)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -82,10 +82,10 @@ export class CopyService {
     ctx: Context,
   ): Promise<Copy | null> {
 		try {
-			this.logger.log(`Creating copy with data=${data}`);
+			this.logger.log(`Creating copy with data=${JSON.stringify(data)}`);
       return ctx.prisma.copy.create({ data });
     } catch (ex) {
-			this.logger.error(`Failed to create copy with data=${data}, ex=${ex}`);
+			this.logger.error(`Failed to create copy with data=${JSON.stringify(data)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -100,18 +100,18 @@ export class CopyService {
     const { where, data } = params;
 
 		try {
-			this.logger.log(`Updating copy with data=${data}, where=${where}`)
+			this.logger.log(`Updating copy with data=${JSON.stringify(data)}, where=${JSON.stringify(where)}`)
       return ctx.prisma.copy.update({ data, where });
     } catch (ex) {
-			this.logger.error(`Failed to update copy with data=${data}, where=${where}, ex=${ex}`);
+			this.logger.error(`Failed to update copy with data=${JSON.stringify(data)}, where=${JSON.stringify(where)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
 
   async searchCopies(where: Prisma.CopyWhereInput, ctx: Context) {
 		try {
-			this.logger.log(`Searching copies with where=${where}`)
-      return ctx.prisma.copy.findMany({
+			this.logger.log(`Searching copies with where=${JSON.stringify(where)}`)
+			return ctx.prisma.copy.findMany({
 				where: where,
         include: {
 					collection: {
@@ -128,7 +128,7 @@ export class CopyService {
         },
       });
     } catch (ex) {
-			this.logger.log(`Failed to search copies with where=${where}, ex=${ex}`)
+			this.logger.log(`Failed to search copies with where=${JSON.stringify(where)}, ex=${ex}`)
       return Promise.reject(ex);
     }
   }

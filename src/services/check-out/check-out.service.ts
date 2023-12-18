@@ -241,12 +241,12 @@ export class CheckOutService {
       }
 
 			try {
-				this.logger.log(`Creating players for checkoutId=${checkOutId} with players=${[...players]}`);
+				this.logger.log(`Creating players for checkoutId=${checkOutId} with ${players?.length} players`);
         await ctx.prisma.player.createMany({
 					data: [...players],
         });
       } catch ({ name, message }) {
-				this.logger.error(`Failed to create players for checkoutId=${checkOutId} with players=${[...players]}`);
+				this.logger.error(`Failed to create players for checkoutId=${checkOutId} with ${players?.length} players`);
 				return Promise.reject('failed creating players');
       }
 

@@ -1105,7 +1105,7 @@ export class LegacyController {
       }[];
 		}
 	) {
-		this.logger.log(`Submitting prize entry for ${entry.checkoutId}`);
+		this.logger.log(`Submitting prize entry for checkoutId=${entry.checkoutId}`);
     return this.checkOutService.submitPrizeEntry(
       entry.checkoutId,
       entry.players.map((p) => {
@@ -1137,7 +1137,7 @@ export class LegacyController {
     }
 		
     const fields = file?.fields as any;
-		this.logger.log(`File input validated; importing collection for orgId=${orgId}, fields=${fields}`);
+		this.logger.log(`File input validated; importing collection for orgId=${orgId}, fields=${JSON.stringify(fields)}`);
 
     return this.collectionService.importCollection(
       Number(orgId),

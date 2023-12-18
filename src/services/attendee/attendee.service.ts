@@ -10,20 +10,21 @@ export class AttendeeService {
 
   async createAttendee(data: Prisma.AttendeeCreateInput, ctx: Context) {
 		try {
-			this.logger.log(`Creating attendee with data=${data}`);
+			this.logger.log(`Creating attendee with data=${JSON.stringify(data)}`);
       return ctx.prisma.attendee.create({ data });
     } catch (ex) {
-			this.logger.error(`Failed to create attendee with data=${data}, ex=${ex}`);
+			this.logger.error(`Failed to create attendee with data=${JSON.stringify(data)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
 
   async syncAttendee(data: Prisma.AttendeeCreateInput, ctx: Context) {
-    try {
+		try {
+			this.logger.log(`Syncing attendee with data=${JSON.stringify(data)}`);
       return ctx.prisma.attendee.upsert({
-        where: {
-          conventionId_tteBadgeNumber: {
-            conventionId: Number(data.convention.connect?.id),
+				where: {
+					conventionId_tteBadgeNumber: {
+						conventionId: Number(data.convention.connect?.id),
             tteBadgeNumber: Number(data.tteBadgeNumber),
           },
         },
@@ -31,16 +32,17 @@ export class AttendeeService {
         update: data,
       });
     } catch (ex) {
+			this.logger.error(`Failed to sync attendee with data=${JSON.stringify(data)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
 
   async attendee(data: Prisma.AttendeeWhereUniqueInput, ctx: Context) {
 		try {
-			this.logger.log(`Getting attendee with data=${data}`);
+			this.logger.log(`Getting attendee with data=${JSON.stringify(data)}`);
       return ctx.prisma.attendee.findUnique({ where: data });
     } catch (ex) {
-			this.logger.error(`Failed to get attendee with data=${data}, ex=${ex}`);
+			this.logger.error(`Failed to get attendee with data=${JSON.stringify(data)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -50,7 +52,7 @@ export class AttendeeService {
     ctx: Context,
   ) {
 		try {
-			this.logger.log(`Getting attendee with checkouts with data=${data}`);
+			this.logger.log(`Getting attendee with checkouts with data=${JSON.stringify(data)}`);
       return ctx.prisma.attendee.findUnique({
 				where: data,
         include: {
@@ -58,7 +60,7 @@ export class AttendeeService {
         },
       });
     } catch (ex) {
-			this.logger.error(`Failed to get attendee with checkouts with data=${data}, ex=${ex}`);
+			this.logger.error(`Failed to get attendee with checkouts with data=${JSON.stringify(data)}, ex=${ex}`);
 			return Promise.reject(ex);
     }
   }
@@ -119,10 +121,10 @@ export class AttendeeService {
     const { where, data } = params;
 
 		try {
-			this.logger.log(`Updating attendee with data=${data}, where=${where}`);
+			this.logger.log(`Updating attendee with data=${JSON.stringify(data)}, where=${JSON.stringify(where)}`);
       return ctx.prisma.attendee.update({ data, where });
     } catch (ex) {
-			this.logger.error(`Failed to update attendee with data=${data}, where=${where}, ex=${ex}`);
+			this.logger.error(`Failed to update attendee with data=${JSON.stringify(data)}, where=${JSON.stringify(where)}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }

@@ -11,10 +11,10 @@ export class GameService {
     ctx: Context,
   ): Promise<Game | null> {
 		try {
-			this.logger.log(`Getting game with where=${gameWhereUniqueInput}`);
+			this.logger.log(`Getting game with where=${JSON.stringify(gameWhereUniqueInput)}`);
       return ctx.prisma.game.findUnique({ where: gameWhereUniqueInput });
     } catch (ex) {
-			this.logger.error(`Failed to get game with where=${gameWhereUniqueInput}, ex=${ex}`);
+			this.logger.error(`Failed to get game with where=${JSON.stringify(gameWhereUniqueInput)}, ex=${ex}`);
 			return Promise.reject(ex);
     }
   }
@@ -50,10 +50,10 @@ export class GameService {
   ) {
     const { where, data } = params;
 		try {
-			this.logger.log(`Updating game with where=${where}, data=${data}`);
+			this.logger.log(`Updating game with where=${JSON.stringify(where)}, data=${JSON.stringify(data)}`);
       return ctx.prisma.game.update({ data, where });
     } catch (ex) {
-			this.logger.error(`Failed to update game with where=${where}, data=${data}, ex=${ex}`);
+			this.logger.error(`Failed to update game with where=${JSON.stringify(where)}, data=${JSON.stringify(data)}, ex=${ex}`);
 			return Promise.reject(ex);
     }
   }
