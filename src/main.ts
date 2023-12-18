@@ -13,7 +13,7 @@ async function bootstrap() {
     AppModule, 
 		new FastifyAdapter({ logger: true }),
 		{
-			logger: logger
+			logger: ['debug', 'error', 'fatal', 'log', 'verbose', 'warn']
 		}
   );
   await app.register(multipart);
