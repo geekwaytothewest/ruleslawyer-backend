@@ -16,11 +16,11 @@ import { createMock } from '@golevelup/ts-jest';
 describe('LegacyController', () => {
   let controller: LegacyController;
   let mockCtx: MockContext;
-  let ctx: Context;
+	let ctx: Context;
 
   beforeEach(async () => {
     mockCtx = createMockContext();
-    ctx = mockCtx as unknown as Context;
+		ctx = mockCtx as unknown as Context;
     const module: TestingModule = await Test.createTestingModule({
       imports: [LegacyModule],
     }).compile();
@@ -173,7 +173,8 @@ describe('LegacyController', () => {
         title: 'Test Title',
         winnable: false,
         comments: '',
-      });
+			},
+			);
 
       expect(bigResponse?.winnable).toBeTruthy();
     });
@@ -203,7 +204,8 @@ describe('LegacyController', () => {
         collectionId: 1,
         winnable: true,
         comments: '',
-      });
+			},
+			);
 
       expect(bigResponse?.winnable).toBeTruthy();
     });
@@ -947,7 +949,8 @@ describe('LegacyController', () => {
         badgeNumber: '1',
         name: 'asdf',
         pronouns: 'She/Her',
-      });
+			},
+			);
 
       expect(bigResponse.id).toBe(1);
     });
@@ -982,7 +985,8 @@ describe('LegacyController', () => {
         badgeNumber: '1',
         name: 'asdf',
         pronouns: 'She/Her',
-      });
+			},
+			);
 
       expect(bigResponse.id).toBe(1);
     });
@@ -1159,7 +1163,7 @@ describe('LegacyController', () => {
       const bigResponse = await controller.checkoutCopy(
         { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
         1,
-        1,
+				1,
       );
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
@@ -1288,7 +1292,7 @@ describe('LegacyController', () => {
       const bigResponse = await controller.checkoutCopy(
         { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
         1,
-        1,
+				1,
       );
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
@@ -1411,7 +1415,7 @@ describe('LegacyController', () => {
         controller.checkoutCopy(
           { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
           1,
-          1,
+					1,
         ),
       ).rejects.toThrow(BadRequestException);
     });
@@ -1503,7 +1507,7 @@ describe('LegacyController', () => {
         controller.checkoutCopy(
           { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
           1,
-          1,
+					1,
         ),
       ).rejects.toThrow(BadRequestException);
     });
@@ -2164,7 +2168,7 @@ describe('LegacyController', () => {
               wantsToWin: true,
             },
           ],
-        }),
+				}),
       ).toBeTruthy();
     });
   });

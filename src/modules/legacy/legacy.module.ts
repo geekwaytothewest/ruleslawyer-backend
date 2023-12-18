@@ -22,7 +22,7 @@ import { UserConventionPermissionsModule } from '../user-convention-permissions/
     AttendeeModule,
     CheckOutModule,
     GameModule,
-    UserConventionPermissionsModule,
+		UserConventionPermissionsModule,
   ],
 })
 export class LegacyModule {}

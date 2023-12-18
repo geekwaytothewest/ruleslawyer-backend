@@ -17,7 +17,7 @@ export class AppController {
   }
 
   @Get('status')
-  async status() {
+	async status() {
     try {
       const userCount = await this.userService.getUserCount(this.ctx);
 

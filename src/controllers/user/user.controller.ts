@@ -14,7 +14,7 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Controller()
 export class UserController {
-  ctx: Context;
+	ctx: Context;
 
   constructor(
     private readonly userService: UserService,
@@ -28,27 +28,26 @@ export class UserController {
   @UseGuards(JwtAuthGuard, UserGuard)
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
-    let user: UserModel | null;
-
-    if (!isNaN(Number(id))) {
+		let user: UserModel | null;
+		if (!isNaN(Number(id))) {
       user = await this.userService.user(
         {
           id: Number(id),
         },
         this.ctx,
-      );
-    } else {
+			);
+		} else {
       user = await this.userService.user(
-        {
-          email: id,
+				{
+					email: id,
         },
         this.ctx,
-      );
-    }
-
-    if (!user) {
-      return Promise.reject(new NotFoundException());
-    }
+				);
+			}
+			
+			if (!user) {
+				return Promise.reject(new NotFoundException());
+			}
 
     return {
       id: user.id,

@@ -5,12 +5,16 @@ import {
   FastifyAdapter,
 } from '@nestjs/platform-fastify';
 import multipart from '@fastify/multipart';
-import { Logger } from '@nestjs/common';
+import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 
 async function bootstrap() {
+	const logger = new RuleslawyerLogger('NESTJS');
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter(),
+    AppModule, 
+		new FastifyAdapter({ logger: true }),
+		{
+			logger: ['debug', 'error', 'fatal', 'log', 'verbose', 'warn']
+		}
   );
   await app.register(multipart);
   app.enableCors({
@@ -21,6 +25,6 @@ async function bootstrap() {
     ],
   });
   await app.listen(`${process.env.FASTIFY_PORT}`, '0.0.0.0');
-  Logger.log(`listening on: ${process.env.FASTIFY_PORT}`);
+  logger.log(`listening on: ${process.env.FASTIFY_PORT}`);
 }
 bootstrap();

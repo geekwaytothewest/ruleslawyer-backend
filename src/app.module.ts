@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RouterModule } from '@nestjs/core';
@@ -16,6 +16,9 @@ import { CopyModule } from './modules/copy/copy.module';
 import { CollectionModule } from './modules/collection/collection.module';
 import { AttendeeModule } from './modules/attendee/attendee.module';
 import { LegacyModule } from './modules/legacy/legacy.module';
+import { ClsModule } from 'nestjs-cls';
+import { FastifyRequest } from 'fastify';
+import { v4 as uuidv4 } from 'uuid';
 
 const routes = [
   {
@@ -66,9 +69,19 @@ const routes = [
     CopyModule,
     CollectionModule,
     AttendeeModule,
-    LegacyModule,
+		LegacyModule,
+		ClsModule.forRoot({
+			global: true,
+			middleware: {
+				mount: true,
+				generateId: true,
+				idGenerator: (req: FastifyRequest) => req.headers['X-Request-Id'] ?? uuidv4()
+			}
+		}),
   ],
   controllers: [AppController],
   providers: [AppService, UserService, PrismaService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+	configure(consumer: MiddlewareConsumer) {}
+}
