@@ -24,6 +24,7 @@ async function main() {
       },
     },
   });
+
   const matt = await prisma.user.upsert({
     where: {
       email: 'matt.dimmic@gmail.com',
@@ -171,7 +172,7 @@ async function main() {
       email: 'maffoe@gmail.com',
       name: 'Mark Finefield',
       username: 'mark.finefield',
-      superAdmin: true,
+      superAdmin: false,
       pronouns: {
         connectOrCreate: {
           create: {
@@ -179,6 +180,75 @@ async function main() {
           },
           where: {
             pronouns: 'He/Him',
+          },
+        },
+      },
+    },
+  });
+
+  const jay = await prisma.user.upsert({
+    where: {
+      email: 'jay.mukid@gmail.com',
+    },
+    update: {},
+    create: {
+      email: 'jay.mukid@gmail.com',
+      name: 'Jay Moore',
+      username: null,
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'He/Him',
+          },
+          where: {
+            pronouns: 'He/Him',
+          },
+        },
+      },
+    },
+  });
+
+  const merlin = await prisma.user.upsert({
+    where: {
+      email: 'merliquin@gmail.com',
+    },
+    update: {},
+    create: {
+      email: 'merliquin@gmail.com',
+      name: 'Merlin Whitman',
+      username: null,
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'She/Her',
+          },
+          where: {
+            pronouns: 'She/Her',
+          },
+        },
+      },
+    },
+  });
+
+  const mari = await prisma.user.upsert({
+    where: {
+      email: 'marib573@gmail.com',
+    },
+    update: {},
+    create: {
+      email: 'marib573@gmail.com',
+      name: 'Mari Berger',
+      username: null,
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'She/Her',
+          },
+          where: {
+            pronouns: 'She/Her',
           },
         },
       },
@@ -228,6 +298,24 @@ async function main() {
             },
             {
               userId: matt.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+            {
+              userId: jay.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+            {
+              userId: mari.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+            {
+              userId: merlin.id,
               admin: true,
               geekGuide: false,
               readOnly: false,
