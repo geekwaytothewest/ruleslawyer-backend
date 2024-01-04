@@ -1,13 +1,24 @@
-name: Deploy to Amazon ECS (Prod)
+name: Build and Deploy
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+    inputs:
+      environment: 
+        description: 'The environment to deploy to'
+        required: true
+        default: 'nonprod'
+        type: choice
+        options:
+          - nonprod
+          - prod
 
 env:
   ECR_REPOSITORY: ruleslawyer-backend
   ECS_SERVICE: ruleslawyer-backend
-  ECS_CLUSTER: geekway-prod
-  ECS_TASK_DEFINITION: .aws/taskdefinition-prod.json
+  ECS_CLUSTER: geekway-${{inputs.environment}}
+  ECS_TASK_DEFINITION: .aws/taskdefinition-${{inputs.environment}}.json
   CONTAINER_NAME: ruleslawyer-backend
+  ROLE_TO_ASSUME: ${{inputs.environment == 'nonprod' && secrets.NONPROD_ROLE_ARN || secrets.PROD_ROLE_ARN}}
 
 permissions:
   contents: read
@@ -16,7 +27,6 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: prod
 
     steps:
     - name: Checkout
@@ -25,9 +35,10 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
+        role-to-assume: ${{ env.ROLE_TO_ASSUME }}
 
     - name: Login to Amazon ECR
       id: login-ecr
