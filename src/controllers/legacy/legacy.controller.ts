@@ -1211,10 +1211,9 @@ export class LegacyController {
     }
 
     const fields = file?.fields as any;
+    console.log(fields);
     this.logger.log(
-      `File input validated; importing collection for orgId=${orgId}, fields=${JSON.stringify(
-        fields,
-      )}`,
+      `File input validated; importing collection for orgId=${orgId}`,
     );
 
     return this.collectionService.importCollection(

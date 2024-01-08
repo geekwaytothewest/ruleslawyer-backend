@@ -163,7 +163,7 @@ describe('OrganizationController', () => {
 
   describe('createCopy', () => {
     it('should create a copy', async () => {
-      mockCtx.prisma.copy.create.mockResolvedValue({
+      mockCtx.prisma.copy.upsert.mockResolvedValue({
         id: 1,
         gameId: 1,
         winnable: false,
@@ -345,7 +345,7 @@ describe('OrganizationController', () => {
 
       const req = ctx.switchToHttp().getRequest() as fastify.FastifyRequest;
 
-      mockCtx.prisma.copy.create.mockResolvedValue({
+      mockCtx.prisma.copy.upsert.mockResolvedValue({
         id: 1,
         gameId: 1,
         winnable: true,
