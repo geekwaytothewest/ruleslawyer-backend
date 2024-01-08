@@ -166,7 +166,7 @@ describe('LegacyController', () => {
         organizationId: 1,
       };
 
-      mockCtx.prisma.copy.create.mockResolvedValue(copy);
+      mockCtx.prisma.copy.upsert.mockResolvedValue(copy);
 
       const bigResponse = await controller.addCopy(1, 1, {
         libraryId: 1,
