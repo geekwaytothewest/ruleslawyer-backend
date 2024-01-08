@@ -81,9 +81,21 @@ export class CopyService {
     data: Prisma.CopyCreateInput,
     ctx: Context,
   ): Promise<Copy | null> {
-		try {
-			this.logger.log(`Creating copy with data=${JSON.stringify(data)}`);
-      return ctx.prisma.copy.create({ data });
+    try {
+      const copyWhereUniqueInput = {
+
+      }
+      this.logger.log(`Creating copy with data=${JSON.stringify(data)}`);
+      return ctx.prisma.copy.upsert({
+        where: {
+          organizationId_barcodeLabel: {
+            barcodeLabel: data.barcodeLabel,
+            organizationId: Number(data.organization.connect?.id)
+          }
+        },
+        create: data,
+        update: data
+      });
     } catch (ex) {
 			this.logger.error(`Failed to create copy with data=${JSON.stringify(data)}, ex=${ex}`);
       return Promise.reject(ex);
