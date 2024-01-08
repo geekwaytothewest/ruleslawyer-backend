@@ -46,7 +46,7 @@ describe('CopyService', () => {
 
   describe('createCopy', () => {
     it('should create a copy', async () => {
-      mockCtx.prisma.copy.create.mockResolvedValue({
+      mockCtx.prisma.copy.upsert.mockResolvedValue({
         id: 1,
         gameId: 1,
         dateAdded: new Date(),
