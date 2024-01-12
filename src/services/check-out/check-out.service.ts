@@ -4,6 +4,7 @@ import { Context } from '../prisma/context';
 import { AttendeeService } from '../attendee/attendee.service';
 import { Prisma } from '@prisma/client';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
+import { GameService } from '../game/game.service';
 
 @Injectable()
 export class CheckOutService {
@@ -13,6 +14,7 @@ export class CheckOutService {
   constructor(
     private readonly copyService: CopyService,
     private readonly attendeeService: AttendeeService,
+    private readonly gameService: GameService,
   ) {}
 
   async getLongestCheckouts(conventionId: number, ctx: Context) {
@@ -157,14 +159,31 @@ export class CheckOutService {
         return Promise.reject('attendee not found');
       }
 
-      if (
-        attendee.checkOuts.filter((co) => !co.checkIn).length > 0 &&
-        !overrideLimit
-      ) {
+      const attendeeCheckouts = attendee.checkOuts.filter((co) => !co.checkIn);
+
+      let checkoutString = '';
+
+      if (attendeeCheckouts.length > 0 && !overrideLimit) {
+        if (attendeeCheckouts[0].copyId) {
+          const checkoutCopy = await this.copyService.copy(
+            { id: attendeeCheckouts[0].copyId },
+            ctx,
+          );
+
+          const game = await this.gameService.game(
+            { id: checkoutCopy?.gameId },
+            ctx,
+          );
+
+          checkoutString = `Game: ${game?.name}, Barcode: ${checkoutCopy?.barcodeLabel}`;
+        }
+
         this.logger.error(
-          `Attendee with conventionId=${conventionId}, attendeeBarcode=${attendeeBarcode} already has a game checked out`,
+          `Attendee with conventionId=${conventionId}, attendeeBarcode=${attendeeBarcode} already has a game checked out. ${checkoutString}`,
         );
-        return Promise.reject('attendee already has a game checked out');
+        return Promise.reject(
+          `attendee already has a game checked out. ${checkoutString}`,
+        );
       }
 
       return await ctx.prisma.checkOut.create({

@@ -291,7 +291,9 @@ describe('CheckOutService', () => {
 
       expect(
         service.checkOut(1, '*00002*', 1, '*000001*', false, ctx),
-      ).rejects.toBe('attendee already has a game checked out');
+      ).rejects.toBe(
+        'attendee already has a game checked out. Game: undefined, Barcode: 1',
+      );
     });
 
     it('should reject bad attendee', async () => {
