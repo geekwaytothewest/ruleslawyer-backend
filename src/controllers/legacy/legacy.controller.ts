@@ -852,7 +852,7 @@ export class LegacyController {
       {
         organizationId_barcode: {
           organizationId: Number(orgId),
-          barcode: body.libraryId,
+          barcode: copyBarcodeStrippedZeroes,
         },
       },
       this.ctx,
@@ -866,7 +866,7 @@ export class LegacyController {
         {
           organizationId_barcodeLabel: {
             organizationId: Number(orgId),
-            barcodeLabel: body.libraryId,
+            barcodeLabel: copyBarcodeStrippedZeroes,
           },
         },
         this.ctx,
@@ -964,7 +964,7 @@ export class LegacyController {
       {
         organizationId_barcode: {
           organizationId: Number(orgId),
-          barcode: copyBarcode,
+          barcode: copyBarcodeStrippedZeroes,
         },
       },
       this.ctx,
@@ -978,7 +978,7 @@ export class LegacyController {
         {
           organizationId_barcodeLabel: {
             organizationId: Number(orgId),
-            barcodeLabel: copyBarcode,
+            barcodeLabel: copyBarcodeStrippedZeroes,
           },
         },
         this.ctx,
