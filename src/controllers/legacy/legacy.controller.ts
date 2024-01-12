@@ -788,49 +788,47 @@ export class LegacyController {
     @Param('orgId') orgId: number,
     @Param('conId') conId: number,
   ) {
-    this.logger.log(
-      `Checking out copy with libraryId=${body.libraryId} to attendeeBadgeNumber=${body.attendeeBadgeNumber}, overrideLimit=${body.overrideLimit}`,
-    );
+    this.logger.log(`Checkout requested for barcode=${body.libraryId}, attendeeBadgeNumber=${body.attendeeBadgeNumber}, overrideLimit=${body.overrideLimit}`);
     this.logger.log(
       `Getting attendee with conventionId_barcode=${body.attendeeBadgeNumber}, conId=${conId}`,
-    );
-    let attendee = await this.attendeeService.attendeeWithCheckouts(
-      {
-        conventionId_barcode: {
-          conventionId: Number(conId),
-          barcode: body.attendeeBadgeNumber,
-        },
-      },
-      this.ctx,
-    );
-
-    if (!attendee) {
-      this.logger.log(
-        `Attendee not found with conventionId_barcode=${body.attendeeBadgeNumber}, conId=${conId}, getting attendee with conventionId_badgeNumber=${body.attendeeBadgeNumber}`,
       );
-      attendee = await this.attendeeService.attendeeWithCheckouts(
+      let attendee = await this.attendeeService.attendeeWithCheckouts(
         {
-          conventionId_badgeNumber: {
+          conventionId_barcode: {
             conventionId: Number(conId),
-            badgeNumber: body.attendeeBadgeNumber,
+            barcode: body.attendeeBadgeNumber,
           },
         },
         this.ctx,
-      );
-    }
-
-    if (!attendee) {
-      this.logger.error(
-        `Attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber} not found`,
-      );
-      throw new BadRequestException({
-        Errors: ['Attendee not found.'],
-        Result: null,
-      });
-    }
-
-    this.logger.log(
-      `Attendee found with attendeeBadgeNumber=${body.attendeeBadgeNumber}, conId=${conId}`,
+        );
+        
+        if (!attendee) {
+          this.logger.log(
+            `Attendee not found with conventionId_barcode=${body.attendeeBadgeNumber}, conId=${conId}, getting attendee with conventionId_badgeNumber=${body.attendeeBadgeNumber}`,
+            );
+            attendee = await this.attendeeService.attendeeWithCheckouts(
+              {
+                conventionId_badgeNumber: {
+                  conventionId: Number(conId),
+                  badgeNumber: body.attendeeBadgeNumber,
+                },
+              },
+              this.ctx,
+              );
+            }
+            
+            if (!attendee) {
+              this.logger.error(
+                `Attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber} not found`,
+                );
+                throw new BadRequestException({
+                  Errors: ['Attendee not found.'],
+                  Result: null,
+                });
+              }
+              
+              this.logger.log(
+                `Attendee found with attendeeBadgeNumber=${body.attendeeBadgeNumber}, conId=${conId}`,
     );
 
     if (
@@ -845,9 +843,9 @@ export class LegacyController {
         Result: null,
       });
     }
-
+    const copyBarcodeStrippedZeroes = Number(body.libraryId)?.toString();
     this.logger.log(
-      `Getting copy with organizationId_barcode=${body.libraryId}`,
+      `Getting copy with organizationId_barcode=${copyBarcodeStrippedZeroes}`,
     );
 
     let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
@@ -862,7 +860,7 @@ export class LegacyController {
 
     if (!copy) {
       this.logger.log(
-        `Copy not found with organizationId_barcode=${body.libraryId}, getting copy with organizationId_barcodeLabel=${body.libraryId}`,
+        `Copy not found with organizationId_barcode=${copyBarcodeStrippedZeroes}, getting copy with organizationId_barcodeLabel=${copyBarcodeStrippedZeroes}`,
       );
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
@@ -876,7 +874,7 @@ export class LegacyController {
     }
 
     if (!copy) {
-      this.logger.error(`Copy not found with libraryId=${body.libraryId}`);
+      this.logger.error(`Copy not found with copyId=${copyBarcodeStrippedZeroes}`);
       throw new NotFoundException({
         Errors: ['Copy not found.'],
         Result: null,
@@ -884,10 +882,10 @@ export class LegacyController {
     }
 
     this.logger.log(
-      `Copy found with libraryId=${body.libraryId}, copy.id=${copy.id}`,
+      `Copy found with barcode=${body.libraryId}, copy.id=${copy.id}`,
     );
     this.logger.log(
-      `Checking out copy with libraryId=${body.libraryId} to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}`,
+      `Checking out copy with copyId=${copy.id} to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}`,
     );
     const checkOut = await this.checkOutService.checkOut(
       copy?.collectionId,
@@ -898,7 +896,7 @@ export class LegacyController {
       this.ctx,
     );
     this.logger.log(
-      `Copy with libraryId=${body.libraryId}, copy.id=${copy.id} successfully checked out to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}, checkout.id=${checkOut.id}`,
+      `Copy with copyId=${copy.id} successfully checked out to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}, checkout.id=${checkOut.id}`,
     );
 
     return {
@@ -959,8 +957,9 @@ export class LegacyController {
     @Param('conId') conId: number,
     @Param('copyBarcode') copyBarcode: string,
   ) {
-    this.logger.log(`Checking in copy with copyBarcode=${copyBarcode}`);
-    this.logger.log(`Getting copy with organizationId_barcode=${copyBarcode}`);
+    const copyBarcodeStrippedZeroes = Number(copyBarcode)?.toString();
+    this.logger.log(`Checking in copy with copyBarcode=${copyBarcode}, copyId=${copyBarcodeStrippedZeroes}`);
+    this.logger.log(`Getting copy with organizationId_barcode=${copyBarcodeStrippedZeroes}`);
     let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
       {
         organizationId_barcode: {
@@ -973,7 +972,7 @@ export class LegacyController {
 
     if (!copy) {
       this.logger.log(
-        `Copy not found with organizationId_barcode=${copyBarcode}, getting copy with organizationId_barcodeLabel=${copyBarcode}`,
+        `Copy not found with organizationId_barcode=${copyBarcodeStrippedZeroes}, getting copy with organizationId_barcodeLabel=${copyBarcodeStrippedZeroes}`,
       );
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
@@ -988,7 +987,7 @@ export class LegacyController {
 
     if (!copy) {
       this.logger.error(
-        `Copy not found with organizationId_barcode=${copyBarcode} or organizationId_barcodeLabel=${copyBarcode}`,
+        `Copy not found with organizationId_barcode=${copyBarcodeStrippedZeroes} or organizationId_barcodeLabel=${copyBarcodeStrippedZeroes}`,
       );
       throw new NotFoundException({
         Errors: ['Could not find a copy with that ID.'],
