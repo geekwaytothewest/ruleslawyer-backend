@@ -560,12 +560,14 @@ export class LegacyController {
     @Param('conId') conId: number,
     @Param('copyBarcode') copyBarcode: string,
   ) {
-    this.logger.log(`Getting copy with organizationId_barcode=${copyBarcode}`);
+    const copyBarcodeStrippedZeroes = Number(copyBarcode)?.toString();
+    this.logger.log(`Getting copy with barcode=${copyBarcode}`);
+    this.logger.log(`Retrieving with organizationId_barcode=${copyBarcodeStrippedZeroes}`)
     let copy = await this.copyService.copyWithCheckOutsGameAndCollection(
       {
         organizationId_barcode: {
           organizationId: Number(orgId),
-          barcode: copyBarcode,
+          barcode: copyBarcodeStrippedZeroes,
         },
       },
       this.ctx,
@@ -573,13 +575,13 @@ export class LegacyController {
 
     if (!copy) {
       this.logger.log(
-        `Copy not found with organizationId_barcode=${copyBarcode}, searching with organizationId_barcodeLabel=${copyBarcode}`,
+        `Copy not found with organizationId_barcode=${copyBarcodeStrippedZeroes}, searching with organizationId_barcodeLabel=${copyBarcodeStrippedZeroes}`,
       );
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
           organizationId_barcodeLabel: {
             organizationId: Number(orgId),
-            barcodeLabel: copyBarcode,
+            barcodeLabel: copyBarcodeStrippedZeroes,
           },
         },
         this.ctx,
@@ -588,7 +590,7 @@ export class LegacyController {
 
     if (!copy) {
       this.logger.error(
-        `Copy not found with organizationId_barcode=${copyBarcode} or organizationId_barcodeLabel=${copyBarcode}`,
+        `Copy not found with organizationId_barcode=${copyBarcodeStrippedZeroes} or organizationId_barcodeLabel=${copyBarcodeStrippedZeroes}`,
       );
       throw new NotFoundException({
         Errors: ['Could not find a copy with that ID'],
@@ -597,7 +599,7 @@ export class LegacyController {
     }
 
     this.logger.log(
-      `Retrieved copy with copyBarcode=${copyBarcode}, copyId=${copy.id}`,
+      `Retrieved copy with barcode=${copyBarcode}, copyId=${copy.id}`,
     );
     this.logger.log(`Getting current checkout for copyId=${copy.id}`);
     const currentCheckout = copy.checkOuts.find((co) => co.checkIn === null);
@@ -1211,9 +1213,10 @@ export class LegacyController {
     }
 
     const fields = file?.fields as any;
-    console.log(fields);
     this.logger.log(
-      `File input validated; importing collection for orgId=${orgId}`,
+      `File input validated; importing collection for orgId=${orgId}, fields=${JSON.stringify(
+        fields,
+      )}`,
     );
 
     return this.collectionService.importCollection(
