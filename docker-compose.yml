@@ -18,7 +18,7 @@ services:
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app
-    command: npm run start:migate:seed:debug
+    command: npm run start:migrate:seed:debug
     stdin_open: true
     tty: true
 
