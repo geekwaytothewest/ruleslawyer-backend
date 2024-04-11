@@ -9,19 +9,19 @@ import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 import * as fastify from 'fastify';
 
 async function bootstrap() {
-	const fastifyInstance = fastify({logger: true});
-	fastifyInstance.addHook('onRoute', opts => {
-		if (opts.path === '/api/status') {
-			opts.logLevel = 'silent';
-		}
-	});
-	const logger = new RuleslawyerLogger('NESTJS');
+  const fastifyInstance = fastify({ logger: true });
+  fastifyInstance.addHook('onRoute', (opts) => {
+    if (opts.path === '/api/status') {
+      opts.logLevel = 'silent';
+    }
+  });
+  const logger = new RuleslawyerLogger('NESTJS');
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule, 
-		new FastifyAdapter(fastifyInstance),
-		{
-			logger: ['debug', 'error', 'fatal', 'log', 'verbose', 'warn']
-		}
+    AppModule,
+    new FastifyAdapter(fastifyInstance),
+    {
+      logger: ['debug', 'error', 'fatal', 'log', 'verbose', 'warn'],
+    },
   );
   await app.register(multipart);
   app.enableCors({

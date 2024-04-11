@@ -1,19 +1,18 @@
-
 ## Description
 
 Geekawy to the West Rules Lawyer is the premier play and win convention backend.
 
 Requirements:
 
-  - Docker/Docker Compose
-  - Auth0
+- Docker/Docker Compose
+- Auth0
 
 ## Installation
 
 Git clone/pull this repository as well as the frontends repository into the same directory
 
 Ex: ./git/geekway/ruleslawyer-backend
-    ./git/geekway/frontends
+./git/geekway/frontends
 
 Create .env file based on .env.template in each project (backend + frontend x 3)
 
@@ -28,9 +27,10 @@ $ docker compose --profile all up
 The backend will be listening on: localhost:8080
 
 The frontends will be listening on:
-  - admin: http://localhost:8081/admin
-  - librarian: http://localhost:8082/librarian
-  - play and win: http://localhost:8083/playandwin
+
+- admin: http://localhost:8081/admin
+- librarian: http://localhost:8082/librarian
+- play and win: http://localhost:8083/playandwin
 
 The database will be listening on: localhost:5432
 
