@@ -55,6 +55,17 @@ services:
     env_file:
       - ../frontends/play-prize-entry/.env
 
+  frontend:
+    profiles: ['frontends', 'all']
+    container_name: ruleslawyer-frontend
+    build:
+      context: ../ruleslawyer-frontend
+      dockerfile: Dockerfile
+    ports:
+      - 8084:3000
+    env_file:
+      - ../ruleslawyer-frontend/.env.local
+
   postgres:
     profiles: ['backend', 'db', 'all']
     image: postgres:14.9
