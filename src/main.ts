@@ -29,6 +29,7 @@ async function bootstrap() {
       `${process.env.ADMIN_CLIENT_ORIGIN}`,
       `${process.env.LIBRARIAN_CLIENT_ORIGIN}`,
       `${process.env.PLAY_AND_WIN_CLIENT_ORIGIN}`,
+      `${process.env.RULESLAWYER_FRONTEND_ORIGIN}`,
     ],
   });
   await app.listen(`${process.env.FASTIFY_PORT}`, '0.0.0.0');
