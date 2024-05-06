@@ -64,7 +64,7 @@ services:
     ports:
       - 8084:3000
     env_file:
-      - ../ruleslawyer-frontend/.env.local
+      - ../ruleslawyer-frontend/.env.production
 
   postgres:
     profiles: ['backend', 'db', 'ruleslawyer', 'all']
