@@ -1,6 +1,6 @@
 services:
   backend:
-    profiles: ['backend', 'all']
+    profiles: ['backend', 'ruleslawyer', 'all']
     container_name: ruleslawyer-backend
     build:
       context: .
@@ -56,7 +56,7 @@ services:
       - ../frontends/play-prize-entry/.env
 
   frontend:
-    profiles: ['frontends', 'all']
+    profiles: ['frontends', 'ruleslawyer', 'all']
     container_name: ruleslawyer-frontend
     build:
       context: ../ruleslawyer-frontend
@@ -67,7 +67,7 @@ services:
       - ../ruleslawyer-frontend/.env.local
 
   postgres:
-    profiles: ['backend', 'db', 'all']
+    profiles: ['backend', 'db', 'ruleslawyer', 'all']
     image: postgres:14.9
     container_name: ruleslawyer-db
     restart: always
