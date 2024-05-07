@@ -1,0 +1,19 @@
+meta {
+  name: Check Out Copy
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/con/{{conId}}/col/{{colId}}/copy/{{copyBarcode}}/checkOut/{{attendeeBarcode}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+  conId: 1
+  colId: 1
+  copyBarcode: 1
+  attendeeBarcode: 1
+}

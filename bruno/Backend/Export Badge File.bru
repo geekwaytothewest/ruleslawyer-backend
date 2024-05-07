@@ -1,0 +1,15 @@
+meta {
+  name: Export Badge File
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{apiUrl}}/con/{{id}}/exportBadgeFile
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  id: 1
+}

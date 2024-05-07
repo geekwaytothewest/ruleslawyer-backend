@@ -1,0 +1,16 @@
+meta {
+  name: PnW Picker Plays
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{apiUrl}}/legacy/org/{{id}}/con/{{conId}}/plays
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+  conId: 1
+}

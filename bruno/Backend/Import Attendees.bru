@@ -1,0 +1,23 @@
+meta {
+  name: Import Attendees
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{apiUrl}}/con/{{id}}/importAttendees
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "userName": "",
+      "password": "",
+      "apiKey": ""
+  }
+}
+
+vars:pre-request {
+  id: 1
+}

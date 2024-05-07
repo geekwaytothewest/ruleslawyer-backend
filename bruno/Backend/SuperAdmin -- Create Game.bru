@@ -1,0 +1,17 @@
+meta {
+  name: SuperAdmin -- Create Game
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{apiUrl}}/game
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Totally a test game"
+  }
+}

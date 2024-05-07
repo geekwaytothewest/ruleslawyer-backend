@@ -1,0 +1,18 @@
+meta {
+  name: Check In Copy
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/con/{{conId}}/col/{{colId}}/copy/{{copyBarcode}}/checkIn
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+  conId: 1
+  colId: 1
+  copyBarcode: 1
+}
