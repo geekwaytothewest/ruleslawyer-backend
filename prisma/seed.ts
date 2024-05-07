@@ -644,6 +644,23 @@ async function main() {
   await prisma.userOrganizationPermissions.upsert({
     where: {
       userId_organizationId: {
+        userId: elzie.id,
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: elzie.id,
+      organizationId: geekway.id,
+      admin: true,
+      geekGuide: false,
+      readOnly: false,
+    },
+  });
+
+  await prisma.userOrganizationPermissions.upsert({
+    where: {
+      userId_organizationId: {
         userId: matt.id,
         organizationId: geekway.id,
       },
@@ -770,6 +787,23 @@ async function main() {
     update: {},
     create: {
       userId: mattie.id,
+      conventionId: geekwayMini2024.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: elzie.id,
+        conventionId: geekwayMini2024.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: elzie.id,
       conventionId: geekwayMini2024.id,
       admin: true,
       geekGuide: false,
@@ -1008,6 +1042,23 @@ async function main() {
     update: {},
     create: {
       userId: kellie.id,
+      conventionId: geekwayPrime2024.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: elzie.id,
+        conventionId: geekwayPrime2024.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: elzie.id,
       conventionId: geekwayPrime2024.id,
       admin: true,
       geekGuide: false,
