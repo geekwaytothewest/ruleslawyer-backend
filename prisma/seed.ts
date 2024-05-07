@@ -278,6 +278,29 @@ async function main() {
     },
   });
 
+  const elzie = await prisma.user.upsert({
+    where: {
+      email: 'elzie.ann@gmail.com',
+    },
+    update: {},
+    create: {
+      email: 'elzie.ann@gmail.com',
+      name: 'Elzie Ann',
+      username: null,
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'She/Her',
+          },
+          where: {
+            pronouns: 'She/Her',
+          },
+        },
+      },
+    },
+  });
+
   const geekway = await prisma.organization.upsert({
     where: {
       name: 'Geekway to the West',
@@ -291,6 +314,12 @@ async function main() {
           data: [
             {
               userId: libby.id,
+              admin: true,
+              geekGuide: false,
+              readOnly: false,
+            },
+            {
+              userId: elzie.id,
               admin: true,
               geekGuide: false,
               readOnly: false,
@@ -451,6 +480,12 @@ async function main() {
               attendee: true,
             },
             {
+              userId: elzie.id,
+              admin: true,
+              geekGuide: false,
+              attendee: true,
+            },
+            {
               userId: libby.id,
               admin: true,
               geekGuide: false,
@@ -525,6 +560,12 @@ async function main() {
           data: [
             {
               userId: mattie.id,
+              admin: true,
+              geekGuide: false,
+              attendee: true,
+            },
+            {
+              userId: elzie.id,
               admin: true,
               geekGuide: false,
               attendee: true,
