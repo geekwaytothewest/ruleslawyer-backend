@@ -287,7 +287,7 @@ async function main() {
       email: 'elzie.ann@gmail.com',
       name: 'Elzie Ann',
       username: null,
-      superAdmin: false,
+      superAdmin: true,
       pronouns: {
         connectOrCreate: {
           create: {
