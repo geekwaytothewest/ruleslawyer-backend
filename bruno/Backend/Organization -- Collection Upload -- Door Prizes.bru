@@ -1,0 +1,22 @@
+meta {
+  name: Organization -- Collection Upload -- Door Prizes
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/col
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  csvFile: undefined
+  name: Geekway Mini 2024 Door Prizes
+  type: Door Prizes
+  conventionId: 1
+}
+
+vars:pre-request {
+  id: 1
+}

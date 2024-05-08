@@ -1,0 +1,15 @@
+meta {
+  name: Organization -- Get Conventions
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{apiUrl}}/org/{{id}}/conventions
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+}

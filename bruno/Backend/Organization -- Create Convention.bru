@@ -1,0 +1,29 @@
+meta {
+  name: Organization -- Create Convention
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/con
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Geekway Mini 2024",
+      "tteConventionId": "85640642-5678-11EE-889C-E67A6477A211",
+      "startDate": "2024-01-12T10:00:00.000Z",
+      "endDate": "2024-01-14T18:00:00.000Z",
+      "type": {
+          "connect": {
+              "id": 2
+          }
+      }
+  }
+}
+
+vars:pre-request {
+  id: 1
+}

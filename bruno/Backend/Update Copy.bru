@@ -1,0 +1,21 @@
+meta {
+  name: Update Copy
+  type: http
+  seq: 21
+}
+
+put {
+  url: {{apiUrl}}/copy/{{id}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "winnable": true
+  }
+}
+
+vars:pre-request {
+  id: 1
+}

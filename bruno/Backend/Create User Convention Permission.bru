@@ -1,0 +1,21 @@
+meta {
+  name: Create User Convention Permission
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{apiUrl}}/userConPerm
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "userId": 12,
+      "conventionId": 1,
+      "admin": true,
+      "geekGuide": false,
+      "attendee": true
+  }
+}

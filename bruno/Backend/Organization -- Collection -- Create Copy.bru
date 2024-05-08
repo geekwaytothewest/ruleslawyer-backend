@@ -1,0 +1,28 @@
+meta {
+  name: Organization -- Collection -- Create Copy
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/col/{{colId}}/copy
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "game": {
+          "connect": {
+              "id": 1
+          }
+      },
+      "barcodeNumber": 4321,
+      "barcode": "*04321*"
+  }
+}
+
+vars:pre-request {
+  id: 1
+  colId: 1
+}

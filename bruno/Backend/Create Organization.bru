@@ -1,0 +1,17 @@
+meta {
+  name: Create Organization
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{apiUrl}}/org
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Geekway to the West"
+  }
+}

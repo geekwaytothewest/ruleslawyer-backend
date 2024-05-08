@@ -1,0 +1,20 @@
+meta {
+  name: Organization -- Collection Upload
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/col
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  csvFile: undefined
+  name: Geekway Library
+}
+
+vars:pre-request {
+  id: 1
+}

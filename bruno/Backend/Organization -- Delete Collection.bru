@@ -1,0 +1,16 @@
+meta {
+  name: Organization -- Delete Collection
+  type: http
+  seq: 17
+}
+
+delete {
+  url: {{apiUrl}}/org/{{id}}/col/{{colId}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+  colId: 1
+}

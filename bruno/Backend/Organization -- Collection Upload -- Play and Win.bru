@@ -1,0 +1,22 @@
+meta {
+  name: Organization -- Collection Upload -- Play and Win
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/col
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  csvFile: undefined
+  name: Geekway Mini 2024 Play and Win
+  type: Play and Win
+  conventionId: 1
+}
+
+vars:pre-request {
+  id: 1
+}

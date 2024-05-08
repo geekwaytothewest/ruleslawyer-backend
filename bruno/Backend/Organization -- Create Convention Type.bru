@@ -1,0 +1,21 @@
+meta {
+  name: Organization -- Create Convention Type
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{apiUrl}}/org/{{id}}/conventionType
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Geekway to the West"
+  }
+}
+
+vars:pre-request {
+  id: 1
+}

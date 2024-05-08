@@ -1,0 +1,15 @@
+meta {
+  name: Get Copy
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{apiUrl}}/copy/{{id}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+}

@@ -1,0 +1,22 @@
+meta {
+  name: SuperAdmin -- Create Convention
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{apiUrl}}/con
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "name": "Geekway Mini 2025",
+      "organization": {
+          "connect": {
+              "id": 1
+          }
+      }
+  }
+}
