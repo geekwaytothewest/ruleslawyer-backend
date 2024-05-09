@@ -8,6 +8,7 @@ import { Context } from '../prisma/context';
 import { CheckOutService } from '../check-out/check-out.service';
 import { stringify } from 'csv-stringify';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
+import { parse } from 'csv-parse';
 
 @Injectable()
 export class ConventionService {
@@ -108,6 +109,69 @@ export class ConventionService {
     } catch (ex) {
       return Promise.reject(ex);
     }
+  }
+
+  async importAttendeesCSV(userData, conventionId, ctx) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.logger.log(`Importing attendees for conventionId=${conventionId}`);
+
+        parse(userData, { delimiter: ',' }, async (error, records) => {
+          if (error) {
+            this.logger.error(`csv could not be parsed`);
+            return reject('invalid csv file');
+          }
+
+          let importCount = 0;
+
+          this.logger.log(`Getting attendees for ${records.length} badges`);
+
+          const attendees = await Promise.all(
+            records.map(async (b) => {
+              const badgeNumber = b[2];
+
+              return <Prisma.AttendeeCreateInput>{
+                convention: {
+                  connect: {
+                    id: Number(conventionId),
+                  },
+                },
+                badgeName: b[0] + ' ' + b[1],
+                badgeFirstName: b[0],
+                badgeLastName: b[1],
+                legalName: b[0] + ' ' + b[1],
+                registrationCode: crypto.randomUUID(),
+                badgeNumber: badgeNumber,
+                barcode: '*' + badgeNumber + '*',
+                tteBadgeNumber: null,
+                tteBadgeId: null,
+                merch: null,
+              };
+            }),
+          );
+
+          this.logger.log(`Importing ${attendees?.length} attendees`);
+          for (const a of attendees) {
+            try {
+              await this.attendeeService.createAttendee(a, ctx);
+              importCount++;
+            } catch (ex) {
+              this.logger.error(
+                `Failed to import attendee with badgeNumber=${a.badgeNumber}`,
+              );
+            }
+          }
+
+          this.logger.log(`Imported ${importCount} attendees`);
+          return resolve(importCount);
+        });
+      } catch (ex) {
+        this.logger.error(
+          `Failed to import attendees for conventionId=${conventionId}`,
+        );
+        return reject(ex);
+      }
+    });
   }
 
   async importAttendees(userData, conventionId, ctx) {

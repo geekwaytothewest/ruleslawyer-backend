@@ -1,0 +1,27 @@
+meta {
+  name: Import Attendees CSV
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{apiUrl}}/con/{{id}}/importAttendeesCSV
+  body: multipartForm
+  auth: inherit
+}
+
+body:json {
+  {
+      "userName": "",
+      "password": "",
+      "apiKey": ""
+  }
+}
+
+body:multipart-form {
+  csvFile: @file(/home/afrozenpeach/Downloads/Untitled spreadsheet - Sheet1.csv)
+}
+
+vars:pre-request {
+  id: 2
+}

@@ -1403,6 +1403,32 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Put('org/:orgId/con/:conId/attendees/import')
+  async importAttendees(
+    @Req() request: fastify.FastifyRequest,
+    @Param('conId') conId: number,
+  ) {
+    this.logger.log(`Importing attendees for conId=${conId}`);
+    this.logger.log(`Validating file input`);
+    const file = await request.file();
+    const buffer = await file?.toBuffer();
+
+    if (buffer === undefined) {
+      this.logger.error(`Missing file`);
+      return Promise.reject('missing file');
+    }
+
+    this.logger.log(
+      `File input validated; importing collection for orgId=${conId}}`,
+    );
+
+    return this.conventionService.importAttendeesCSV(
+      buffer,
+      Number(conId),
+      this.ctx,
+    );
+  }
+  @UseGuards(JwtAuthGuard, ConventionGuard)
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
   async syncTabletopEvents(
     @Param('conId') conId: number,

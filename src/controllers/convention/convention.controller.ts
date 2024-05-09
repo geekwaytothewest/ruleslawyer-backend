@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Put,
   Header,
+  Req,
 } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { ConventionService } from '../../services/convention/convention.service';
@@ -17,6 +18,7 @@ import { ConventionGuard } from '../../guards/convention/convention.guard';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { Context } from '../../services/prisma/context';
 import { AttendeeService } from '../../services/attendee/attendee.service';
+import fastify = require('fastify');
 
 @Controller()
 export class ConventionController {
@@ -74,6 +76,22 @@ export class ConventionController {
       conventionData,
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @Post(':id/importAttendeesCSV')
+  async importAttendeesCSV(
+    @Req() request: fastify.FastifyRequest,
+    @Param('id') id: number,
+  ) {
+    const file = await request.file();
+    const buffer = await file?.toBuffer();
+
+    if (buffer === undefined) {
+      return Promise.reject('missing file');
+    }
+
+    return this.conventionService.importAttendeesCSV(buffer, id, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, ConventionGuard)
