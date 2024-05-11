@@ -62,4 +62,13 @@ export class UserOrganizationPermissionsController {
       this.ctx,
     );
   }
+
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @Get(':id/count')
+  async getUserConventionCount(@Param('id') id: string): Promise<number> {
+    return await this.userOrganizationPermissionsService.userOrganizationCount(
+      id,
+      this.ctx,
+    );
+  }
 }

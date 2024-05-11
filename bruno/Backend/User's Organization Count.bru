@@ -1,0 +1,15 @@
+meta {
+  name: User's Organization Count
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{apiUrl}}/userOrgPerm/{{id}}/count
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+}

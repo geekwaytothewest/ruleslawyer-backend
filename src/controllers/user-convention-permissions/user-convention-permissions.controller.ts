@@ -31,6 +31,15 @@ export class UserConventionPermissionsController {
     );
   }
 
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @Get(':id/count')
+  async getUserConventionCount(@Param('id') id: string): Promise<number> {
+    return await this.userConventionPermissionsService.userConventionCount(
+      id,
+      this.ctx,
+    );
+  }
+
   @UseGuards(JwtAuthGuard, ConventionGuard)
   @Post()
   async createPermission(

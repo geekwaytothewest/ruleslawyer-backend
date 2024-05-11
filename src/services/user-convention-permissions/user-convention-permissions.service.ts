@@ -1,25 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, UserConventionPermissions } from '@prisma/client';
 import { Context } from '../prisma/context';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class UserConventionPermissionsService {
-  constructor() {}
+  constructor(private readonly userService: UserService) {}
 
   async userConventionPermissions(
     id: string,
     ctx: Context,
   ): Promise<UserConventionPermissions[]> {
     try {
-      let userId: number = Number(id);
-
-      if (!Number.isInteger(userId)) {
-        const user = await ctx.prisma.user.findUnique({
-          where: { id: Number(id) },
-        });
-
-        userId = Number(user?.id);
-      }
+      const userId = await this.userService.convertToUserId(id, ctx);
 
       return ctx.prisma.userConventionPermissions.findMany({
         where: {
@@ -32,6 +25,16 @@ export class UserConventionPermissionsService {
     } catch (ex) {
       return Promise.reject(ex);
     }
+  }
+
+  async userConventionCount(id: string, ctx: Context): Promise<number> {
+    const userId = await this.userService.convertToUserId(id, ctx);
+
+    return await ctx.prisma.userConventionPermissions.count({
+      where: {
+        userId: userId,
+      },
+    });
   }
 
   async createPermission(

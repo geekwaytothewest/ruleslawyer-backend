@@ -1,25 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, UserOrganizationPermissions } from '@prisma/client';
 import { Context } from '../prisma/context';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class UserOrganizationPermissionsService {
-  constructor() {}
+  constructor(private readonly userService: UserService) {}
+
+  async userOrganizationCount(id: string, ctx: Context): Promise<number> {
+    const userId = await this.userService.convertToUserId(id, ctx);
+
+    return await ctx.prisma.userOrganizationPermissions.count({
+      where: {
+        userId: userId,
+      },
+    });
+  }
 
   async userOrganizationPermissions(
     id: string,
     ctx: Context,
   ): Promise<UserOrganizationPermissions[]> {
     try {
-      let userId: number = Number(id);
-
-      if (!Number.isInteger(userId)) {
-        const user = await ctx.prisma.user.findUnique({
-          where: { id: Number(id) },
-        });
-
-        userId = Number(user?.id);
-      }
+      const userId = await this.userService.convertToUserId(id, ctx);
 
       return ctx.prisma.userOrganizationPermissions.findMany({
         where: {

@@ -1,0 +1,15 @@
+meta {
+  name: User's Convention Count
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{apiUrl}}/userConPerm/{{id}}/count
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+}
