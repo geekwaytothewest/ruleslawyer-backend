@@ -25,6 +25,9 @@ export class UserConventionPermissionsService {
         where: {
           id: userId,
         },
+        include: {
+          convention: true,
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);

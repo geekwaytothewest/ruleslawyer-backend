@@ -25,6 +25,9 @@ export class UserOrganizationPermissionsService {
         where: {
           id: userId,
         },
+        include: {
+          organization: true,
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
