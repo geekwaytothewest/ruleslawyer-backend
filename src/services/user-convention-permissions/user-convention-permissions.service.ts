@@ -13,7 +13,7 @@ export class UserConventionPermissionsService {
     try {
       let userId: number = Number(id);
 
-      if (!Number.isInteger(Number(id))) {
+      if (!Number.isInteger(userId)) {
         const user = await ctx.prisma.user.findUnique({
           where: { id: Number(id) },
         });
