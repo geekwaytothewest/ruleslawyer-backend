@@ -6,6 +6,31 @@ import { Context } from '../prisma/context';
 export class UserConventionPermissionsService {
   constructor() {}
 
+  async userConventionPermissions(
+    id: string,
+    ctx: Context,
+  ): Promise<UserConventionPermissions[]> {
+    try {
+      let userId: number = Number(id);
+
+      if (!Number.isInteger(Number(id))) {
+        const user = await ctx.prisma.user.findUnique({
+          where: { id: Number(id) },
+        });
+
+        userId = Number(user?.id);
+      }
+
+      return ctx.prisma.userConventionPermissions.findMany({
+        where: {
+          id: userId,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
   async createPermission(
     data: Prisma.UserConventionPermissionsCreateInput,
     ctx: Context,
