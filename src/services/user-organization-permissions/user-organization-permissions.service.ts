@@ -23,7 +23,7 @@ export class UserOrganizationPermissionsService {
 
       return ctx.prisma.userOrganizationPermissions.findMany({
         where: {
-          id: userId,
+          userId: userId,
         },
         include: {
           organization: true,

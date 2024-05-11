@@ -23,7 +23,7 @@ export class UserConventionPermissionsService {
 
       return ctx.prisma.userConventionPermissions.findMany({
         where: {
-          id: userId,
+          userId: userId,
         },
         include: {
           convention: true,
