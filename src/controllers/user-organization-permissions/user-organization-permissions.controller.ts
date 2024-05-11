@@ -26,7 +26,7 @@ export class UserOrganizationPermissionsController {
     @Param('id') id: string,
   ): Promise<UserOrganizationPermissions[]> {
     return this.userOrganizationPermissionsService.userOrganizationPermissions(
-      Number(id),
+      id,
       this.ctx,
     );
   }

@@ -7,13 +7,23 @@ export class UserOrganizationPermissionsService {
   constructor() {}
 
   async userOrganizationPermissions(
-    id: number,
+    id: string,
     ctx: Context,
   ): Promise<UserOrganizationPermissions[]> {
     try {
+      let user: any;
+
+      if (!Number.isInteger(id)) {
+        user = await ctx.prisma.user.findUnique({
+          where: { id: Number(id) },
+        });
+
+        id = user?.id;
+      }
+
       return ctx.prisma.userOrganizationPermissions.findMany({
         where: {
-          id: id,
+          id: Number(id),
         },
       });
     } catch (ex) {
