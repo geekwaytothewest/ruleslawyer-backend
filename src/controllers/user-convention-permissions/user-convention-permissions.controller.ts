@@ -30,7 +30,7 @@ export class UserConventionPermissionsController {
       this.ctx,
     );
   }
-ß
+
   @UseGuards(JwtAuthGuard, ConventionGuard)
   @Post()
   async createPermission(
