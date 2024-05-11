@@ -1,10 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserOrganizationPermissions } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationGuard } from '../../guards/organization/organization.guard';
 import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
+import { UserGuard } from 'src/guards/user/user.guard';
 
 @Controller()
 export class UserOrganizationPermissionsController {
@@ -17,6 +18,17 @@ export class UserOrganizationPermissionsController {
     this.ctx = {
       prisma: prismaService,
     };
+  }
+
+  @UseGuards(JwtAuthGuard, UserGuard, OrganizationGuard)
+  @Get(':id')
+  async getUserOrganizationPermissions(
+    @Param('id') id: string,
+  ): Promise<UserOrganizationPermissions[]> {
+    return this.userOrganizationPermissionsService.userOrganizationPermissions(
+      Number(id),
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, OrganizationGuard)
