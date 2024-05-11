@@ -11,19 +11,19 @@ export class UserOrganizationPermissionsService {
     ctx: Context,
   ): Promise<UserOrganizationPermissions[]> {
     try {
-      let user: any;
+      let userId: number = Number(id);
 
-      if (!Number.isInteger(id)) {
-        user = await ctx.prisma.user.findUnique({
+      if (!Number.isInteger(Number(id))) {
+        const user = await ctx.prisma.user.findUnique({
           where: { id: Number(id) },
         });
 
-        id = user?.id;
+        userId = Number(user?.id);
       }
 
       return ctx.prisma.userOrganizationPermissions.findMany({
         where: {
-          id: Number(id),
+          id: userId,
         },
       });
     } catch (ex) {

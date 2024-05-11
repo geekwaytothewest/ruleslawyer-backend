@@ -20,7 +20,7 @@ export class UserOrganizationPermissionsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, UserGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @Get(':id')
   async getUserOrganizationPermissions(
     @Param('id') id: string,
