@@ -4,11 +4,10 @@ import { CopyModule } from '../copy/copy.module';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { CollectionGuard } from '../../guards/collection/collection.guard';
 import { OrganizationService } from '../../services/organization/organization.service';
-import { CollectionController } from 'src/controllers/collection/collection.controller';
 
 @Module({
   imports: [CopyModule],
-  controllers: [CollectionController],
+  controllers: [],
   providers: [
     CollectionService,
     PrismaService,

@@ -29,6 +29,7 @@ export class UserController {
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
     let user: UserModel | null;
+
     if (!isNaN(Number(id))) {
       user = await this.userService.user(
         {
