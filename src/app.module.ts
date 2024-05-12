@@ -53,6 +53,10 @@ const routes = [
     path: '/api/legacy',
     module: LegacyModule,
   },
+  {
+    path: 'api/collection',
+    module: CollectionModule,
+  },
 ];
 
 @Module({

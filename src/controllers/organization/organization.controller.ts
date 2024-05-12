@@ -63,6 +63,12 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Get(':id')
+  async organization(@Param('id') id: number): Promise<Organization | null> {
+    return this.organizationService.organization({ id: Number(id) }, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
   @Post(':id/con')
   async createConvention(
     @Body() conventionData: Prisma.ConventionCreateInput,

@@ -1,11 +1,15 @@
 meta {
-  name: Organization - Doesn't work yet just a note here!
+  name: Organization
   type: http
-  seq: 4
+  seq: 34
 }
 
 get {
-  url: 
+  url: {{apiUrl}}/org/{{id}}
   body: none
-  auth: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
 }

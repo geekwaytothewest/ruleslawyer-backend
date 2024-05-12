@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
@@ -12,6 +12,13 @@ export class CollectionService {
   async collection(id: number, ctx: Context) {
     return await ctx.prisma.collection.findUnique({
       where: { id: Number(id) },
+      include: {
+        copies: {
+          include: {
+            game: true,
+          },
+        },
+      },
     });
   }
 

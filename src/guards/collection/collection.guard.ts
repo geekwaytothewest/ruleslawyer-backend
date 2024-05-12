@@ -33,11 +33,12 @@ export class CollectionGuard implements CanActivate {
       orgId = context.getArgByIndex(0).params?.orgId;
     }
 
+    const collection = await this.collectionService.collection(colId, this.ctx);
+    orgId = collection?.organizationId;
+
     if (!orgId) {
       return false;
     }
-
-    const collection = await this.collectionService.collection(colId, this.ctx);
 
     if (collection?.organizationId !== Number(orgId)) {
       return false;
