@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  Collection,
   Convention,
   ConventionType,
   Organization,
@@ -203,5 +204,11 @@ export class OrganizationController {
   @Get(':id/conventions')
   async getConventions(@Param('id') id: number): Promise<Convention[] | void> {
     return this.conventionService.conventions(Number(id), this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @Get(':id/collections')
+  async getCollections(@Param('id') id: number): Promise<Collection[] | void> {
+    return this.collectionService.collectionsByOrg(Number(id), this.ctx);
   }
 }
