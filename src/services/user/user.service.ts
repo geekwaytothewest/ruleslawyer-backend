@@ -24,7 +24,7 @@ export class UserService {
 
     if (!Number.isInteger(userId)) {
       const user = await ctx.prisma.user.findUnique({
-        where: { id: Number(id) },
+        where: { email: id },
       });
 
       userId = Number(user?.id);
