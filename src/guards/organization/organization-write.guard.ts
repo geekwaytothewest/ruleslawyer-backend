@@ -6,7 +6,7 @@ import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Injectable()
-export class OrganizationGuard implements CanActivate {
+export class OrganizationWriteGuard implements CanActivate {
   ctx: Context;
 
   constructor(
@@ -52,7 +52,11 @@ export class OrganizationGuard implements CanActivate {
       return true;
     }
 
-    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+    if (
+      org?.users?.filter(
+        (u) => u.userId === user.id && (u.admin || u.geekGuide),
+      ).length > 0
+    ) {
       return true;
     }
 

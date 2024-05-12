@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext } from '@nestjs/common';
 import { createMock } from '@golevelup/ts-jest';
-import { OrganizationGuard } from './organization.guard';
+import { OrganizationGuard } from './organization-write.guard';
 import { MockContext, createMockContext } from '../../services/prisma/context';
 import { OrganizationModule } from '../../modules/organization/organization.module';
 

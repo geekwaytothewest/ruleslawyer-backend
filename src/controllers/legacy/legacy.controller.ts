@@ -16,7 +16,8 @@ import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CollectionService } from '../../services/collection/collection.service';
-import { OrganizationGuard } from '../../guards/organization/organization.guard';
+import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
+import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { CopyGuard } from '../../guards/copy/copy.guard';
 import { CollectionGuard } from '../../guards/collection/collection.guard';
@@ -55,7 +56,7 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get('org/:orgId/con/:conId/copycollections')
   async getCopyCollections(@Param('orgId') orgId: number) {
     this.logger.log(`Getting collections for orgId=${orgId}`);
@@ -1221,7 +1222,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/importCollection')
   async importCollection(
     @Req() request: fastify.FastifyRequest,
@@ -1250,7 +1251,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/addCollection')
   async addCollection(
     @Param('orgId') orgId: number,
@@ -1271,7 +1272,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/collection/:colId')
   async updateCollection(
     @Param('orgId') orgId: number,
@@ -1376,7 +1377,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/copycollections/:collId/copies/upload')
   async uploadCopies(
     @Req() request: fastify.FastifyRequest,

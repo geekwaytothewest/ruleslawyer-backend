@@ -18,7 +18,8 @@ import {
 import { OrganizationService } from '../../services/organization/organization.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
-import { OrganizationGuard } from '../../guards/organization/organization.guard';
+import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
+import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import fastify = require('fastify');
@@ -62,13 +63,13 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get(':id')
   async organization(@Param('id') id: number): Promise<Organization | null> {
     return this.organizationService.organization({ id: Number(id) }, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post(':id/con')
   async createConvention(
     @Body() conventionData: Prisma.ConventionCreateInput,
@@ -83,7 +84,7 @@ export class OrganizationController {
     return this.conventionService.createConvention(conventionData, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard, UploadGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, UploadGuard)
   @Post(':id/col')
   async importCollection(
     @Req() request: fastify.FastifyRequest,
@@ -106,7 +107,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionGuard)
   @Delete(':id/col/:colId')
   async deleteCollection(
     @Param('id') id: number,
@@ -115,7 +116,7 @@ export class OrganizationController {
     return await this.collectionService.deleteCollection(colId, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionGuard)
   @Post(':id/col/:colId/copy')
   async createCopy(
     @Param('id') id: number,
@@ -179,7 +180,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post(':id/conventionType')
   async createConventionType(
     @Param('id') id: number,
@@ -198,7 +199,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get(':id/conventionType')
   async getConventionTypes(
     @Param('id') id: number,
@@ -206,13 +207,13 @@ export class OrganizationController {
     return this.conventionTypeService.conventionTypes(Number(id), this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get(':id/conventions')
   async getConventions(@Param('id') id: number): Promise<Convention[] | void> {
     return this.conventionService.conventions(Number(id), this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get(':id/collections')
   async getCollections(@Param('id') id: number): Promise<Collection[] | void> {
     return this.collectionService.collectionsByOrg(Number(id), this.ctx);
