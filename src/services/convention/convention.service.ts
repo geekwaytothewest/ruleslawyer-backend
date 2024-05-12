@@ -311,10 +311,14 @@ export class ConventionService {
               pronouns: {
                 connectOrCreate: {
                   create: {
-                    pronouns: b.custom_fields.PreferredPronouns,
+                    pronouns: b.custom_fields?.PreferredPronouns
+                      ? b.custom_fields.PreferredPronouns
+                      : 'Prefer Not To Say',
                   },
                   where: {
-                    pronouns: b.custom_fields.PreferredPronouns,
+                    pronouns: b.custom_fields?.PreferredPronouns
+                      ? b.custom_fields.PreferredPronouns
+                      : 'Prefer Not To Say',
                   },
                 },
               },
