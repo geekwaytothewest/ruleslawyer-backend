@@ -5,7 +5,7 @@ import { ConventionGuard } from '../../guards/convention/convention.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { UserGuard } from 'src/guards/user/user.guard';
+import { UserGuard } from '../../guards/user/user.guard';
 
 @Controller()
 export class UserConventionPermissionsController {

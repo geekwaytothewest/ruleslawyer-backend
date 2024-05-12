@@ -25,7 +25,7 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import fastify = require('fastify');
 import { UploadGuard } from '../../guards/upload/upload.guard';
 import { CollectionService } from '../../services/collection/collection.service';
-import { CollectionGuard } from '../../guards/collection/collection.guard';
+import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { CheckOutService } from '../../services/check-out/check-out.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
@@ -107,7 +107,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionWriteGuard)
   @Delete(':id/col/:colId')
   async deleteCollection(
     @Param('id') id: number,
@@ -116,7 +116,7 @@ export class OrganizationController {
     return await this.collectionService.deleteCollection(colId, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionWriteGuard)
   @Post(':id/col/:colId/copy')
   async createCopy(
     @Param('id') id: number,

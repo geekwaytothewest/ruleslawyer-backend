@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CollectionService } from '../../services/collection/collection.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
-import { CollectionGuard } from '../../guards/collection/collection.guard';
+import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { Context } from '../../services/prisma/context';
 import { AttendeeService } from '../../services/attendee/attendee.service';
@@ -26,7 +26,7 @@ export class CollectionController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, CollectionReadGuard)
   @Get(':colId')
   async collection(@Param('colId') colId: number) {
     const con = await this.collectionService

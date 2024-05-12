@@ -3,15 +3,15 @@ import { UserOrganizationPermissionsController } from '../../controllers/user-or
 import { OrganizationService } from '../../services/organization/organization.service';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
-import { UserService } from 'src/services/user/user.service';
+import { UserModule } from '../user/user.module';
 
 @Module({
   controllers: [UserOrganizationPermissionsController],
+  imports: [UserModule],
   providers: [
     UserOrganizationPermissionsService,
     PrismaService,
     OrganizationService,
-    UserService,
   ],
   exports: [UserOrganizationPermissionsService],
 })

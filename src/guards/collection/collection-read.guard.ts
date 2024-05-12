@@ -7,7 +7,7 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { CollectionService } from '../../services/collection/collection.service';
 
 @Injectable()
-export class CollectionGuard implements CanActivate {
+export class CollectionReadGuard implements CanActivate {
   ctx: Context;
 
   constructor(
@@ -62,7 +62,11 @@ export class CollectionGuard implements CanActivate {
       return true;
     }
 
-    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+    if (
+      org?.users?.filter(
+        (u) => u.userId === user.id && (u.admin || u.geekGuide),
+      ).length > 0
+    ) {
       return true;
     }
 

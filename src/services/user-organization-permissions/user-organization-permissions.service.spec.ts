@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserOrganizationPermissionsService } from './user-organization-permissions.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserOrganizationPermissionsModule } from '../../modules/user-organization-permissions/user-organization-permissions.module';
 
 describe('UserOrganizationPermissionsService', () => {
   let service: UserOrganizationPermissionsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserOrganizationPermissionsService, PrismaService],
+      imports: [UserOrganizationPermissionsModule],
     }).compile();
 
     service = module.get<UserOrganizationPermissionsService>(

@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { CollectionService } from '../../services/collection/collection.service';
 import { CopyModule } from '../copy/copy.module';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { CollectionGuard } from '../../guards/collection/collection.guard';
 import { OrganizationService } from '../../services/organization/organization.service';
-import { CollectionController } from 'src/controllers/collection/collection.controller';
+import { CollectionController } from '../../controllers/collection/collection.controller';
 import { AttendeeModule } from '../attendee/attendee.module';
+import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
+import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 
 @Module({
   imports: [CopyModule, AttendeeModule],
@@ -13,8 +14,9 @@ import { AttendeeModule } from '../attendee/attendee.module';
   providers: [
     CollectionService,
     PrismaService,
-    CollectionGuard,
     OrganizationService,
+    CollectionReadGuard,
+    CollectionWriteGuard,
   ],
   exports: [CollectionService],
 })

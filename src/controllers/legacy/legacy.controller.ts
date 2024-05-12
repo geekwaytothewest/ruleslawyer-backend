@@ -20,7 +20,7 @@ import { OrganizationWriteGuard } from '../../guards/organization/organization-w
 import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { CopyGuard } from '../../guards/copy/copy.guard';
-import { CollectionGuard } from '../../guards/collection/collection.guard';
+import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { ConventionGuard } from '../../guards/convention/convention.guard';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
@@ -175,7 +175,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, CollectionWriteGuard)
   @Post('org/:orgId/con/:conId/copycollections/:colId/copies')
   async addCopy(
     @Param('orgId') orgId: number,
