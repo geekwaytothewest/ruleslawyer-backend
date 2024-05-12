@@ -50,7 +50,11 @@ export class CopyService {
       return ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
         include: {
-          checkOuts: true,
+          checkOuts: {
+            orderBy: {
+              checkOut: 'desc',
+            },
+          },
         },
       });
     } catch (ex) {
@@ -100,7 +104,6 @@ export class CopyService {
     ctx: Context,
   ): Promise<Copy | null> {
     try {
-      const copyWhereUniqueInput = {};
       this.logger.log(`Creating copy with data=${JSON.stringify(data)}`);
       return ctx.prisma.copy.upsert({
         where: {

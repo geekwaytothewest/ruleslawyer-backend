@@ -16,6 +16,11 @@ export class CollectionService {
         copies: {
           include: {
             game: true,
+            checkOuts: {
+              orderBy: {
+                checkOut: 'desc',
+              },
+            },
           },
         },
       },

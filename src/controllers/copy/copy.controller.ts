@@ -26,6 +26,15 @@ export class CopyController {
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
+  @Get(':id/withCheckOuts')
+  async getCopyWithCheckOuts(@Param('id') id: number) {
+    return await this.copyService.copyWithCheckouts(
+      { id: Number(id) },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, CopyGuard)
   @Put(':id')
   async updateCopy(
     @Param('id') id: number,
