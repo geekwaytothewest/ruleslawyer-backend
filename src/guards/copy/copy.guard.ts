@@ -66,7 +66,7 @@ export class CopyGuard implements CanActivate {
 
     const organization = await this.organizationService.organizationWithUsers(
       {
-        id: copy.collection.organizationId,
+        id: copy.organizationId,
       },
       this.ctx,
     );
