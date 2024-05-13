@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { Game, Prisma } from '@prisma/client';
 import { GameService } from '../../services/game/game.service';
+import { CopyService } from 'src/services/copy/copy.service';
 
 @Controller()
 export class GameController {
@@ -21,6 +22,7 @@ export class GameController {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly gameService: GameService,
+    private readonly copyService: CopyService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -40,6 +42,12 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Get('/withCopies')
+  async getGamesWithCopies() {
+    return this.gameService.search({ include: { copies: true } }, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Put(':id')
   async updateGame(
     @Body() data: Prisma.GameUpdateInput,
@@ -49,7 +57,7 @@ export class GameController {
       {
         data: data,
         where: {
-          id: id,
+          id: Number(id),
         },
       },
       this.ctx,
@@ -60,5 +68,16 @@ export class GameController {
   @Get(':id')
   async getGame(@Param('id') id: number) {
     return this.gameService.game({ id: Number(id) }, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Get(':id/copies')
+  async getCopies(@Param('id') id: number) {
+    return this.copyService.searchCopies(
+      {
+        gameId: Number(id),
+      },
+      this.ctx,
+    );
   }
 }

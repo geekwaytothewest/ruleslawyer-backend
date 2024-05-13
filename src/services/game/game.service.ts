@@ -37,6 +37,16 @@ export class GameService {
     }
   }
 
+  async search(where: Prisma.GameFindManyArgs, ctx: Context) {
+    try {
+      this.logger.log(`Searching games`);
+      return ctx.prisma.game.findMany(where);
+    } catch (ex) {
+      this.logger.error(`Failed to search games, ex=${ex}`);
+      return Promise.reject(ex);
+    }
+  }
+
   async createGame(
     data: Prisma.GameCreateInput,
     ctx: Context,
