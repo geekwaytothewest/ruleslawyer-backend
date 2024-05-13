@@ -15,6 +15,9 @@ export class CopyService {
     try {
       return ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
+        include: {
+          collection: true,
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
