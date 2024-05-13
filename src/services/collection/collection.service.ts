@@ -27,7 +27,7 @@ export class CollectionService {
     });
   }
 
-  async collectionsByOrg(orgId: number, ctx: Context) {
+  async collectionsByOrgWithCopies(orgId: number, ctx: Context) {
     this.logger.log(`Getting collections for orgId=${orgId}`);
     return await ctx.prisma.collection.findMany({
       where: {
@@ -45,6 +45,18 @@ export class CollectionService {
             game: true,
           },
         },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  async collectionsByOrg(orgId: number, ctx: Context) {
+    this.logger.log(`Getting collections for orgId=${orgId}`);
+    return await ctx.prisma.collection.findMany({
+      where: {
+        organizationId: orgId,
       },
       orderBy: {
         name: 'asc',
