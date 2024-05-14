@@ -22,6 +22,11 @@ export class CollectionService {
               },
             },
           },
+          orderBy: {
+            game: {
+              name: 'asc',
+            },
+          },
         },
       },
     });
