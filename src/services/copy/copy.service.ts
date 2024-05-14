@@ -17,6 +17,7 @@ export class CopyService {
         where: copyWhereUniqueInput,
         include: {
           collection: true,
+          game: true,
         },
       });
     } catch (ex) {
@@ -141,7 +142,11 @@ export class CopyService {
           data,
         )}, where=${JSON.stringify(where)}`,
       );
-      return ctx.prisma.copy.update({ data, where });
+      return ctx.prisma.copy.update({
+        data,
+        where,
+        include: { collection: true, game: true },
+      });
     } catch (ex) {
       this.logger.error(
         `Failed to update copy with data=${JSON.stringify(
@@ -168,6 +173,11 @@ export class CopyService {
             include: {
               attendee: true,
             },
+          },
+        },
+        orderBy: {
+          game: {
+            name: 'asc',
           },
         },
       });

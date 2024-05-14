@@ -30,7 +30,7 @@ export class GameService {
   async games(ctx: Context) {
     try {
       this.logger.log(`Getting games`);
-      return ctx.prisma.game.findMany();
+      return ctx.prisma.game.findMany({ orderBy: { name: 'asc' } });
     } catch (ex) {
       this.logger.error(`Failed to get games, ex=${ex}`);
       return Promise.reject(ex);

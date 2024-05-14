@@ -48,6 +48,18 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Get('/search/:gameName')
+  async searchGames(@Param('gameName') gameName: string) {
+    return this.gameService.search(
+      {
+        where: { name: { contains: gameName, mode: 'insensitive' } },
+        orderBy: { name: 'asc' },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Put(':id')
   async updateGame(
     @Body() data: Prisma.GameUpdateInput,
