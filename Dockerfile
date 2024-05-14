@@ -10,8 +10,8 @@ RUN npm run build
 
 FROM node:20-alpine
 
-COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
+RUN npm install
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/prisma ./prisma
 
