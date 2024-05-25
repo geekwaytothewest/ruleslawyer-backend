@@ -11,12 +11,43 @@ export class GameService {
   async game(
     gameWhereUniqueInput: Prisma.GameWhereUniqueInput,
     ctx: Context,
+    user: any,
   ): Promise<Game | null> {
     try {
       this.logger.log(
         `Getting game with where=${JSON.stringify(gameWhereUniqueInput)}`,
       );
-      return ctx.prisma.game.findUnique({ where: gameWhereUniqueInput });
+      return ctx.prisma.game.findUnique({
+        where: gameWhereUniqueInput,
+        include: {
+          copies: {
+            where: {
+              OR: [
+                {
+                  organization: {
+                    users: {
+                      some: { id: user.id },
+                    },
+                  },
+                },
+                {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: { id: user.id },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
     } catch (ex) {
       this.logger.error(
         `Failed to get game with where=${JSON.stringify(

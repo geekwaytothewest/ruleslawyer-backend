@@ -32,6 +32,7 @@ import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { PrizeEntryGuard } from '../../guards/prize-entry/prize-entry.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
+import { User } from 'src/modules/authz/user.decorator';
 
 @Controller()
 export class LegacyController {
@@ -790,6 +791,7 @@ export class LegacyController {
     },
     @Param('orgId') orgId: number,
     @Param('conId') conId: number,
+    @User() user: any,
   ) {
     this.logger.log(
       `Checkout requested for barcode=${body.libraryId}, attendeeBadgeNumber=${body.attendeeBadgeNumber}, overrideLimit=${body.overrideLimit}`,
@@ -850,6 +852,7 @@ export class LegacyController {
         const game = await this.gameService.game(
           { id: checkoutCopy?.gameId },
           this.ctx,
+          user,
         );
 
         checkoutString = `Game: ${game?.name}, Barcode: ${checkoutCopy?.barcodeLabel}`;
@@ -917,6 +920,7 @@ export class LegacyController {
       attendee.barcode,
       body.overrideLimit,
       this.ctx,
+      user,
     );
     this.logger.log(
       `Copy with copyId=${copy.id} successfully checked out to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}, checkout.id=${checkOut.id}`,

@@ -110,6 +110,7 @@ export class CheckOutService {
     attendeeBarcode: string,
     overrideLimit: boolean,
     ctx: Context,
+    user: any,
   ) {
     try {
       this.logger.log(
@@ -173,6 +174,7 @@ export class CheckOutService {
           const game = await this.gameService.game(
             { id: checkoutCopy?.gameId },
             ctx,
+            user,
           );
 
           checkoutString = `Game: ${game?.name}, Barcode: ${checkoutCopy?.barcodeLabel}`;

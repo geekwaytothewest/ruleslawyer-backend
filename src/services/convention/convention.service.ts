@@ -381,6 +381,7 @@ export class ConventionService {
     attendeeBarcode: string,
     collectionId: number,
     ctx: Context,
+    user: any,
   ) {
     try {
       return this.checkOutService.checkOut(
@@ -390,6 +391,7 @@ export class ConventionService {
         attendeeBarcode,
         false,
         ctx,
+        user,
       );
     } catch (ex) {
       return Promise.reject(ex);

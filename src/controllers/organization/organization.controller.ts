@@ -30,6 +30,7 @@ import { CopyService } from '../../services/copy/copy.service';
 import { CheckOutService } from '../../services/check-out/check-out.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 import { ConventionTypeService } from '../../services/convention-type/convention-type.service';
+import { User } from 'src/modules/authz/user.decorator';
 
 @Controller()
 export class OrganizationController {
@@ -142,6 +143,7 @@ export class OrganizationController {
     @Param('colId') colId: number,
     @Param('copyBarcode') copyBarcode: string,
     @Param('attendeeBarcode') attendeeBarcode: string,
+    @User() user: any,
   ) {
     return await this.checkOutService.checkOut(
       Number(colId),
@@ -150,6 +152,7 @@ export class OrganizationController {
       attendeeBarcode,
       false,
       this.ctx,
+      user,
     );
   }
 

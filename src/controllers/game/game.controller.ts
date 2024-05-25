@@ -14,6 +14,7 @@ import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { Game, Prisma } from '@prisma/client';
 import { GameService } from '../../services/game/game.service';
 import { CopyService } from 'src/services/copy/copy.service';
+import { User } from 'src/modules/authz/user.decorator';
 
 @Controller()
 export class GameController {
@@ -41,10 +42,49 @@ export class GameController {
     return this.gameService.games(this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('/withCopies')
-  async getGamesWithCopies() {
-    return this.gameService.search({ include: { copies: true } }, this.ctx);
+  async getGamesWithCopies(@User() user: any) {
+    return this.gameService.search(
+      {
+        include: {
+          copies: {
+            include: {
+              checkOuts: true,
+              game: true,
+            },
+            where: {
+              OR: [
+                {
+                  organization: {
+                    users: {
+                      some: { id: user.id },
+                    },
+                  },
+                },
+                {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: { id: user.id },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      },
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
@@ -78,16 +118,44 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async getGame(@Param('id') id: number) {
-    return this.gameService.game({ id: Number(id) }, this.ctx);
+  async getGame(@Param('id') id: number, @User() user: any) {
+    return this.gameService.game(
+      {
+        id: Number(id),
+      },
+      this.ctx,
+      user,
+    );
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id/copies')
-  async getCopies(@Param('id') id: number) {
+  async getCopies(@Param('id') id: number, @User() user: any) {
     return this.copyService.searchCopies(
       {
         gameId: Number(id),
+        OR: [
+          {
+            organization: {
+              users: {
+                some: { id: user.id },
+              },
+            },
+          },
+          {
+            collection: {
+              conventions: {
+                some: {
+                  convention: {
+                    users: {
+                      some: { id: user.id },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
       },
       this.ctx,
     );

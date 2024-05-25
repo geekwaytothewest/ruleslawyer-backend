@@ -193,34 +193,6 @@ export class CollectionService {
           return reject('could not create collection');
         }
 
-        if (fields?.type?.value === 'Door Prizes') {
-          this.logger.log(
-            `Adding door prize collection with name=${fields?.name?.value} to convention witih conventionId=${fields?.conventionId?.value}`,
-          );
-          await ctx.prisma.convention.update({
-            where: {
-              id: Number(fields.conventionId.value),
-              organizationId: Number(orgId),
-            },
-            data: {
-              doorPrizeCollectionId: Number(collection?.id),
-            },
-          });
-        } else if (fields?.type?.value === 'Play and Win') {
-          this.logger.log(
-            `Adding play and win collection with name=${fields?.name?.value} to convention witih conventionId=${fields?.conventionId?.value}`,
-          );
-          await ctx.prisma.convention.update({
-            where: {
-              id: Number(fields.conventionId.value),
-              organizationId: Number(orgId),
-            },
-            data: {
-              playAndWinCollectionId: Number(collection?.id),
-            },
-          });
-        }
-
         this.logger.log(
           `Uploading copies for orgId=${orgId}, collectionId=${collection.id}`,
         );
@@ -245,10 +217,11 @@ export class CollectionService {
     try {
       const conventions = await ctx.prisma.convention.count({
         where: {
-          OR: [
-            { doorPrizeCollectionId: Number(id) },
-            { playAndWinCollectionId: Number(id) },
-          ],
+          collections: {
+            some: {
+              collectionId: id,
+            },
+          },
         },
       });
 
