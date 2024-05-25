@@ -57,11 +57,18 @@ export class GameController {
               OR: [
                 {
                   organization: {
-                    users: {
-                      some: {
-                        userId: user.id,
+                    OR: [
+                      {
+                        users: {
+                          some: {
+                            userId: user.id,
+                          },
+                        },
                       },
-                    },
+                      {
+                        ownerId: user.id,
+                      },
+                    ],
                   },
                 },
                 {
@@ -150,10 +157,14 @@ export class GameController {
                   OR: [
                     {
                       users: {
-                        some: { id: user.id },
+                        some: {
+                          userId: user.id,
+                        },
                       },
                     },
-                    { ownerId: user.id },
+                    {
+                      ownerId: user.id,
+                    },
                   ],
                 },
               },
@@ -163,7 +174,7 @@ export class GameController {
                     some: {
                       convention: {
                         users: {
-                          some: { id: user.id },
+                          some: { userId: user.id },
                         },
                       },
                     },

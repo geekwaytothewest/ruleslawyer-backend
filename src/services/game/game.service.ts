@@ -28,7 +28,7 @@ export class GameService {
                     OR: [
                       {
                         users: {
-                          some: { id: user.id },
+                          some: { userId: user.id },
                         },
                       },
                       { ownerId: user.id },
@@ -41,7 +41,7 @@ export class GameService {
                       some: {
                         convention: {
                           users: {
-                            some: { id: user.id },
+                            some: { userId: user.id },
                           },
                         },
                       },
