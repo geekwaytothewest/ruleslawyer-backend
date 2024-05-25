@@ -25,9 +25,14 @@ export class GameService {
               OR: [
                 {
                   organization: {
-                    users: {
-                      some: { id: user.id },
-                    },
+                    OR: [
+                      {
+                        users: {
+                          some: { id: user.id },
+                        },
+                      },
+                      { ownerId: user.id },
+                    ],
                   },
                 },
                 {

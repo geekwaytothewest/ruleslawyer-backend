@@ -15,11 +15,15 @@ import { Game, Prisma } from '@prisma/client';
 import { GameService } from '../../services/game/game.service';
 import { CopyService } from 'src/services/copy/copy.service';
 import { User } from 'src/modules/authz/user.decorator';
+import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
 
 @Controller()
 export class GameController {
   ctx: Context;
 
+  private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(
+    GameController.name,
+  );
   constructor(
     private readonly prismaService: PrismaService,
     private readonly gameService: GameService,
@@ -49,16 +53,14 @@ export class GameController {
       {
         include: {
           copies: {
-            include: {
-              checkOuts: true,
-              game: true,
-            },
             where: {
               OR: [
                 {
                   organization: {
                     users: {
-                      some: { id: user.id },
+                      some: {
+                        userId: user.id,
+                      },
                     },
                   },
                 },
@@ -68,7 +70,9 @@ export class GameController {
                       some: {
                         convention: {
                           users: {
-                            some: { id: user.id },
+                            some: {
+                              userId: user.id,
+                            },
                           },
                         },
                       },
@@ -76,6 +80,10 @@ export class GameController {
                   },
                 },
               ],
+            },
+            include: {
+              checkOuts: true,
+              game: true,
             },
           },
         },
@@ -133,27 +141,36 @@ export class GameController {
   async getCopies(@Param('id') id: number, @User() user: any) {
     return this.copyService.searchCopies(
       {
-        gameId: Number(id),
-        OR: [
+        AND: [
+          { gameId: Number(id) },
           {
-            organization: {
-              users: {
-                some: { id: user.id },
+            OR: [
+              {
+                organization: {
+                  OR: [
+                    {
+                      users: {
+                        some: { id: user.id },
+                      },
+                    },
+                    { ownerId: user.id },
+                  ],
+                },
               },
-            },
-          },
-          {
-            collection: {
-              conventions: {
-                some: {
-                  convention: {
-                    users: {
-                      some: { id: user.id },
+              {
+                collection: {
+                  conventions: {
+                    some: {
+                      convention: {
+                        users: {
+                          some: { id: user.id },
+                        },
+                      },
                     },
                   },
                 },
               },
-            },
+            ],
           },
         ],
       },
