@@ -404,6 +404,9 @@ export class ConventionService {
         where: {
           organizationId: organizationId,
         },
+        orderBy: {
+          startDate: 'desc',
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);

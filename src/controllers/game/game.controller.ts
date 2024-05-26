@@ -70,6 +70,139 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get()
+  async getGames(@User() user: any) {
+    return this.gameService.search(
+      {
+        include: {
+          copies: {
+            include: {
+              checkOuts: true,
+            },
+            where: {
+              OR: [
+                {
+                  organization: {
+                    users: {
+                      some: {
+                        userId: user.id,
+                      },
+                    },
+                  },
+                },
+                {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: {
+                              userId: user.id,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+        where: {
+          OR: [
+            {
+              organization: {
+                users: {
+                  some: {
+                    userId: user.id,
+                  },
+                },
+              },
+            },
+            {
+              copies: {
+                some: {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: {
+                              userId: user.id,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/withCopies')
+  async getGamesWithCopies(@User() user: any) {
+    return this.gameService.search(
+      {
+        include: {
+          copies: {
+            include: {
+              game: true,
+              checkOuts: true,
+            },
+          },
+        },
+        where: {
+          OR: [
+            {
+              organization: {
+                users: {
+                  some: {
+                    userId: user.id,
+                  },
+                },
+              },
+            },
+            {
+              copies: {
+                some: {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: {
+                              userId: user.id,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id/copies')
   async getCopies(@Param('id') id: number, @User() user: any) {
     return this.copyService.searchCopies(

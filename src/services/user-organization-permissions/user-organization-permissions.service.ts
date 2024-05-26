@@ -31,6 +31,11 @@ export class UserOrganizationPermissionsService {
         include: {
           organization: true,
         },
+        orderBy: {
+          organization: {
+            name: 'asc',
+          },
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);

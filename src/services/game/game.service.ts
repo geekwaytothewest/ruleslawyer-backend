@@ -21,6 +21,10 @@ export class GameService {
         where: gameWhereUniqueInput,
         include: {
           copies: {
+            include: {
+              checkOuts: true,
+              game: true,
+            },
             where: {
               OR: [
                 {

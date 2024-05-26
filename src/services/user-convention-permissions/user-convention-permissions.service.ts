@@ -21,6 +21,11 @@ export class UserConventionPermissionsService {
         include: {
           convention: true,
         },
+        orderBy: {
+          convention: {
+            startDate: 'desc',
+          },
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
