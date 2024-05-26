@@ -81,6 +81,11 @@ export class ConventionService {
                 },
               },
             },
+            orderBy: {
+              collection: {
+                name: 'asc',
+              },
+            },
           },
         },
       });
