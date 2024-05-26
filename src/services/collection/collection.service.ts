@@ -63,6 +63,9 @@ export class CollectionService {
       where: {
         organizationId: orgId,
       },
+      include: {
+        _count: true,
+      },
       orderBy: {
         name: 'asc',
       },

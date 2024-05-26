@@ -440,4 +440,23 @@ export class ConventionService {
       return Promise.reject(ex);
     }
   }
+
+  async detachCollection(
+    conventionId: number,
+    collectionId: number,
+    ctx: Context,
+  ) {
+    try {
+      return ctx.prisma.conventionCollections.delete({
+        where: {
+          conventionId_collectionId: {
+            collectionId: Number(collectionId),
+            conventionId: Number(conventionId),
+          },
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
 }

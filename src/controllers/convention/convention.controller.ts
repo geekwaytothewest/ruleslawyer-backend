@@ -9,6 +9,7 @@ import {
   Put,
   Header,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { ConventionService } from '../../services/convention/convention.service';
@@ -144,12 +145,25 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard, CollectionWriteGuard)
-  @Post(':conId/attachCollection/:colId')
+  @Post(':conId/conventionCollection/:colId')
   async attachCollection(
     @Param('conId') conId: number,
     @Param('colId') colId: any,
   ) {
     return await this.conventionService.attachCollection(
+      conId,
+      colId,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard, CollectionWriteGuard)
+  @Delete(':conId/conventionCollection/:colId')
+  async detachCollection(
+    @Param('conId') conId: number,
+    @Param('colId') colId: any,
+  ) {
+    return await this.conventionService.detachCollection(
       conId,
       colId,
       this.ctx,
