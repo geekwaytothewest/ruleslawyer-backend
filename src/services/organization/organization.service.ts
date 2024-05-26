@@ -37,6 +37,18 @@ export class OrganizationService {
     }
   }
 
+  async organizationByOwner(id: number, ctx: Context): Promise<any> {
+    try {
+      return ctx.prisma.organization.findMany({
+        where: {
+          ownerId: id,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
   async organizationWithCollections(
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
     ctx: Context,

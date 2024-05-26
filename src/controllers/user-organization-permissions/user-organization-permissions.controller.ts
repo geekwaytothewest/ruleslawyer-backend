@@ -6,6 +6,7 @@ import { UserOrganizationPermissionsService } from '../../services/user-organiza
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserGuard } from '../../guards/user/user.guard';
+import { OrganizationService } from '../../services/organization/organization.service';
 
 @Controller()
 export class UserOrganizationPermissionsController {
@@ -13,6 +14,7 @@ export class UserOrganizationPermissionsController {
 
   constructor(
     private readonly userOrganizationPermissionsService: UserOrganizationPermissionsService,
+    private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
   ) {
     this.ctx = {
@@ -25,10 +27,29 @@ export class UserOrganizationPermissionsController {
   async getUserOrganizationPermissions(
     @Param('id') id: string,
   ): Promise<UserOrganizationPermissions[]> {
-    return this.userOrganizationPermissionsService.userOrganizationPermissions(
-      id,
+    const userOrgPermissions =
+      await this.userOrganizationPermissionsService.userOrganizationPermissions(
+        id,
+        this.ctx,
+      );
+
+    const userOrgs = await this.organizationService.organizationByOwner(
+      Number(id),
       this.ctx,
     );
+
+    userOrgPermissions.push(
+      userOrgs.map((uo) => {
+        return {
+          id: -1,
+          userId: id,
+          organizationId: uo.id,
+          admin: true,
+        };
+      }),
+    );
+
+    return userOrgPermissions;
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
