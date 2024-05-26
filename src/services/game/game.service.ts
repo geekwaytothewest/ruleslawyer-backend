@@ -63,10 +63,13 @@ export class GameService {
     }
   }
 
-  async games(ctx: Context) {
+  async games(orgId: number, ctx: Context) {
     try {
       this.logger.log(`Getting games`);
-      return ctx.prisma.game.findMany({ orderBy: { name: 'asc' } });
+      return ctx.prisma.game.findMany({
+        where: { organizationId: Number(orgId) },
+        orderBy: { name: 'asc' },
+      });
     } catch (ex) {
       this.logger.error(`Failed to get games, ex=${ex}`);
       return Promise.reject(ex);

@@ -103,8 +103,9 @@ model Organization {
   users          UserOrganizationPermissions[]
   collections    Collection[]
   conventions    Convention[]
-  Copy           Copy[]
-  ConventionType ConventionType[]
+  copies         Copy[]
+  conventionType ConventionType[]
+  cames          Game[]
 }
 
 model ConventionType {
@@ -117,7 +118,7 @@ model ConventionType {
   content        String?
   organization   Organization @relation(fields: organizationId, references: [id])
   organizationId Int
-  Convention     Convention[]
+  convention     Convention[]
 
   @@unique([name, organizationId])
 }
@@ -145,10 +146,12 @@ model Collection {
 }
 
 model Game {
-  id               Int       @id @default(autoincrement())
-  bggId            Int?      @unique
+  id               Int          @id @default(autoincrement())
+  organization     Organization @relation(fields: organizationId, references: [id])
+  organizationId   Int
+  bggId            Int?         @unique
   lastBGGSync      DateTime?
-  name             String    @unique
+  name             String       @unique
   shortDescription String?
   designer         String?
   artist           String?
@@ -177,7 +180,7 @@ model Copy {
   winner           Attendee?    @relation(fields: winnerId, references: [id])
   winnerId         Int?
   coverArtOverride Bytes?
-  collection       Collection  @relation(fields: collectionId, references: [id])
+  collection       Collection   @relation(fields: collectionId, references: [id])
   collectionId     Int
   checkOuts        CheckOut[]
   organization     Organization @relation(fields: organizationId, references: [id])
@@ -195,7 +198,7 @@ model CheckOut {
   attendeeId Int
   checkOut   DateTime
   checkIn    DateTime?
-  Copy       Copy?     @relation(fields: copyId, references: [id])
+  copy       Copy?     @relation(fields: copyId, references: [id])
   copyId     Int?
   players    Player[]
   submitted  Boolean   @default(false)

@@ -211,6 +211,7 @@ export class LegacyController {
             },
             create: {
               name: copy.title,
+              organizationId: orgId,
             },
           },
         },
@@ -429,8 +430,8 @@ export class LegacyController {
           },
           Copy: {
             Collection: {
-              ID: c.Copy?.collection?.id,
-              Name: c.Copy?.collection?.name,
+              ID: c.copy?.collection?.id,
+              Name: c.copy?.collection?.name,
             },
             CurrentCheckout: {
               Attendee: {
@@ -449,13 +450,13 @@ export class LegacyController {
               },
             },
             Game: {
-              ID: c.Copy?.game.id,
-              Name: c.Copy?.game.name,
+              ID: c.copy?.game.id,
+              Name: c.copy?.game.name,
             },
-            ID: c.Copy?.barcodeLabel,
+            ID: c.copy?.barcodeLabel,
             IsCheckedOut: true,
-            Title: c.Copy?.game.name,
-            Winnable: c.Copy?.winnable,
+            Title: c.copy?.game.name,
+            Winnable: c.copy?.winnable,
           },
           ID: c.id,
           Length: {
@@ -513,8 +514,8 @@ export class LegacyController {
           },
           Copy: {
             Collection: {
-              ID: c.Copy?.collection?.id,
-              Name: c.Copy?.collection?.name,
+              ID: c.copy?.collection?.id,
+              Name: c.copy?.collection?.name,
             },
             CurrentCheckout: {
               Attendee: {
@@ -533,13 +534,13 @@ export class LegacyController {
               },
             },
             Game: {
-              ID: c.Copy?.game.id,
-              Name: c.Copy?.game.name,
+              ID: c.copy?.game.id,
+              Name: c.copy?.game.name,
             },
-            ID: c.Copy?.barcodeLabel,
+            ID: c.copy?.barcodeLabel,
             IsCheckedOut: true,
-            Title: c.Copy?.game.name,
-            Winnable: c.Copy?.winnable,
+            Title: c.copy?.game.name,
+            Winnable: c.copy?.winnable,
           },
           ID: c.id,
           Length: {
@@ -850,7 +851,7 @@ export class LegacyController {
         );
 
         const game = await this.gameService.game(
-          { id: checkoutCopy?.gameId },
+          { id: checkoutCopy?.gameId, organizationId: Number(orgId) },
           this.ctx,
           user,
         );
@@ -1136,17 +1137,17 @@ export class LegacyController {
           },
           Copy: {
             Game: {
-              ID: e.Copy?.game.id,
-              Name: e.Copy?.game.name,
+              ID: e.copy?.game.id,
+              Name: e.copy?.game.name,
             },
             Collection: {
-              ID: e.Copy?.collection?.id,
-              Name: e.Copy?.collection?.name,
-              AllowWinning: e.Copy?.collection?.allowWinning,
+              ID: e.copy?.collection?.id,
+              Name: e.copy?.collection?.name,
+              AllowWinning: e.copy?.collection?.allowWinning,
             },
-            ID: e.Copy?.id,
-            Title: e.Copy?.game.name,
-            Winnable: e.Copy?.winnable,
+            ID: e.copy?.id,
+            Title: e.copy?.game.name,
+            Winnable: e.copy?.winnable,
           },
           ID: e.id,
         };
@@ -1168,12 +1169,12 @@ export class LegacyController {
           return {
             ID: p.id,
             CheckoutID: p.id,
-            GameID: p.Copy?.gameId,
-            GameName: p.Copy?.game.name,
+            GameID: p.copy?.gameId,
+            GameName: p.copy?.game.name,
             Collection: {
-              ID: p.Copy?.collection?.id,
-              Name: p.Copy?.collection?.name,
-              AllowWinning: p.Copy?.collection?.allowWinning,
+              ID: p.copy?.collection?.id,
+              Name: p.copy?.collection?.name,
+              AllowWinning: p.copy?.collection?.allowWinning,
               Color: null,
             },
             Checkout: {
@@ -1300,7 +1301,7 @@ export class LegacyController {
   @Get('org/:orgId/con/:conId/games')
   async getGames(@Param('orgId') orgId: number) {
     this.logger.log(`Getting games for orgId=${orgId}`);
-    const games = await this.gameService.games(this.ctx);
+    const games = await this.gameService.games(orgId, this.ctx);
     this.logger.log(`${games?.length} games found for orgId=${orgId}`);
     this.logger.log(`Getting copies for orgId=${orgId}`);
     const copies = await this.copyService.searchCopies(
@@ -1353,14 +1354,15 @@ export class LegacyController {
   //It was renamed to gameList to not interfere with the pnwpicker code which uses 'games' as its route
   @UseGuards(JwtAuthGuard)
   @Get('org/:orgId/con/:conId/gameList')
-  async getGameList() {
+  async getGameList(@Param('orgId') orgId: number) {
     this.logger.log(`Getting game list`);
-    return this.gameService.games(this.ctx);
+    return this.gameService.games(orgId, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Put('org/:orgId/con/:conId/gameList/:gameId')
   async updateGame(
+    @Param('orgId') orgId: number,
     @Param('gameId') gameId: number,
     @Body()
     game: {
@@ -1372,6 +1374,7 @@ export class LegacyController {
       {
         where: {
           id: Number(gameId),
+          organizationId: Number(orgId),
         },
         data: {
           name: game.title,

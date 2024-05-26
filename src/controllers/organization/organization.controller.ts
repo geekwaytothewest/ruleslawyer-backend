@@ -30,7 +30,8 @@ import { CopyService } from '../../services/copy/copy.service';
 import { CheckOutService } from '../../services/check-out/check-out.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 import { ConventionTypeService } from '../../services/convention-type/convention-type.service';
-import { User } from 'src/modules/authz/user.decorator';
+import { User } from '../../modules/authz/user.decorator';
+import { GameService } from '../../services/game/game.service';
 
 @Controller()
 export class OrganizationController {
@@ -44,6 +45,7 @@ export class OrganizationController {
     private readonly copyService: CopyService,
     private readonly checkOutService: CheckOutService,
     private readonly conventionTypeService: ConventionTypeService,
+    private readonly gameService: GameService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -220,5 +222,82 @@ export class OrganizationController {
   @Get(':id/collections')
   async getCollections(@Param('id') id: number): Promise<Collection[] | void> {
     return this.collectionService.collectionsByOrg(Number(id), this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games')
+  async getGames(@Param('id') id: number) {
+    return this.gameService.games(Number(id), this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games/withCopies')
+  async getGamesWithCopies(@Param('id') id: number, @User() user: any) {
+    return this.gameService.search(
+      {
+        where: {
+          organizationId: Number(id),
+        },
+        include: {
+          copies: {
+            where: {
+              OR: [
+                {
+                  organization: {
+                    OR: [
+                      {
+                        users: {
+                          some: {
+                            userId: user.id,
+                          },
+                        },
+                      },
+                      {
+                        ownerId: user.id,
+                      },
+                    ],
+                  },
+                },
+                {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: {
+                              userId: user.id,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            include: {
+              checkOuts: true,
+              game: true,
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games/search/:gameName')
+  async searchGames(@Param('gameName') gameName: string) {
+    return this.gameService.search(
+      {
+        where: { name: { contains: gameName, mode: 'insensitive' } },
+        orderBy: { name: 'asc' },
+      },
+      this.ctx,
+    );
   }
 }

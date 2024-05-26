@@ -9,6 +9,7 @@ import { CollectionModule } from '../collection/collection.module';
 import { CopyService } from '../../services/copy/copy.service';
 import { CheckOutModule } from '../check-out/check-out.module';
 import { ConventionTypeService } from '../../services/convention-type/convention-type.service';
+import { GameModule } from '../game/game.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ConventionTypeService } from '../../services/convention-type/convention
     ConventionModule,
     CollectionModule,
     CheckOutModule,
+    GameModule,
   ],
   controllers: [OrganizationController],
   providers: [

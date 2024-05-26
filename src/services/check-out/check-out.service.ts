@@ -32,7 +32,7 @@ export class CheckOutService {
         take: 10,
         include: {
           attendee: true,
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -63,7 +63,7 @@ export class CheckOutService {
         take: 10,
         include: {
           attendee: true,
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -84,7 +84,7 @@ export class CheckOutService {
     try {
       return ctx.prisma.checkOut.findMany({
         include: {
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -346,7 +346,7 @@ export class CheckOutService {
       return ctx.prisma.checkOut.findMany({
         include: {
           attendee: true,
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -361,7 +361,7 @@ export class CheckOutService {
               },
             },
             {
-              Copy: {
+              copy: {
                 collection: {
                   allowWinning: true,
                 },

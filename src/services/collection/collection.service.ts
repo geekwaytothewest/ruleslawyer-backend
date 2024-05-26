@@ -297,6 +297,7 @@ export class CollectionService {
                     connectOrCreate: {
                       create: {
                         name: r[0],
+                        organizationId: Number(orgId),
                       },
                       where: {
                         name: r[0],
