@@ -21,7 +21,8 @@ import { OrganizationReadGuard } from '../../guards/organization/organization-re
 import { CopyService } from '../../services/copy/copy.service';
 import { CopyGuard } from '../../guards/copy/copy.guard';
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
-import { ConventionGuard } from '../../guards/convention/convention.guard';
+import { ConventionReadGuard } from '../../guards/convention/convention-read.guard';
+import { ConventionWriteGuard } from '../../guards/convention/convention-write.guard';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 import { CheckOutService } from '../../services/check-out/check-out.service';
@@ -295,7 +296,7 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Post('org/:orgId/con/:conId/attendees')
   async addAttendee(
     @Param('conId') conId: number,
@@ -339,7 +340,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Put('org/:orgId/con/:conId/attendees/:badgeNumber')
   async updateAttendee(
     @Param('badgeNumber') badgeNumber: string,
@@ -1155,7 +1156,7 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionReadGuard)
   @Get('org/:orgId/con/:conId/plays')
   async getPlays(@Param('conId') conId: number) {
     this.logger.log(`Getting plays for conId=${conId}`);
@@ -1410,7 +1411,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Put('org/:orgId/con/:conId/attendees/import')
   async importAttendees(
     @Req() request: fastify.FastifyRequest,
@@ -1436,7 +1437,7 @@ export class LegacyController {
       this.ctx,
     );
   }
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
   async syncTabletopEvents(
     @Param('conId') conId: number,

@@ -64,7 +64,7 @@ export class CollectionReadGuard implements CanActivate {
 
     if (
       org?.users?.filter(
-        (u) => u.userId === user.id && (u.admin || u.geekGuide),
+        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.readOnly),
       ).length > 0
     ) {
       return true;

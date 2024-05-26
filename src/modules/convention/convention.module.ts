@@ -8,7 +8,8 @@ import { OrganizationService } from '../../services/organization/organization.se
 import { CollectionModule } from '../collection/collection.module';
 import { AttendeeModule } from '../attendee/attendee.module';
 import { CheckOutModule } from '../check-out/check-out.module';
-import { ConventionGuard } from '../../guards/convention/convention.guard';
+import { ConventionReadGuard } from '../../guards/convention/convention-read.guard';
+import { ConventionWriteGuard } from '../../guards/convention/convention-write.guard';
 
 @Module({
   imports: [HttpModule, CollectionModule, AttendeeModule, CheckOutModule],
@@ -18,8 +19,9 @@ import { ConventionGuard } from '../../guards/convention/convention.guard';
     TabletopeventsService,
     PrismaService,
     OrganizationService,
-    ConventionGuard,
+    ConventionReadGuard,
+    ConventionWriteGuard,
   ],
-  exports: [ConventionService, ConventionGuard],
+  exports: [ConventionService, ConventionReadGuard, ConventionWriteGuard],
 })
 export class ConventionModule {}

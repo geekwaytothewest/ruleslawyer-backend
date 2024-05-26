@@ -6,7 +6,7 @@ import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Injectable()
-export class ConventionGuard implements CanActivate {
+export class ConventionWriteGuard implements CanActivate {
   ctx: Context;
 
   constructor(

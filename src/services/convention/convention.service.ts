@@ -72,6 +72,17 @@ export class ConventionService {
     try {
       return ctx.prisma.convention.findUnique({
         where: conventionWhereUniqueInput,
+        include: {
+          collections: {
+            include: {
+              collection: {
+                include: {
+                  _count: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
@@ -406,6 +417,23 @@ export class ConventionService {
         },
         orderBy: {
           startDate: 'desc',
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async attachCollection(
+    conventionId: number,
+    collectionId: number,
+    ctx: Context,
+  ) {
+    try {
+      return ctx.prisma.conventionCollections.create({
+        data: {
+          collectionId: Number(collectionId),
+          conventionId: Number(conventionId),
         },
       });
     } catch (ex) {
