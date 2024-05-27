@@ -47,17 +47,23 @@ export class UserOrganizationPermissionsController {
       );
     }
 
-    userOrgPermissions.push(
-      ...userOrgs.map((uo) => {
-        return {
+    userOrgs.forEach((uo) => {
+      const uop = userOrgPermissions.find(
+        (uop) => uop.organizationId === uo.id,
+      );
+
+      if (uop) {
+        uop.admin = true;
+      } else {
+        userOrgPermissions.push({
           id: -1,
           userId: id,
           organizationId: uo.id,
           admin: true,
           organization: uo,
-        };
-      }),
-    );
+        });
+      }
+    });
 
     return userOrgPermissions;
   }
