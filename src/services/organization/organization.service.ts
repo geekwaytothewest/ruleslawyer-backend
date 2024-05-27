@@ -20,6 +20,14 @@ export class OrganizationService {
     }
   }
 
+  async allOrganizations(ctx: Context): Promise<Organization[] | null> {
+    try {
+      return ctx.prisma.organization.findMany();
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
   async organizationWithUsers(
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
     ctx: Context,

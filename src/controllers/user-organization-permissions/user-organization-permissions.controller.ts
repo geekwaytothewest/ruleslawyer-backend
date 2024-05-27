@@ -7,6 +7,7 @@ import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserGuard } from '../../guards/user/user.guard';
 import { OrganizationService } from '../../services/organization/organization.service';
+import { User } from '../../modules/authz/user.decorator';
 
 @Controller()
 export class UserOrganizationPermissionsController {
@@ -26,17 +27,25 @@ export class UserOrganizationPermissionsController {
   @Get(':id')
   async getUserOrganizationPermissions(
     @Param('id') id: string,
+    @User() user: any,
   ): Promise<UserOrganizationPermissions[]> {
-    const userOrgPermissions =
-      await this.userOrganizationPermissionsService.userOrganizationPermissions(
-        id,
+    let userOrgPermissions: any = [];
+    let userOrgs: any = [];
+
+    if (user.superAdmin) {
+      userOrgs = await this.organizationService.allOrganizations(this.ctx);
+    } else {
+      userOrgPermissions =
+        await this.userOrganizationPermissionsService.userOrganizationPermissions(
+          id,
+          this.ctx,
+        );
+
+      userOrgs = await this.organizationService.organizationByOwner(
+        Number(id),
         this.ctx,
       );
-
-    const userOrgs = await this.organizationService.organizationByOwner(
-      Number(id),
-      this.ctx,
-    );
+    }
 
     userOrgPermissions.push(
       ...userOrgs.map((uo) => {
@@ -45,6 +54,7 @@ export class UserOrganizationPermissionsController {
           userId: id,
           organizationId: uo.id,
           admin: true,
+          organization: uo,
         };
       }),
     );
