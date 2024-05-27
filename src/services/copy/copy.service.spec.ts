@@ -80,6 +80,11 @@ describe('CopyService', () => {
               id: 1,
             },
           },
+          collection: {
+            connect: {
+              id: 1,
+            },
+          },
         },
         ctx,
       );

@@ -62,12 +62,6 @@ describe('ConventionService', () => {
         annual: '',
         size: 3000,
         cancelled: false,
-        playAndWinAnnounced: false,
-        doorPrizesAnnounced: false,
-        playAndWinCollectionId: 1,
-        doorPrizeCollectionId: 1,
-        playAndWinWinnersAnnounced: false,
-        playAndWinWinnersSelected: false,
         tteConventionId: '',
       });
 
@@ -111,12 +105,6 @@ describe('ConventionService', () => {
         annual: '',
         size: null,
         cancelled: false,
-        playAndWinAnnounced: false,
-        playAndWinWinnersSelected: false,
-        playAndWinWinnersAnnounced: false,
-        doorPrizesAnnounced: false,
-        playAndWinCollectionId: null,
-        doorPrizeCollectionId: null,
         tteConventionId: '',
       });
 
@@ -198,13 +186,7 @@ describe('ConventionService', () => {
         annual: '1st Testable',
         size: 300,
         registrationUrl: 'fakeurl',
-        playAndWinAnnounced: false,
-        playAndWinCollectionId: null,
-        playAndWinWinnersSelected: false,
-        doorPrizeCollectionId: null,
-        doorPrizesAnnounced: false,
         cancelled: false,
-        playAndWinWinnersAnnounced: false,
       });
 
       expect(
@@ -237,13 +219,7 @@ describe('ConventionService', () => {
         annual: '1st Testable',
         size: 300,
         registrationUrl: 'fakeurl',
-        playAndWinAnnounced: false,
-        playAndWinCollectionId: null,
-        playAndWinWinnersSelected: false,
-        doorPrizeCollectionId: null,
-        doorPrizesAnnounced: false,
         cancelled: false,
-        playAndWinWinnersAnnounced: false,
       });
 
       jest
@@ -280,13 +256,7 @@ describe('ConventionService', () => {
         annual: '1st Testable',
         size: 300,
         registrationUrl: 'fakeurl',
-        playAndWinAnnounced: false,
-        playAndWinCollectionId: null,
-        playAndWinWinnersSelected: false,
-        doorPrizeCollectionId: null,
-        doorPrizesAnnounced: false,
         cancelled: false,
-        playAndWinWinnersAnnounced: false,
       });
 
       jest.spyOn(service['tteService'], 'getSession').mockResolvedValueOnce({
@@ -327,13 +297,7 @@ describe('ConventionService', () => {
         annual: '1st Testable',
         size: 300,
         registrationUrl: 'fakeurl',
-        playAndWinAnnounced: false,
-        playAndWinCollectionId: null,
-        playAndWinWinnersSelected: false,
-        doorPrizeCollectionId: null,
-        doorPrizesAnnounced: false,
         cancelled: false,
-        playAndWinWinnersAnnounced: false,
       });
 
       jest.spyOn(service['tteService'], 'getSession').mockResolvedValueOnce({
@@ -376,13 +340,7 @@ describe('ConventionService', () => {
         annual: '1st Testable',
         size: 300,
         registrationUrl: 'fakeurl',
-        playAndWinAnnounced: false,
-        playAndWinCollectionId: null,
-        playAndWinWinnersSelected: false,
-        doorPrizeCollectionId: null,
-        doorPrizesAnnounced: false,
         cancelled: false,
-        playAndWinWinnersAnnounced: false,
       });
 
       jest.spyOn(service['tteService'], 'getSession').mockResolvedValueOnce({
@@ -448,13 +406,7 @@ describe('ConventionService', () => {
         annual: '1st Testable',
         size: 300,
         registrationUrl: 'fakeurl',
-        playAndWinAnnounced: false,
-        playAndWinCollectionId: null,
-        playAndWinWinnersSelected: false,
-        doorPrizeCollectionId: null,
-        doorPrizesAnnounced: false,
         cancelled: false,
-        playAndWinWinnersAnnounced: false,
       });
 
       jest.spyOn(service['tteService'], 'getSession').mockResolvedValueOnce({
@@ -575,7 +527,7 @@ describe('ConventionService', () => {
       });
 
       expect(
-        service.checkOutGame(1, '*000001*', '*000001*', 1, ctx),
+        service.checkOutGame(1, '*000001*', '*000001*', 1, ctx, { userId: 1 }),
       ).resolves.toBeTruthy();
     });
   });

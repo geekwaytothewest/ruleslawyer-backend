@@ -2,11 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext } from '@nestjs/common';
 import { createMock } from '@golevelup/ts-jest';
 import { MockContext, createMockContext } from '../../services/prisma/context';
-import { ConventionGuard } from './convention-read.guard';
+import { ConventionReadGuard } from './convention-read.guard';
 import { ConventionModule } from '../../modules/convention/convention.module';
 
 describe('ConventionGuard', () => {
-  let guard: ConventionGuard;
+  let guard: ConventionReadGuard;
   let mockCtx: MockContext;
 
   beforeEach(async () => {
@@ -15,7 +15,7 @@ describe('ConventionGuard', () => {
       imports: [ConventionModule],
     }).compile();
 
-    guard = module.get<ConventionGuard>(ConventionGuard);
+    guard = module.get<ConventionReadGuard>(ConventionReadGuard);
     guard.ctx = mockCtx;
   });
 

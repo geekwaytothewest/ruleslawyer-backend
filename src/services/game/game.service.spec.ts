@@ -41,9 +41,10 @@ describe('GameService', () => {
         shortDescription: 'Test Game Short Description',
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
+        organizationId: 1,
       });
 
-      const game = await service.game({ id: 1 }, ctx);
+      const game = await service.game({ id: 1 }, ctx, { userId: 1 });
 
       expect(game?.id).toBe(1);
     });
@@ -67,6 +68,7 @@ describe('GameService', () => {
           shortDescription: 'Test Game Short Description',
           weight: new Prisma.Decimal(2.5),
           minAge: 10,
+          organizationId: 1,
         });
 
         const game = await service.createGame(
@@ -86,6 +88,11 @@ describe('GameService', () => {
             shortDescription: 'Test Game Short Description',
             weight: new Prisma.Decimal(2.5),
             minAge: 10,
+            organization: {
+              connect: {
+                id: 1,
+              },
+            },
           },
           ctx,
         );
@@ -113,6 +120,7 @@ describe('GameService', () => {
           shortDescription: 'Test Game Short Description',
           weight: new Prisma.Decimal(2.5),
           minAge: 10,
+          organizationId: 1,
         });
 
         const game = await service.updateGame(

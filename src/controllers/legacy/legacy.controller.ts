@@ -33,7 +33,7 @@ import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { PrizeEntryGuard } from '../../guards/prize-entry/prize-entry.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
-import { User } from 'src/modules/authz/user.decorator';
+import { User } from '../../modules/authz/user.decorator';
 
 @Controller()
 export class LegacyController {

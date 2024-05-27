@@ -13,9 +13,9 @@ import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { Game, Prisma } from '@prisma/client';
 import { GameService } from '../../services/game/game.service';
-import { CopyService } from 'src/services/copy/copy.service';
-import { User } from 'src/modules/authz/user.decorator';
-import { RuleslawyerLogger } from 'src/utils/ruleslawyer.logger';
+import { CopyService } from '../../services/copy/copy.service';
+import { User } from '../../modules/authz/user.decorator';
+import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 
 @Controller()
 export class GameController {
