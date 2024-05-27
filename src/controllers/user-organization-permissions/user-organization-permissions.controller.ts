@@ -39,7 +39,7 @@ export class UserOrganizationPermissionsController {
     );
 
     userOrgPermissions.push(
-      userOrgs.map((uo) => {
+      ...userOrgs.map((uo) => {
         return {
           id: -1,
           userId: id,
