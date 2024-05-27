@@ -6,6 +6,7 @@ import {
   Put,
   Get,
   Param,
+  Query,
 } from '@nestjs/common';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -151,39 +152,38 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/withCopies')
-  async getGamesWithCopies(@User() user: any) {
-    return this.gameService.search(
-      {
-        include: {
-          copies: {
-            include: {
-              game: true,
-              checkOuts: true,
-            },
+  async getGamesWithCopies(@User() user: any, @Query('limit') limit: string) {
+    this.logger.log(limit);
+    const query: Prisma.GameFindManyArgs = {
+      include: {
+        copies: {
+          include: {
+            game: true,
+            checkOuts: true,
           },
         },
-        where: {
-          OR: [
-            {
-              organization: {
-                users: {
-                  some: {
-                    userId: user.id,
-                  },
+      },
+      where: {
+        OR: [
+          {
+            organization: {
+              users: {
+                some: {
+                  userId: user.id,
                 },
               },
             },
-            {
-              copies: {
-                some: {
-                  collection: {
-                    conventions: {
-                      some: {
-                        convention: {
-                          users: {
-                            some: {
-                              userId: user.id,
-                            },
+          },
+          {
+            copies: {
+              some: {
+                collection: {
+                  conventions: {
+                    some: {
+                      convention: {
+                        users: {
+                          some: {
+                            userId: user.id,
                           },
                         },
                       },
@@ -192,14 +192,19 @@ export class GameController {
                 },
               },
             },
-          ],
-        },
-        orderBy: {
-          name: 'asc',
-        },
+          },
+        ],
       },
-      this.ctx,
-    );
+      orderBy: {
+        name: 'asc',
+      },
+    };
+
+    if (!Number.isNaN(limit)) {
+      query.take = Number(limit);
+    }
+
+    return this.gameService.search(query, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard)
