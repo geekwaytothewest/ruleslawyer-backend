@@ -152,7 +152,11 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/withCopies')
-  async getGamesWithCopies(@User() user: any, @Query('limit') limit: string) {
+  async getGamesWithCopies(
+    @User() user: any,
+    @Query('limit') limit: string,
+    @Query('filter') filter: string,
+  ) {
     const query: Prisma.GameFindManyArgs = {
       include: {
         copies: {
@@ -201,6 +205,18 @@ export class GameController {
 
     if (!Number.isNaN(limit)) {
       query.take = Number(limit);
+    }
+
+    if (filter) {
+      query.where = {
+        ...query.where,
+        ...{
+          OR: [
+            { name: { search: filter.split(' ').join(' <-> ') } },
+            { name: { startsWith: filter } },
+          ],
+        },
+      };
     }
 
     return this.gameService.search(query, this.ctx);
