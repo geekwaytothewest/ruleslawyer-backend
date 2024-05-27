@@ -153,7 +153,6 @@ export class GameController {
   @UseGuards(JwtAuthGuard)
   @Get('/withCopies')
   async getGamesWithCopies(@User() user: any, @Query('limit') limit: string) {
-    this.logger.log(limit);
     const query: Prisma.GameFindManyArgs = {
       include: {
         copies: {
