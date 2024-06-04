@@ -51,7 +51,7 @@ export class ConventionService {
             geekGuide: false,
             attendee: false,
           },
-          ...userPermissions,
+          ...userPermissions.filter((up) => up.userId !== org.owner.id),
         ],
       };
 
