@@ -13,6 +13,7 @@ export class CollectionService {
     return await ctx.prisma.collection.findUnique({
       where: { id: Number(id) },
       include: {
+        _count: true,
         copies: {
           include: {
             game: true,
