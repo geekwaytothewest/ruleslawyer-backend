@@ -22,19 +22,14 @@ export class CollectionWriteGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let orgId = context.getArgByIndex(0).params?.id;
     const colId = context.getArgByIndex(0).params?.colId;
 
     if (!colId) {
       return false;
     }
 
-    if (!orgId) {
-      orgId = context.getArgByIndex(0).params?.orgId;
-    }
-
     const collection = await this.collectionService.collection(colId, this.ctx);
-    orgId = collection?.organizationId;
+    const orgId = collection?.organizationId;
 
     if (!orgId) {
       return false;
