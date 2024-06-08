@@ -33,7 +33,7 @@ describe('CollectionService', () => {
         allowWinning: false,
       });
 
-      const collection = await service.collection(1, ctx);
+      const collection = await service.collection(1, null, null, ctx);
 
       expect(collection?.id).toBe(1);
     });

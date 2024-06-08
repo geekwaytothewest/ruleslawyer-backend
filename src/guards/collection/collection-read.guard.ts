@@ -28,7 +28,12 @@ export class CollectionReadGuard implements CanActivate {
       return false;
     }
 
-    const collection = await this.collectionService.collection(colId, this.ctx);
+    const collection = await this.collectionService.collection(
+      colId,
+      null,
+      null,
+      this.ctx,
+    );
     const orgId = collection?.organizationId;
 
     if (!orgId) {

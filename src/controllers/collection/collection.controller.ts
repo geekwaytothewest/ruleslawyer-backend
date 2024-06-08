@@ -7,6 +7,7 @@ import {
   Body,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CollectionService } from '../../services/collection/collection.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -33,9 +34,13 @@ export class CollectionController {
 
   @UseGuards(JwtAuthGuard, CollectionReadGuard)
   @Get(':colId')
-  async collection(@Param('colId') colId: number) {
+  async collection(
+    @Param('colId') colId: number,
+    @Query('limit') limit: string,
+    @Query('filter') filter: string,
+  ) {
     const con = await this.collectionService
-      .collection(Number(colId), this.ctx)
+      .collection(Number(colId), limit, filter, this.ctx)
       .catch((error) => {
         return Promise.reject(error);
       });
@@ -75,9 +80,15 @@ export class CollectionController {
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
   @Delete(':colId')
-  async deleteCollection(@Param('colId') colId: number) {
+  async deleteCollection(
+    @Param('colId') colId: number,
+    @Query('limit') limit: string,
+    @Query('filter') filter: string,
+  ) {
     const collection = await this.collectionService.collection(
       Number(colId),
+      limit,
+      filter,
       this.ctx,
     );
 

@@ -4,13 +4,19 @@ import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
 import { CopyService } from '../copy/copy.service';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
+import { DefaultArgs } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class CollectionService {
   constructor(private readonly copyService: CopyService) {}
   private readonly logger = new RuleslawyerLogger(CollectionService.name);
-  async collection(id: number, ctx: Context) {
-    return await ctx.prisma.collection.findUnique({
+  async collection(
+    id: number,
+    limit: string | null,
+    filter: string | null,
+    ctx: Context,
+  ): Promise<any> {
+    const query: Prisma.CollectionFindUniqueArgs = {
       where: { id: Number(id) },
       include: {
         _count: true,
@@ -30,7 +36,26 @@ export class CollectionService {
           },
         },
       },
-    });
+    };
+
+    if (limit && !Number.isNaN(limit)) {
+      (
+        query.include?.copies as Prisma.Collection$copiesArgs<DefaultArgs>
+      ).take = Number(limit);
+    }
+
+    if (filter) {
+      (
+        query.include?.copies as Prisma.Collection$copiesArgs<DefaultArgs>
+      ).where = {
+        OR: [
+          { game: { name: { search: filter.split(' ').join(' <-> ') } } },
+          { game: { name: { startsWith: filter } } },
+        ],
+      };
+    }
+
+    return await ctx.prisma.collection.findUnique(query);
   }
 
   async collectionsByOrgWithCopies(orgId: number, ctx: Context) {
