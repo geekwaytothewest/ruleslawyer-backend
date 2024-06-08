@@ -301,4 +301,29 @@ export class OrganizationController {
       this.ctx,
     );
   }
+
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @Post(':id/collections')
+  async createCollection(
+    @Param('id') id: number,
+    @Body() collectionData: Prisma.CollectionCreateInput,
+  ) {
+    if (!collectionData.name || typeof collectionData.name !== 'string') {
+      return Promise.reject('name not set');
+    }
+
+    if (
+      collectionData.allowWinning === undefined ||
+      typeof collectionData.allowWinning !== 'boolean'
+    ) {
+      return Promise.reject('allowWinning not set');
+    }
+
+    return this.collectionService.createCollection(
+      id,
+      collectionData.name,
+      collectionData.allowWinning,
+      this.ctx,
+    );
+  }
 }
