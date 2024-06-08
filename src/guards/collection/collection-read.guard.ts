@@ -44,6 +44,10 @@ export class CollectionReadGuard implements CanActivate {
       return false;
     }
 
+    if (collection?.public) {
+      return true;
+    }
+
     const orgWithUsers = Prisma.validator<Prisma.OrganizationDefaultArgs>()({
       include: { users: true },
     });
