@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Body,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { CollectionService } from '../../services/collection/collection.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -65,9 +66,39 @@ export class CollectionController {
     }
 
     return await this.collectionService.updateCollection(
-      colId,
+      Number(colId),
       collectionData.name,
       collectionData.allowWinning,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @Delete(':colId')
+  async deleteCollection(@Param('colId') colId: number) {
+    const collection = await this.collectionService.collection(
+      Number(colId),
+      this.ctx,
+    );
+
+    if (!collection) {
+      return Promise.reject('Collection not found');
+    }
+
+    if (collection?._count?.copies > 0) {
+      return Promise.reject(
+        'Collection still has copies and cannot be deleted.',
+      );
+    }
+
+    if (collection?._count?.conventions > 0) {
+      return Promise.reject(
+        'Collection still has conventions and cannot be deleted.',
+      );
+    }
+
+    return await this.collectionService.deleteCollection(
+      Number(colId),
       this.ctx,
     );
   }
