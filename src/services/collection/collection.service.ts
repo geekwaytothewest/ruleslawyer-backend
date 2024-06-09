@@ -38,7 +38,7 @@ export class CollectionService {
       },
     };
 
-    if (limit && !Number.isNaN(limit)) {
+    if (limit && !Number.isNaN(Number(limit))) {
       (
         query.include?.copies as Prisma.Collection$copiesArgs<DefaultArgs>
       ).take = Number(limit);

@@ -203,7 +203,7 @@ export class GameController {
       },
     };
 
-    if (limit && !Number.isNaN(limit)) {
+    if (limit && !Number.isNaN(Number(limit))) {
       query.take = Number(limit);
     }
 
