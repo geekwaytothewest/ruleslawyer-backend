@@ -4,18 +4,12 @@ import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
 import { CopyService } from '../copy/copy.service';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
-import { DefaultArgs } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class CollectionService {
   constructor(private readonly copyService: CopyService) {}
   private readonly logger = new RuleslawyerLogger(CollectionService.name);
-  async collection(
-    id: number,
-    limit: string | null,
-    filter: string | null,
-    ctx: Context,
-  ): Promise<any> {
+  async collection(id: number, ctx: Context): Promise<any> {
     const query: Prisma.CollectionFindUniqueArgs = {
       where: { id: Number(id) },
       include: {
@@ -38,24 +32,62 @@ export class CollectionService {
       },
     };
 
+    return await ctx.prisma.collection.findUnique(query);
+  }
+
+  async collectionCopiesByGames(
+    id: number,
+    limit: number,
+    filter: string,
+    ctx: Context,
+  ) {
+    const query: Prisma.CollectionFindUniqueArgs = {
+      where: {
+        id: Number(id),
+      },
+    };
+
+    const collection: any = await ctx.prisma.collection.findUnique(query);
+
+    const gameQuery: Prisma.GameFindManyArgs = {
+      include: {
+        copies: {
+          include: {
+            checkOuts: true,
+          },
+          where: {
+            collectionId: Number(id),
+          },
+        },
+      },
+      where: {
+        copies: {
+          some: {
+            collectionId: Number(id),
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    };
+
     if (limit && !Number.isNaN(Number(limit))) {
-      (
-        query.include?.copies as Prisma.Collection$copiesArgs<DefaultArgs>
-      ).take = Number(limit);
+      gameQuery.take = Number(limit);
     }
 
     if (filter) {
-      (
-        query.include?.copies as Prisma.Collection$copiesArgs<DefaultArgs>
-      ).where = {
+      gameQuery.where = {
         OR: [
-          { game: { name: { search: filter.split(' ').join(' <-> ') } } },
-          { game: { name: { contains: filter, mode: 'insensitive' } } },
+          { name: { search: filter.split(' ').join(' <-> ') } },
+          { name: { contains: filter, mode: 'insensitive' } },
         ],
       };
     }
 
-    return await ctx.prisma.collection.findUnique(query);
+    collection.games = await ctx.prisma.game.findMany(gameQuery);
+
+    return collection;
   }
 
   async collectionsByOrgWithCopies(orgId: number, ctx: Context) {

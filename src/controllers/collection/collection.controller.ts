@@ -15,7 +15,7 @@ import { CollectionReadGuard } from '../../guards/collection/collection-read.gua
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { Context } from '../../services/prisma/context';
 import { AttendeeService } from '../../services/attendee/attendee.service';
-import { CollectionWriteGuard } from 'src/guards/collection/collection-write.guard';
+import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { Prisma } from '@prisma/client';
 
 @Controller()
@@ -34,22 +34,39 @@ export class CollectionController {
 
   @UseGuards(JwtAuthGuard, CollectionReadGuard)
   @Get(':colId')
-  async collection(
-    @Param('colId') colId: number,
-    @Query('limit') limit: string,
-    @Query('filter') filter: string,
-  ) {
-    const con = await this.collectionService
-      .collection(Number(colId), limit, filter, this.ctx)
+  async collection(@Param('colId') colId: number) {
+    const col = await this.collectionService
+      .collection(Number(colId), this.ctx)
       .catch((error) => {
         return Promise.reject(error);
       });
 
-    if (!con) {
+    if (!col) {
       return Promise.reject(new NotFoundException());
     }
 
-    return con;
+    return col;
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @Get(':colId/copiesByGames')
+  async collectionCopiesByGames(
+    @Param('colId') colId: number,
+    @Query('limit') limit: number,
+    @Query('filter') filter: string,
+  ) {
+    const col = this.collectionService.collectionCopiesByGames(
+      Number(colId),
+      limit,
+      filter,
+      this.ctx,
+    );
+
+    if (!col) {
+      return Promise.reject(new NotFoundException());
+    }
+
+    return col;
   }
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
@@ -80,15 +97,9 @@ export class CollectionController {
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
   @Delete(':colId')
-  async deleteCollection(
-    @Param('colId') colId: number,
-    @Query('limit') limit: string,
-    @Query('filter') filter: string,
-  ) {
+  async deleteCollection(@Param('colId') colId: number) {
     const collection = await this.collectionService.collection(
       Number(colId),
-      limit,
-      filter,
       this.ctx,
     );
 
