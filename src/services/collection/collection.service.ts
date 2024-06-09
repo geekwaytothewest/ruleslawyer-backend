@@ -50,7 +50,7 @@ export class CollectionService {
       ).where = {
         OR: [
           { game: { name: { search: filter.split(' ').join(' <-> ') } } },
-          { game: { name: { startsWith: filter } } },
+          { game: { name: { contains: filter, mode: 'insensitive' } } },
         ],
       };
     }
