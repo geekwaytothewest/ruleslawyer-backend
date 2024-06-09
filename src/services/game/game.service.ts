@@ -125,4 +125,8 @@ export class GameService {
       return Promise.reject(ex);
     }
   }
+
+  async deleteGame(id: number, ctx: Context) {
+    return ctx.prisma.game.delete({ where: { id: Number(id) } });
+  }
 }

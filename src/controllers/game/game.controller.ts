@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -17,6 +18,7 @@ import { GameService } from '../../services/game/game.service';
 import { CopyService } from '../../services/copy/copy.service';
 import { User } from '../../modules/authz/user.decorator';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
+import { GameGuard } from '../../guards/game/game.guard';
 
 @Controller()
 export class GameController {
@@ -220,6 +222,12 @@ export class GameController {
     }
 
     return this.gameService.search(query, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, GameGuard)
+  @Delete(':id')
+  async deleteGame(@Param('id') id: number) {
+    return this.gameService.deleteGame(id, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard)
