@@ -133,6 +133,12 @@ export class OrganizationController {
       },
     };
 
+    data.organization = {
+      connect: {
+        id: Number(id),
+      },
+    };
+
     data.dateAdded = new Date();
 
     return await this.copyService.createCopy(data, this.ctx);

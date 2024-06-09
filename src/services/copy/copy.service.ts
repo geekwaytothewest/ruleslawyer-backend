@@ -188,4 +188,12 @@ export class CopyService {
       return Promise.reject(ex);
     }
   }
+
+  async deleteCopy(id: number, ctx: Context) {
+    return ctx.prisma.copy.delete({
+      where: {
+        id: id,
+      },
+    });
+  }
 }
