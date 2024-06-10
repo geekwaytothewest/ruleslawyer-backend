@@ -59,6 +59,7 @@ export class CollectionService {
             collectionId: Number(id),
           },
         },
+        _count: true,
       },
       where: {
         copies: {
@@ -108,6 +109,7 @@ export class CollectionService {
             game: true,
           },
         },
+        _count: true,
       },
       orderBy: {
         name: 'asc',
