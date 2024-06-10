@@ -54,6 +54,7 @@ export class CollectionService {
         copies: {
           include: {
             checkOuts: true,
+            game: true,
           },
           where: {
             collectionId: Number(id),
