@@ -51,7 +51,7 @@ export class ConventionController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getConventions(@User() user: any) {
-    return await this.conventionService.conventions(user, this.ctx);
+    return this.conventionService.conventions(user, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard)
