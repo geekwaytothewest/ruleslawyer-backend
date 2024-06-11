@@ -178,7 +178,7 @@ model Copy {
   dateRetired      DateTime?
   comments         String?
   winnable         Boolean      @default(true)
-  winner           Attendee?    @relation(fields: winnerId, references: [id])
+  winner           Attendee?    @relation(fields: winnerId, references: [id], onDelete: Restrict)
   winnerId         Int?
   coverArtOverride Bytes?
   collection       Collection   @relation(fields: collectionId, references: [id])
@@ -199,7 +199,7 @@ model CheckOut {
   attendeeId Int
   checkOut   DateTime
   checkIn    DateTime?
-  copy       Copy?     @relation(fields: copyId, references: [id])
+  copy       Copy?     @relation(fields: copyId, references: [id], onDelete: Restrict)
   copyId     Int?
   players    Player[]
   submitted  Boolean   @default(false)
