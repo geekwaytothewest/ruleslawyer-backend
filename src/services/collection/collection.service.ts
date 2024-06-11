@@ -81,9 +81,20 @@ export class CollectionService {
 
     if (filter) {
       gameQuery.where = {
-        OR: [
-          { name: { search: filter.split(' ').join(' <-> ') } },
-          { name: { contains: filter, mode: 'insensitive' } },
+        AND: [
+          {
+            OR: [
+              { name: { search: filter.split(' ').join(' <-> ') } },
+              { name: { contains: filter, mode: 'insensitive' } },
+            ],
+          },
+          {
+            copies: {
+              some: {
+                collectionId: Number(id),
+              },
+            },
+          },
         ],
       };
     }
