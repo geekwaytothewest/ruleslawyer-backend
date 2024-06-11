@@ -414,11 +414,43 @@ export class ConventionService {
     }
   }
 
-  async conventions(organizationId: number, ctx: Context) {
+  async conventionsByOrg(organizationId: number, ctx: Context) {
     try {
       return ctx.prisma.convention.findMany({
         where: {
           organizationId: organizationId,
+        },
+        orderBy: {
+          startDate: 'desc',
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async conventions(user: any, ctx: Context) {
+    try {
+      return ctx.prisma.convention.findMany({
+        where: {
+          OR: [
+            {
+              organization: {
+                users: {
+                  some: {
+                    userId: user.id,
+                  },
+                },
+              },
+            },
+            {
+              users: {
+                some: {
+                  userId: user.id,
+                },
+              },
+            },
+          ],
         },
         orderBy: {
           startDate: 'desc',

@@ -22,6 +22,7 @@ import { AttendeeService } from '../../services/attendee/attendee.service';
 import fastify = require('fastify');
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { CollectionService } from '../../services/collection/collection.service';
+import { User } from 'src/modules/authz/user.decorator';
 
 @Controller()
 export class ConventionController {
@@ -45,6 +46,12 @@ export class ConventionController {
     conventionData: Prisma.ConventionCreateInput,
   ): Promise<Convention | void> {
     return this.conventionService.createConvention(conventionData, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getConventions(@User() user: any) {
+    return await this.conventionService.conventions(user, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard)
