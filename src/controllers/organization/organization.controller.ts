@@ -308,6 +308,20 @@ export class OrganizationController {
     );
   }
 
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games/autocomplete/:gameName')
+  async autocompleteGames(@Param('gameName') gameName: string) {
+    return this.gameService.search(
+      {
+        select: { name: true, id: true },
+        where: { name: { contains: gameName, mode: 'insensitive' } },
+        orderBy: { name: 'asc' },
+        take: 10,
+      },
+      this.ctx,
+    );
+  }
+
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post(':id/collections')
   async createCollection(
