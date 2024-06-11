@@ -22,6 +22,14 @@ export class OrganizationWriteGuard implements CanActivate {
     const user = context.getArgByIndex(0).user?.user;
     let orgId = context.getArgByIndex(0).params?.id;
 
+    if (!user) {
+      return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
+    }
+
     if (!orgId) {
       orgId = context.getArgByIndex(0).params?.orgId;
     }

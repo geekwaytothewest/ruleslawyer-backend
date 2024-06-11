@@ -28,6 +28,10 @@ export class PrizeEntryGuard implements CanActivate {
       return false;
     }
 
+    if (user.superAdmin) {
+      return true;
+    }
+
     if (!organizationId) {
       organizationId = context.getArgByIndex(0).params?.orgId;
     }

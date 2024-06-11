@@ -22,6 +22,14 @@ export class GameGuard implements CanActivate {
     const user = context.getArgByIndex(0).user?.user;
     let gameId = context.getArgByIndex(0).params?.id;
 
+    if (!user) {
+      return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
+    }
+
     if (!gameId) {
       gameId = context.getArgByIndex(0).params?.gameId;
     }

@@ -24,6 +24,14 @@ export class CollectionReadGuard implements CanActivate {
     const user = context.getArgByIndex(0).user?.user;
     const colId = context.getArgByIndex(0).params?.colId;
 
+    if (!user) {
+      return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
+    }
+
     if (!colId) {
       return false;
     }

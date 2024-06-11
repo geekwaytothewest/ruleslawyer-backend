@@ -22,6 +22,14 @@ export class ConventionReadGuard implements CanActivate {
     const user = context.getArgByIndex(0).user?.user;
     let conId = context.getArgByIndex(0).params?.id;
 
+    if (!user) {
+      return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
+    }
+
     if (!conId) {
       conId = context.getArgByIndex(0).params?.conId;
     }
