@@ -43,7 +43,7 @@ export class GameController {
     return this.gameService.createGame(game, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UseGuards(JwtAuthGuard, GameGuard)
   @Put(':id')
   async updateGame(
     @Body() data: Prisma.GameUpdateInput,
