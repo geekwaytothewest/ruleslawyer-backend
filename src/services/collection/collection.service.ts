@@ -14,6 +14,7 @@ export class CollectionService {
       where: { id: Number(id) },
       include: {
         _count: true,
+        conventions: true,
         copies: {
           include: {
             game: true,

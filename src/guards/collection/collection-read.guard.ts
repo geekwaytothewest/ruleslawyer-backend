@@ -1,16 +1,26 @@
 //jwt-auth.guard.ts
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { CollectionService } from '../../services/collection/collection.service';
+import { ConventionService } from '../../services/convention/convention.service';
 
 @Injectable()
 export class CollectionReadGuard implements CanActivate {
   ctx: Context;
 
   constructor(
+    @Inject(forwardRef(() => ConventionService))
+    @Inject(forwardRef(() => OrganizationService))
+    private readonly conventionService: ConventionService,
     private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
     private readonly collectionService: CollectionService,
@@ -48,6 +58,16 @@ export class CollectionReadGuard implements CanActivate {
     }
 
     if (collection?.public) {
+      return true;
+    }
+
+    const cons: any = await this.conventionService.conventions(user, this.ctx);
+
+    if (
+      collection?.conventions.filter(
+        (c) => cons.filter((cn) => cn.id === c.conventionId).length > 0,
+      ).length > 0
+    ) {
       return true;
     }
 
