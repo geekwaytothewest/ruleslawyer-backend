@@ -32,7 +32,7 @@ import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 import { ConventionTypeService } from '../../services/convention-type/convention-type.service';
 import { User } from '../../modules/authz/user.decorator';
 import { GameService } from '../../services/game/game.service';
-import { SuperAdminGuard } from 'src/guards/superAdmin/superAdmin.guard';
+import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 
 @Controller()
 export class OrganizationController {

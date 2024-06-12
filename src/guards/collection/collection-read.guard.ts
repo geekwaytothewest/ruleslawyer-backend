@@ -64,7 +64,7 @@ export class CollectionReadGuard implements CanActivate {
     const cons: any = await this.conventionService.conventions(user, this.ctx);
 
     if (
-      collection?.conventions.filter(
+      collection?.conventions?.filter(
         (c) => cons.filter((cn) => cn.id === c.conventionId).length > 0,
       ).length > 0
     ) {

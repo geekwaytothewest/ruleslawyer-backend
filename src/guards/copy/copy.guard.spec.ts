@@ -142,7 +142,7 @@ describe('CopyGuard', () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
         user: {
-          user: { id: 1, superAdmin: true },
+          user: { id: 1 },
         },
         params: {
           id: 1,

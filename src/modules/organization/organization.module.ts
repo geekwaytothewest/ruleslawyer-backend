@@ -1,5 +1,5 @@
 import { HttpModule } from 'nestjs-http-promise';
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { OrganizationController } from '../../controllers/organization/organization.controller';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -15,8 +15,8 @@ import { GameModule } from '../game/game.module';
   imports: [
     HttpModule,
     UserOrganizationPermissionsModule,
-    ConventionModule,
-    CollectionModule,
+    forwardRef(() => ConventionModule),
+    forwardRef(() => CollectionModule),
     CheckOutModule,
     GameModule,
   ],

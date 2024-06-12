@@ -22,7 +22,7 @@ import { AttendeeService } from '../../services/attendee/attendee.service';
 import fastify = require('fastify');
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { CollectionService } from '../../services/collection/collection.service';
-import { User } from 'src/modules/authz/user.decorator';
+import { User } from '../../modules/authz/user.decorator';
 
 @Controller()
 export class ConventionController {
