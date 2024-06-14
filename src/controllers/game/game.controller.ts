@@ -215,7 +215,8 @@ export class GameController {
         ...{
           OR: [
             { name: { search: filter.split(' ').join(' <-> ') } },
-            { name: { startsWith: filter } },
+            { name: { contains: filter, mode: 'insensitive' } },
+            { name: { startsWith: filter, mode: 'insensitive' } },
           ],
         },
       };

@@ -86,6 +86,7 @@ export class CollectionService {
             OR: [
               { name: { search: filter.split(' ').join(' <-> ') } },
               { name: { contains: filter, mode: 'insensitive' } },
+              { name: { startsWith: filter, mode: 'insensitive' } },
             ],
           },
           {
