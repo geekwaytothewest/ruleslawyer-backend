@@ -1196,6 +1196,53 @@ export class LegacyController {
       },
     };
   }
+  @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @Get('org/:orgId/con/:conId/coll/:collId/plays')
+  async getCollPlays(
+    @Param('conId') conId: number,
+    @Param('collId') collId: number,
+  ) {
+    this.logger.log(`Getting plays for conId=${conId}`);
+    const plays = await this.checkOutService.getCheckOutsByCollectionId(
+      conId,
+      collId,
+      this.ctx,
+    );
+    this.logger.log(`Got ${plays.length} plays for conId=${conId}`);
+
+    return {
+      Errors: [],
+      Result: {
+        Plays: plays.map((p) => {
+          return {
+            ID: p.id,
+            CheckoutID: p.id,
+            GameID: p.copy?.gameId,
+            GameName: p.copy?.game.name,
+            Collection: {
+              ID: p.copy?.collection?.id,
+              Name: p.copy?.collection?.name,
+              AllowWinning: p.copy?.collection?.allowWinning,
+              Color: null,
+            },
+            Checkout: {
+              ID: p.id,
+              TimeOut: p.checkOut,
+              TimeIn: p.checkIn,
+            },
+            Players: p.players?.map((player) => {
+              return {
+                ID: player.attendee.badgeNumber.toString(),
+                Name: player.attendee.badgeName,
+                WantsToWin: player.wantToWin,
+                Rating: player.rating,
+              };
+            }),
+          };
+        }),
+      },
+    };
+  }
 
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @Post('org/:orgId/con/:conId/plays')
@@ -1308,6 +1355,63 @@ export class LegacyController {
     const copies = await this.copyService.searchCopies(
       {
         organizationId: Number(orgId),
+      },
+      this.ctx,
+    );
+    this.logger.log(`${copies?.length} copies found for orgId=${orgId}`);
+
+    return {
+      Errors: [],
+      Result: {
+        Games: games.map((g) => {
+          return {
+            ID: g.id,
+            Name: g.name,
+            Copies: copies
+              .filter((c) => c.gameId === g.id)
+              .map((c) => {
+                return {
+                  ID: c.barcodeLabel,
+                  IsCheckedOut:
+                    c.checkOuts.filter((co) => co.checkOut !== null).length > 0,
+                  Title: c.game.name,
+                  Winnable: c.winnable,
+                  Collection: {
+                    ID: c.collection?.id,
+                    Name: c.collection?.name,
+                    AllowWinning: c.collection?.allowWinning,
+                    Color: null,
+                  },
+                  CurrentCheckout: c.checkOuts.filter(
+                    (co) => co.checkOut === null,
+                  )[0],
+                  Game: {
+                    ID: c.game.id,
+                    Name: c.game.name,
+                    Copies: null,
+                  },
+                };
+              }),
+          };
+        }),
+      },
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('org/:orgId/con/:conId/coll/:collId/games')
+  async getGamesByCollectionId(
+    @Param('orgId') orgId: number,
+    @Param('collId') collId: number,
+  ) {
+    this.logger.log(`Getting games for orgId=${orgId}`);
+    const games = await this.gameService.games(orgId, this.ctx);
+    this.logger.log(`${games?.length} games found for orgId=${orgId}`);
+    this.logger.log(`Getting copies for orgId=${orgId}`);
+    const copies = await this.copyService.searchCopies(
+      {
+        organizationId: Number(orgId),
+        collectionId: Number(collId),
       },
       this.ctx,
     );

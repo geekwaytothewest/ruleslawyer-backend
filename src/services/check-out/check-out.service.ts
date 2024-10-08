@@ -103,6 +103,35 @@ export class CheckOutService {
     }
   }
 
+  getCheckOutsByCollectionId(conId: number, collId: number, ctx: Context) {
+    this.logger.log(`Getting checkouts for conId=${conId}`);
+    try {
+      return ctx.prisma.checkOut.findMany({
+        include: {
+          copy: {
+            include: {
+              collection: true,
+              game: true,
+            },
+          },
+          players: {
+            include: {
+              attendee: true,
+            },
+          },
+        },
+        where: {
+          copy: {
+            collectionId: collId,
+          },
+        },
+      });
+    } catch (ex) {
+      this.logger.error(`Failed to get checkouts for conId=${conId}, ex=${ex}`);
+      return Promise.reject(ex);
+    }
+  }
+
   async checkOut(
     collectionId: number,
     copyBarcode: string,
