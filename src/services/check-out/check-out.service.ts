@@ -119,6 +119,7 @@ export class CheckOutService {
               attendee: true,
             },
           },
+          attendee: true,
         },
         where: {
           copy: {

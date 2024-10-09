@@ -9,6 +9,7 @@ import {
   Put,
   Query,
   Req,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
@@ -34,6 +35,9 @@ import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { PrizeEntryGuard } from '../../guards/prize-entry/prize-entry.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { User } from '../../modules/authz/user.decorator';
+import { stringify } from 'csv-stringify';
+import { Console } from 'console';
+import { CollectionReadGuard } from 'src/guards/collection/collection-read.guard';
 
 @Controller()
 export class LegacyController {
@@ -1541,6 +1545,7 @@ export class LegacyController {
       this.ctx,
     );
   }
+
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
   async syncTabletopEvents(
@@ -1562,5 +1567,37 @@ export class LegacyController {
       Number(conId),
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @Get('org/:orgId/con/:conId/coll/:collId/exportPlays')
+  async exportPlaysByCollectionId(
+    @Param('conId') conId: number,
+    @Param('collId') collId: number,
+  ) {
+    const checkOuts = await this.checkOutService.getCheckOutsByCollectionId(
+      Number(conId),
+      Number(collId),
+      this.ctx,
+    );
+
+    const collName = checkOuts[0].copy?.collection.name;
+
+    const csv = stringify(
+      checkOuts.map((co) => {
+        return [
+          co.copy?.game.name,
+          co.copy?.barcodeLabel,
+          co.attendee.badgeName,
+          co.checkOut,
+          co.checkIn,
+        ];
+      }),
+    );
+
+    return new StreamableFile(csv, {
+      type: 'text/csv',
+      disposition: `attachment; filename=${collName}.csv`,
+    });
   }
 }
