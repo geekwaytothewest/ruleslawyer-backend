@@ -9,7 +9,6 @@ import {
   Put,
   Query,
   Req,
-  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
@@ -35,8 +34,7 @@ import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { PrizeEntryGuard } from '../../guards/prize-entry/prize-entry.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { User } from '../../modules/authz/user.decorator';
-import { stringify } from 'csv-stringify';
-import { Console } from 'console';
+import { stringify } from 'csv-stringify/sync';
 import { CollectionReadGuard } from 'src/guards/collection/collection-read.guard';
 
 @Controller()
@@ -1595,9 +1593,9 @@ export class LegacyController {
       }),
     );
 
-    return new StreamableFile(csv, {
-      type: 'text/csv',
-      disposition: `attachment; filename=${collName}.csv`,
-    });
+    return {
+      csvText: csv,
+      collectionName: collName,
+    };
   }
 }
