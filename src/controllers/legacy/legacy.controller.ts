@@ -35,7 +35,7 @@ import { PrizeEntryGuard } from '../../guards/prize-entry/prize-entry.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { User } from '../../modules/authz/user.decorator';
 import { stringify } from 'csv-stringify/sync';
-import { CollectionReadGuard } from 'src/guards/collection/collection-read.guard';
+import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
 
 @Controller()
 export class LegacyController {
