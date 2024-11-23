@@ -99,6 +99,7 @@ describe('CollectionService', () => {
         publisher: null,
         shortDescription: null,
         weight: null,
+        organizationId: 1,
       });
 
       mockCtx.prisma.collection.create.mockResolvedValueOnce({

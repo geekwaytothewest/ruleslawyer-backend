@@ -51,7 +51,7 @@ export class ConventionService {
             geekGuide: false,
             attendee: false,
           },
-          ...userPermissions,
+          ...userPermissions.filter((up) => up.userId !== org.owner.id),
         ],
       };
 
@@ -72,6 +72,22 @@ export class ConventionService {
     try {
       return ctx.prisma.convention.findUnique({
         where: conventionWhereUniqueInput,
+        include: {
+          collections: {
+            include: {
+              collection: {
+                include: {
+                  _count: true,
+                },
+              },
+            },
+            orderBy: {
+              collection: {
+                name: 'asc',
+              },
+            },
+          },
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
@@ -311,10 +327,14 @@ export class ConventionService {
               pronouns: {
                 connectOrCreate: {
                   create: {
-                    pronouns: b.custom_fields.PreferredPronouns,
+                    pronouns: b.custom_fields?.PreferredPronouns
+                      ? b.custom_fields.PreferredPronouns
+                      : 'Prefer Not To Say',
                   },
                   where: {
-                    pronouns: b.custom_fields.PreferredPronouns,
+                    pronouns: b.custom_fields?.PreferredPronouns
+                      ? b.custom_fields.PreferredPronouns
+                      : 'Prefer Not To Say',
                   },
                 },
               },
@@ -377,6 +397,7 @@ export class ConventionService {
     attendeeBarcode: string,
     collectionId: number,
     ctx: Context,
+    user: any,
   ) {
     try {
       return this.checkOutService.checkOut(
@@ -386,17 +407,89 @@ export class ConventionService {
         attendeeBarcode,
         false,
         ctx,
+        user,
       );
     } catch (ex) {
       return Promise.reject(ex);
     }
   }
 
-  async conventions(organizationId: number, ctx: Context) {
+  async conventionsByOrg(organizationId: number, ctx: Context) {
     try {
       return ctx.prisma.convention.findMany({
         where: {
           organizationId: organizationId,
+        },
+        orderBy: {
+          startDate: 'desc',
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async conventions(user: any, ctx: Context) {
+    try {
+      return ctx.prisma.convention.findMany({
+        where: {
+          OR: [
+            {
+              organization: {
+                users: {
+                  some: {
+                    userId: user.id,
+                  },
+                },
+              },
+            },
+            {
+              users: {
+                some: {
+                  userId: user.id,
+                },
+              },
+            },
+          ],
+        },
+        orderBy: {
+          startDate: 'desc',
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async attachCollection(
+    conventionId: number,
+    collectionId: number,
+    ctx: Context,
+  ) {
+    try {
+      return ctx.prisma.conventionCollections.create({
+        data: {
+          collectionId: Number(collectionId),
+          conventionId: Number(conventionId),
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async detachCollection(
+    conventionId: number,
+    collectionId: number,
+    ctx: Context,
+  ) {
+    try {
+      return ctx.prisma.conventionCollections.delete({
+        where: {
+          conventionId_collectionId: {
+            collectionId: Number(collectionId),
+            conventionId: Number(conventionId),
+          },
         },
       });
     } catch (ex) {

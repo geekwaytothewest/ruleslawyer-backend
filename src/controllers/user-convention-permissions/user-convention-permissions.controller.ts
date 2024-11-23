@@ -1,10 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserConventionPermissions } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
-import { ConventionGuard } from '../../guards/convention/convention.guard';
+import { ConventionWriteGuard } from '../../guards/convention/convention-write.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
+import { UserGuard } from '../../guards/user/user.guard';
 
 @Controller()
 export class UserConventionPermissionsController {
@@ -19,7 +20,27 @@ export class UserConventionPermissionsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @Get(':id')
+  async getUserConventionPermissions(
+    @Param('id') id: string,
+  ): Promise<UserConventionPermissions[]> {
+    return this.userConventionPermissionsService.userConventionPermissions(
+      id,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @Get(':id/count')
+  async getUserConventionCount(@Param('id') id: string): Promise<number> {
+    return await this.userConventionPermissionsService.userConventionCount(
+      id,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Post()
   async createPermission(
     @Body()

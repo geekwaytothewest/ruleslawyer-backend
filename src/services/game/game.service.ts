@@ -11,12 +11,52 @@ export class GameService {
   async game(
     gameWhereUniqueInput: Prisma.GameWhereUniqueInput,
     ctx: Context,
+    user: any,
   ): Promise<Game | null> {
     try {
       this.logger.log(
         `Getting game with where=${JSON.stringify(gameWhereUniqueInput)}`,
       );
-      return ctx.prisma.game.findUnique({ where: gameWhereUniqueInput });
+      return ctx.prisma.game.findUnique({
+        where: gameWhereUniqueInput,
+        include: {
+          copies: {
+            include: {
+              checkOuts: true,
+              game: true,
+            },
+            where: {
+              OR: [
+                {
+                  organization: {
+                    OR: [
+                      {
+                        users: {
+                          some: { userId: user.id },
+                        },
+                      },
+                      { ownerId: user.id },
+                    ],
+                  },
+                },
+                {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: { userId: user.id },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
     } catch (ex) {
       this.logger.error(
         `Failed to get game with where=${JSON.stringify(
@@ -27,12 +67,25 @@ export class GameService {
     }
   }
 
-  async games(ctx: Context) {
+  async games(orgId: number, ctx: Context) {
     try {
       this.logger.log(`Getting games`);
-      return ctx.prisma.game.findMany();
+      return ctx.prisma.game.findMany({
+        where: { organizationId: Number(orgId) },
+        orderBy: { name: 'asc' },
+      });
     } catch (ex) {
       this.logger.error(`Failed to get games, ex=${ex}`);
+      return Promise.reject(ex);
+    }
+  }
+
+  async search(where: Prisma.GameFindManyArgs, ctx: Context) {
+    try {
+      this.logger.log(`Searching games`);
+      return ctx.prisma.game.findMany(where);
+    } catch (ex) {
+      this.logger.error(`Failed to search games, ex=${ex}`);
       return Promise.reject(ex);
     }
   }
@@ -71,5 +124,9 @@ export class GameService {
       );
       return Promise.reject(ex);
     }
+  }
+
+  async deleteGame(id: number, ctx: Context) {
+    return ctx.prisma.game.delete({ where: { id: Number(id) } });
   }
 }

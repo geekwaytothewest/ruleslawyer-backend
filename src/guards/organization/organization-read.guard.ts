@@ -4,16 +4,14 @@ import { Prisma } from '@prisma/client';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { CollectionService } from '../../services/collection/collection.service';
 
 @Injectable()
-export class CollectionGuard implements CanActivate {
+export class OrganizationReadGuard implements CanActivate {
   ctx: Context;
 
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
-    private readonly collectionService: CollectionService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -23,10 +21,13 @@ export class CollectionGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
     let orgId = context.getArgByIndex(0).params?.id;
-    const colId = context.getArgByIndex(0).params?.colId;
 
-    if (!colId) {
+    if (!user) {
       return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
     }
 
     if (!orgId) {
@@ -34,12 +35,10 @@ export class CollectionGuard implements CanActivate {
     }
 
     if (!orgId) {
-      return false;
+      orgId = context.getArgByIndex(0).body?.organizationId;
     }
 
-    const collection = await this.collectionService.collection(colId, this.ctx);
-
-    if (collection?.organizationId !== Number(orgId)) {
+    if (!orgId) {
       return false;
     }
 
@@ -61,7 +60,11 @@ export class CollectionGuard implements CanActivate {
       return true;
     }
 
-    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+    if (
+      org?.users?.filter(
+        (u) => u.userId === user.id && (u.admin || u.geekGuide),
+      ).length > 0
+    ) {
       return true;
     }
 

@@ -196,6 +196,11 @@ describe('OrganizationController', () => {
             id: 1,
           },
         },
+        collection: {
+          connect: {
+            id: 1,
+          },
+        },
       });
 
       expect(copy?.id).toBe(1);
@@ -386,9 +391,9 @@ describe('OrganizationController', () => {
     it('should call check out copy', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
 
-      expect(controller.checkOutCopy(1, 1, 1, '*000001*', '1')).rejects.toBe(
-        'copy not found',
-      );
+      expect(
+        controller.checkOutCopy(1, 1, 1, '*000001*', '1', { userId: 1 }),
+      ).rejects.toBe('copy not found');
     });
   });
 

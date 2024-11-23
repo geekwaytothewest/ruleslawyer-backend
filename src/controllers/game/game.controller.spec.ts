@@ -47,10 +47,16 @@ describe('GameController', () => {
         shortDescription: 'Test Game Short Description',
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
+        organizationId: 1,
       });
 
       const game = await controller.createGame({
         name: 'Test Game',
+        organization: {
+          connect: {
+            id: 1,
+          },
+        },
       });
 
       expect(game?.id).toBe(1);
@@ -76,6 +82,7 @@ describe('GameController', () => {
         shortDescription: 'Updated Short Description',
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
+        organizationId: 1,
       });
 
       const game = await controller.updateGame(
@@ -108,9 +115,10 @@ describe('GameController', () => {
         shortDescription: 'Test Game Short Description',
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
+        organizationId: 1,
       });
 
-      const game = await controller.getGame(1);
+      const game = await controller.getGame(1, { userId: 1 });
 
       expect(game?.id).toBe(1);
     });

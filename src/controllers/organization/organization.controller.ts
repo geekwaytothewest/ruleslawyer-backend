@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  Collection,
   Convention,
   ConventionType,
   Organization,
@@ -17,17 +18,21 @@ import {
 import { OrganizationService } from '../../services/organization/organization.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
-import { OrganizationGuard } from '../../guards/organization/organization.guard';
+import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
+import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import fastify = require('fastify');
 import { UploadGuard } from '../../guards/upload/upload.guard';
 import { CollectionService } from '../../services/collection/collection.service';
-import { CollectionGuard } from '../../guards/collection/collection.guard';
+import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { CheckOutService } from '../../services/check-out/check-out.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 import { ConventionTypeService } from '../../services/convention-type/convention-type.service';
+import { User } from '../../modules/authz/user.decorator';
+import { GameService } from '../../services/game/game.service';
+import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 
 @Controller()
 export class OrganizationController {
@@ -41,13 +46,14 @@ export class OrganizationController {
     private readonly copyService: CopyService,
     private readonly checkOutService: CheckOutService,
     private readonly conventionTypeService: ConventionTypeService,
+    private readonly gameService: GameService,
   ) {
     this.ctx = {
       prisma: prismaService,
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post()
   async createOrganization(
     @Body() organizationData: { name: string },
@@ -61,7 +67,13 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id')
+  async organization(@Param('id') id: number): Promise<Organization | null> {
+    return this.organizationService.organization({ id: Number(id) }, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post(':id/con')
   async createConvention(
     @Body() conventionData: Prisma.ConventionCreateInput,
@@ -76,7 +88,7 @@ export class OrganizationController {
     return this.conventionService.createConvention(conventionData, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard, UploadGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, UploadGuard)
   @Post(':id/col')
   async importCollection(
     @Req() request: fastify.FastifyRequest,
@@ -99,7 +111,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionWriteGuard)
   @Delete(':id/col/:colId')
   async deleteCollection(
     @Param('id') id: number,
@@ -108,7 +120,7 @@ export class OrganizationController {
     return await this.collectionService.deleteCollection(colId, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionWriteGuard)
   @Post(':id/col/:colId/copy')
   async createCopy(
     @Param('id') id: number,
@@ -118,6 +130,12 @@ export class OrganizationController {
     data.collection = {
       connect: {
         id: Number(colId),
+      },
+    };
+
+    data.organization = {
+      connect: {
+        id: Number(id),
       },
     };
 
@@ -134,6 +152,7 @@ export class OrganizationController {
     @Param('colId') colId: number,
     @Param('copyBarcode') copyBarcode: string,
     @Param('attendeeBarcode') attendeeBarcode: string,
+    @User() user: any,
   ) {
     return await this.checkOutService.checkOut(
       Number(colId),
@@ -142,6 +161,7 @@ export class OrganizationController {
       attendeeBarcode,
       false,
       this.ctx,
+      user,
     );
   }
 
@@ -172,7 +192,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post(':id/conventionType')
   async createConventionType(
     @Param('id') id: number,
@@ -191,7 +211,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get(':id/conventionType')
   async getConventionTypes(
     @Param('id') id: number,
@@ -199,9 +219,131 @@ export class OrganizationController {
     return this.conventionTypeService.conventionTypes(Number(id), this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get(':id/conventions')
   async getConventions(@Param('id') id: number): Promise<Convention[] | void> {
-    return this.conventionService.conventions(Number(id), this.ctx);
+    return this.conventionService.conventionsByOrg(Number(id), this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/collections')
+  async getCollections(@Param('id') id: number): Promise<Collection[] | void> {
+    return this.collectionService.collectionsByOrg(Number(id), this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games')
+  async getGames(@Param('id') id: number) {
+    return this.gameService.games(Number(id), this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games/withCopies')
+  async getGamesWithCopies(@Param('id') id: number, @User() user: any) {
+    return this.gameService.search(
+      {
+        where: {
+          organizationId: Number(id),
+        },
+        include: {
+          copies: {
+            where: {
+              OR: [
+                {
+                  organization: {
+                    OR: [
+                      {
+                        users: {
+                          some: {
+                            userId: user.id,
+                          },
+                        },
+                      },
+                      {
+                        ownerId: user.id,
+                      },
+                    ],
+                  },
+                },
+                {
+                  collection: {
+                    conventions: {
+                      some: {
+                        convention: {
+                          users: {
+                            some: {
+                              userId: user.id,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            include: {
+              checkOuts: true,
+              game: true,
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games/search/:gameName')
+  async searchGames(@Param('gameName') gameName: string) {
+    return this.gameService.search(
+      {
+        where: { name: { contains: gameName, mode: 'insensitive' } },
+        orderBy: { name: 'asc' },
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get(':id/games/autocomplete/:gameName')
+  async autocompleteGames(@Param('gameName') gameName: string) {
+    return this.gameService.search(
+      {
+        select: { name: true, id: true },
+        where: { name: { contains: gameName, mode: 'insensitive' } },
+        orderBy: { name: 'asc' },
+        take: 10,
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @Post(':id/collections')
+  async createCollection(
+    @Param('id') id: number,
+    @Body() collectionData: Prisma.CollectionCreateInput,
+  ) {
+    if (!collectionData.name || typeof collectionData.name !== 'string') {
+      return Promise.reject('name not set');
+    }
+
+    if (
+      collectionData.allowWinning === undefined ||
+      typeof collectionData.allowWinning !== 'boolean'
+    ) {
+      return Promise.reject('allowWinning not set');
+    }
+
+    return this.collectionService.createCollection(
+      id,
+      collectionData.name,
+      collectionData.allowWinning,
+      this.ctx,
+    );
   }
 }

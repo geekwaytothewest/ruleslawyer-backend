@@ -1160,6 +1160,7 @@ describe('LegacyController', () => {
         { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
         1,
         1,
+        { userId: 1 },
       );
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
@@ -1289,6 +1290,7 @@ describe('LegacyController', () => {
         { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
         1,
         1,
+        { userId: 1 },
       );
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
@@ -1375,7 +1377,7 @@ describe('LegacyController', () => {
         dateRetired: null,
         coverArtOverride: null,
         winnerId: null,
-        collectionId: null,
+        collectionId: 1,
         comments: null,
         game: {
           id: 1,
@@ -1412,6 +1414,7 @@ describe('LegacyController', () => {
           { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
           1,
           1,
+          { userId: 1 },
         ),
       ).rejects.toThrow(BadRequestException);
     });
@@ -1467,7 +1470,7 @@ describe('LegacyController', () => {
         dateRetired: null,
         coverArtOverride: null,
         winnerId: null,
-        collectionId: null,
+        collectionId: 1,
         comments: null,
         game: {
           id: 1,
@@ -1504,6 +1507,7 @@ describe('LegacyController', () => {
           { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
           1,
           1,
+          { userId: 1 },
         ),
       ).rejects.toThrow(BadRequestException);
     });

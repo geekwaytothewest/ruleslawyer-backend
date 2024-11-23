@@ -4,14 +4,16 @@ import { Prisma } from '@prisma/client';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
+import { CollectionService } from '../../services/collection/collection.service';
 
 @Injectable()
-export class OrganizationGuard implements CanActivate {
+export class CollectionWriteGuard implements CanActivate {
   ctx: Context;
 
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
+    private readonly collectionService: CollectionService,
   ) {
     this.ctx = {
       prisma: prismaService,
@@ -20,17 +22,28 @@ export class OrganizationGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let orgId = context.getArgByIndex(0).params?.id;
+    const colId = context.getArgByIndex(0).params?.colId;
 
-    if (!orgId) {
-      orgId = context.getArgByIndex(0).params?.orgId;
+    if (!user) {
+      return false;
     }
 
-    if (!orgId) {
-      orgId = context.getArgByIndex(0).body?.organizationId;
+    if (user.superAdmin) {
+      return true;
     }
 
+    if (!colId) {
+      return false;
+    }
+
+    const collection = await this.collectionService.collection(colId, this.ctx);
+    const orgId = collection?.organizationId;
+
     if (!orgId) {
+      return false;
+    }
+
+    if (collection?.organizationId !== Number(orgId)) {
       return false;
     }
 

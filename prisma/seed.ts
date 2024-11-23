@@ -140,7 +140,7 @@ async function main() {
     },
   });
 
-  const mm = await prisma.user.upsert({
+  const mmStu = await prisma.user.upsert({
     where: {
       email: 'stu@miniaturemarket.com',
     },
@@ -295,6 +295,29 @@ async function main() {
           },
           where: {
             pronouns: 'She/Her',
+          },
+        },
+      },
+    },
+  });
+
+  const mmStaff = await prisma.user.upsert({
+    where: {
+      email: 'mm@geekway.com',
+    },
+    update: {},
+    create: {
+      email: 'mm@geekway.com',
+      name: 'Miniature Market Staff',
+      username: null,
+      superAdmin: false,
+      pronouns: {
+        connectOrCreate: {
+          create: {
+            pronouns: 'They/Them',
+          },
+          where: {
+            pronouns: 'They/Them',
           },
         },
       },
@@ -559,13 +582,13 @@ async function main() {
   await prisma.userOrganizationPermissions.upsert({
     where: {
       userId_organizationId: {
-        userId: mm.id,
+        userId: mmStu.id,
         organizationId: geekway.id,
       },
     },
     update: {},
     create: {
-      userId: mm.id,
+      userId: mmStu.id,
       organizationId: geekway.id,
       admin: false,
       geekGuide: true,
@@ -729,13 +752,13 @@ async function main() {
   await prisma.userConventionPermissions.upsert({
     where: {
       userId_conventionId: {
-        userId: mm.id,
+        userId: mmStu.id,
         conventionId: geekwayMini2024.id,
       },
     },
     update: {},
     create: {
-      userId: mm.id,
+      userId: mmStu.id,
       conventionId: geekwayMini2024.id,
       admin: false,
       geekGuide: true,
@@ -899,14 +922,50 @@ async function main() {
   await prisma.userConventionPermissions.upsert({
     where: {
       userId_conventionId: {
-        userId: mm.id,
+        userId: mmStu.id,
         conventionId: geekwayPrime2024.id,
       },
     },
     update: {},
     create: {
-      userId: mm.id,
+      userId: mmStu.id,
       conventionId: geekwayPrime2024.id,
+      admin: false,
+      geekGuide: true,
+      attendee: false,
+    },
+  });
+
+  const mmStoreLibrary = await prisma.convention.upsert({
+    where: {
+      name_organizationId: {
+        name: 'Miniature Market Store Library',
+        organizationId: geekway.id,
+      },
+    },
+    update: {},
+    create: {
+      name: 'Miniature Market Store Library',
+      organizationId: geekway.id,
+      theme: 'Miniature Market',
+      tteConventionId: '',
+      startDate: '2024-11-23T10:00:00.000Z',
+      endDate: '2030-11-23T18:00:00.000Z',
+      typeId: conventionTypeSE.id,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: mmStaff.id,
+        conventionId: mmStoreLibrary.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mmStaff.id,
+      conventionId: mmStoreLibrary.id,
       admin: false,
       geekGuide: true,
       attendee: false,

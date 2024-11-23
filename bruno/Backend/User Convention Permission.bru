@@ -1,0 +1,15 @@
+meta {
+  name: User Convention Permission
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{apiUrl}}/userConPerm/{{id}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: mattie@mattie.lgbt
+}

@@ -20,6 +20,14 @@ export class OrganizationService {
     }
   }
 
+  async allOrganizations(ctx: Context): Promise<Organization[] | null> {
+    try {
+      return ctx.prisma.organization.findMany();
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
   async organizationWithUsers(
     organizationWhereUniqueInput: Prisma.OrganizationWhereUniqueInput,
     ctx: Context,
@@ -30,6 +38,18 @@ export class OrganizationService {
         include: {
           users: true,
           owner: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async organizationByOwner(id: number, ctx: Context): Promise<any> {
+    try {
+      return ctx.prisma.organization.findMany({
+        where: {
+          ownerId: id,
         },
       });
     } catch (ex) {

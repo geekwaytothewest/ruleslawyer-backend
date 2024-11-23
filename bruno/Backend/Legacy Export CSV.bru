@@ -1,0 +1,17 @@
+meta {
+  name: Legacy Export CSV
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{apiUrl}}/legacy/org/{{id}}/con/{{conId}}/coll/{{collId}}/exportPlays
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  id: 1
+  conId: 2
+  collId: 2
+}

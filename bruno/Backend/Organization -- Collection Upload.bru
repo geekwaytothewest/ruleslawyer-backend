@@ -1,7 +1,7 @@
 meta {
   name: Organization -- Collection Upload
   type: http
-  seq: 15
+  seq: 18
 }
 
 post {
@@ -11,8 +11,8 @@ post {
 }
 
 body:multipart-form {
-  csvFile: undefined
   name: Geekway Library
+  csvFile: @file(/home/afrozenpeach/Downloads/GW_Library_03_26_2018.csv)
 }
 
 vars:pre-request {

@@ -1,9 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RouterModule } from '@nestjs/core';
@@ -57,6 +52,10 @@ const routes = [
   {
     path: '/api/legacy',
     module: LegacyModule,
+  },
+  {
+    path: 'api/collection',
+    module: CollectionModule,
   },
 ];
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
 import { Collection, Prisma } from '@prisma/client';
@@ -9,13 +9,103 @@ import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 export class CollectionService {
   constructor(private readonly copyService: CopyService) {}
   private readonly logger = new RuleslawyerLogger(CollectionService.name);
-  async collection(id: number, ctx: Context) {
-    return await ctx.prisma.collection.findUnique({
+  async collection(id: number, ctx: Context): Promise<any> {
+    const query: Prisma.CollectionFindUniqueArgs = {
       where: { id: Number(id) },
-    });
+      include: {
+        _count: true,
+        conventions: true,
+        copies: {
+          include: {
+            game: true,
+            checkOuts: {
+              orderBy: {
+                checkOut: 'desc',
+              },
+            },
+          },
+          orderBy: {
+            game: {
+              name: 'asc',
+            },
+          },
+        },
+      },
+    };
+
+    return await ctx.prisma.collection.findUnique(query);
   }
 
-  async collectionsByOrg(orgId: number, ctx: Context) {
+  async collectionCopiesByGames(
+    id: number,
+    limit: number,
+    filter: string,
+    ctx: Context,
+  ) {
+    const query: Prisma.CollectionFindUniqueArgs = {
+      where: {
+        id: Number(id),
+      },
+    };
+
+    const collection: any = await ctx.prisma.collection.findUnique(query);
+
+    const gameQuery: Prisma.GameFindManyArgs = {
+      include: {
+        copies: {
+          include: {
+            checkOuts: true,
+            game: true,
+          },
+          where: {
+            collectionId: Number(id),
+          },
+        },
+        _count: true,
+      },
+      where: {
+        copies: {
+          some: {
+            collectionId: Number(id),
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    };
+
+    if (limit && !Number.isNaN(Number(limit))) {
+      gameQuery.take = Number(limit);
+    }
+
+    if (filter) {
+      gameQuery.where = {
+        AND: [
+          {
+            OR: [
+              { name: { search: filter.split(' ').join(' <-> ') } },
+              { name: { contains: filter, mode: 'insensitive' } },
+              { name: { startsWith: filter, mode: 'insensitive' } },
+            ],
+          },
+          {
+            copies: {
+              some: {
+                collectionId: Number(id),
+              },
+            },
+          },
+        ],
+      };
+    }
+
+    collection.games = await ctx.prisma.game.findMany(gameQuery);
+
+    return collection;
+  }
+
+  async collectionsByOrgWithCopies(orgId: number, ctx: Context) {
     this.logger.log(`Getting collections for orgId=${orgId}`);
     return await ctx.prisma.collection.findMany({
       where: {
@@ -33,6 +123,22 @@ export class CollectionService {
             game: true,
           },
         },
+        _count: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  async collectionsByOrg(orgId: number, ctx: Context) {
+    this.logger.log(`Getting collections for orgId=${orgId}`);
+    return await ctx.prisma.collection.findMany({
+      where: {
+        organizationId: orgId,
+      },
+      include: {
+        _count: true,
       },
       orderBy: {
         name: 'asc',
@@ -164,34 +270,6 @@ export class CollectionService {
           return reject('could not create collection');
         }
 
-        if (fields?.type?.value === 'Door Prizes') {
-          this.logger.log(
-            `Adding door prize collection with name=${fields?.name?.value} to convention witih conventionId=${fields?.conventionId?.value}`,
-          );
-          await ctx.prisma.convention.update({
-            where: {
-              id: Number(fields.conventionId.value),
-              organizationId: Number(orgId),
-            },
-            data: {
-              doorPrizeCollectionId: Number(collection?.id),
-            },
-          });
-        } else if (fields?.type?.value === 'Play and Win') {
-          this.logger.log(
-            `Adding play and win collection with name=${fields?.name?.value} to convention witih conventionId=${fields?.conventionId?.value}`,
-          );
-          await ctx.prisma.convention.update({
-            where: {
-              id: Number(fields.conventionId.value),
-              organizationId: Number(orgId),
-            },
-            data: {
-              playAndWinCollectionId: Number(collection?.id),
-            },
-          });
-        }
-
         this.logger.log(
           `Uploading copies for orgId=${orgId}, collectionId=${collection.id}`,
         );
@@ -216,10 +294,11 @@ export class CollectionService {
     try {
       const conventions = await ctx.prisma.convention.count({
         where: {
-          OR: [
-            { doorPrizeCollectionId: Number(id) },
-            { playAndWinCollectionId: Number(id) },
-          ],
+          collections: {
+            some: {
+              collectionId: id,
+            },
+          },
         },
       });
 
@@ -295,6 +374,7 @@ export class CollectionService {
                     connectOrCreate: {
                       create: {
                         name: r[0],
+                        organizationId: Number(orgId),
                       },
                       where: {
                         name: r[0],

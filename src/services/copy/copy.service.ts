@@ -15,6 +15,10 @@ export class CopyService {
     try {
       return ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
+        include: {
+          collection: true,
+          game: true,
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
@@ -50,7 +54,11 @@ export class CopyService {
       return ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
         include: {
-          checkOuts: true,
+          checkOuts: {
+            orderBy: {
+              checkOut: 'desc',
+            },
+          },
         },
       });
     } catch (ex) {
@@ -100,7 +108,6 @@ export class CopyService {
     ctx: Context,
   ): Promise<Copy | null> {
     try {
-      const copyWhereUniqueInput = {};
       this.logger.log(`Creating copy with data=${JSON.stringify(data)}`);
       return ctx.prisma.copy.upsert({
         where: {
@@ -135,7 +142,11 @@ export class CopyService {
           data,
         )}, where=${JSON.stringify(where)}`,
       );
-      return ctx.prisma.copy.update({ data, where });
+      return ctx.prisma.copy.update({
+        data,
+        where,
+        include: { collection: true, game: true },
+      });
     } catch (ex) {
       this.logger.error(
         `Failed to update copy with data=${JSON.stringify(
@@ -164,6 +175,11 @@ export class CopyService {
             },
           },
         },
+        orderBy: {
+          game: {
+            name: 'asc',
+          },
+        },
       });
     } catch (ex) {
       this.logger.log(
@@ -171,5 +187,13 @@ export class CopyService {
       );
       return Promise.reject(ex);
     }
+  }
+
+  async deleteCopy(id: number, ctx: Context) {
+    return ctx.prisma.copy.delete({
+      where: {
+        id: id,
+      },
+    });
   }
 }

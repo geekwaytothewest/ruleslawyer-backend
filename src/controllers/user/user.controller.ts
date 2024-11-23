@@ -27,8 +27,9 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard, UserGuard)
   @Get(':id')
-  async getUserById(@Param('id') id: string): Promise<UserModel> {
+  async getUserById(@Param('id') id: string): Promise<UserModel | null> {
     let user: UserModel | null;
+
     if (!isNaN(Number(id))) {
       user = await this.userService.user(
         {
@@ -39,7 +40,7 @@ export class UserController {
     } else {
       user = await this.userService.user(
         {
-          email: id,
+          email: String(id),
         },
         this.ctx,
       );

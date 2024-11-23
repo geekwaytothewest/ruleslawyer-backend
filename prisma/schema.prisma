@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -103,8 +104,9 @@ model Organization {
   users          UserOrganizationPermissions[]
   collections    Collection[]
   conventions    Convention[]
-  Copy           Copy[]
-  ConventionType ConventionType[]
+  copies         Copy[]
+  conventionType ConventionType[]
+  cames          Game[]
 }
 
 model ConventionType {
@@ -117,7 +119,7 @@ model ConventionType {
   content        String?
   organization   Organization @relation(fields: organizationId, references: [id])
   organizationId Int
-  Convention     Convention[]
+  convention     Convention[]
 
   @@unique([name, organizationId])
 }
@@ -132,24 +134,25 @@ model RegistrationDate {
 }
 
 model Collection {
-  id                   Int          @id @default(autoincrement())
-  name                 String
-  organization         Organization @relation(fields: organizationId, references: [id])
-  organizationId       Int
-  copies               Copy[]
-  conventionDoorPrize  Convention?  @relation("DoorPrizes")
-  conventionPlayAndWin Convention?  @relation("PlayAndWins")
-  public               Boolean      @default(false)
-  allowWinning         Boolean      @default(false)
+  id             Int                     @id @default(autoincrement())
+  name           String
+  organization   Organization            @relation(fields: organizationId, references: [id])
+  organizationId Int
+  copies         Copy[]
+  public         Boolean                 @default(false)
+  allowWinning   Boolean                 @default(false)
+  conventions    ConventionCollections[]
 
   @@unique([organizationId, name])
 }
 
 model Game {
-  id               Int       @id @default(autoincrement())
-  bggId            Int?      @unique
+  id               Int          @id @default(autoincrement())
+  organization     Organization @relation(fields: organizationId, references: [id])
+  organizationId   Int
+  bggId            Int?         @unique
   lastBGGSync      DateTime?
-  name             String    @unique
+  name             String       @unique
   shortDescription String?
   designer         String?
   artist           String?
@@ -175,11 +178,11 @@ model Copy {
   dateRetired      DateTime?
   comments         String?
   winnable         Boolean      @default(true)
-  winner           Attendee?    @relation(fields: winnerId, references: [id])
+  winner           Attendee?    @relation(fields: winnerId, references: [id], onDelete: Restrict)
   winnerId         Int?
   coverArtOverride Bytes?
-  collection       Collection?  @relation(fields: collectionId, references: [id])
-  collectionId     Int?
+  collection       Collection   @relation(fields: collectionId, references: [id])
+  collectionId     Int
   checkOuts        CheckOut[]
   organization     Organization @relation(fields: organizationId, references: [id])
   organizationId   Int
@@ -196,7 +199,7 @@ model CheckOut {
   attendeeId Int
   checkOut   DateTime
   checkIn    DateTime?
-  Copy       Copy?     @relation(fields: copyId, references: [id])
+  copy       Copy?     @relation(fields: copyId, references: [id], onDelete: Restrict)
   copyId     Int?
   players    Player[]
   submitted  Boolean   @default(false)
@@ -213,34 +216,37 @@ model Player {
 }
 
 model Convention {
-  id                         Int                         @id @default(autoincrement())
-  organization               Organization                @relation(fields: organizationId, references: [id])
-  organizationId             Int
-  name                       String
-  theme                      String                      @default("")
-  logo                       Bytes                       @default("")
-  logoSquare                 Bytes                       @default("")
-  icon                       String                      @default("")
-  startDate                  DateTime
-  endDate                    DateTime
-  registrationUrl            String?                     @default("")
-  type                       ConventionType              @relation(fields: typeId, references: [id])
-  typeId                     Int
-  annual                     String                      @default("")
-  size                       Int?
-  registrationDates          RegistrationDate[]
-  cancelled                  Boolean                     @default(false)
-  playAndWinAnnounced        Boolean                     @default(false)
-  playAndWinWinnersSelected  Boolean                     @default(false)
-  playAndWinWinnersAnnounced Boolean                     @default(false)
-  doorPrizesAnnounced        Boolean                     @default(false)
-  doorPrizes                 Collection?                 @relation("DoorPrizes", fields: doorPrizeCollectionId, references: [id])
-  doorPrizeCollectionId      Int?                        @unique
-  playAndWins                Collection?                 @relation("PlayAndWins", fields: playAndWinCollectionId, references: [id])
-  playAndWinCollectionId     Int?                        @unique
-  users                      UserConventionPermissions[]
-  attendees                  Attendee[]
-  tteConventionId            String?
+  id                Int                         @id @default(autoincrement())
+  organization      Organization                @relation(fields: organizationId, references: [id])
+  organizationId    Int
+  name              String
+  theme             String                      @default("")
+  logo              Bytes                       @default("")
+  logoSquare        Bytes                       @default("")
+  icon              String                      @default("")
+  startDate         DateTime
+  endDate           DateTime
+  registrationUrl   String?                     @default("")
+  type              ConventionType              @relation(fields: typeId, references: [id])
+  typeId            Int
+  annual            String                      @default("")
+  size              Int?
+  registrationDates RegistrationDate[]
+  cancelled         Boolean                     @default(false)
+  users             UserConventionPermissions[]
+  attendees         Attendee[]
+  tteConventionId   String?
+  collections       ConventionCollections[]
 
   @@unique([name, organizationId])
+}
+
+model ConventionCollections {
+  id           Int        @id @default(autoincrement())
+  conventionId Int
+  convention   Convention @relation(fields: conventionId, references: [id])
+  collectionId Int
+  collection   Collection @relation(fields: collectionId, references: [id])
+
+  @@unique([conventionId, collectionId])
 }

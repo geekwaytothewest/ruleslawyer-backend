@@ -19,6 +19,20 @@ export class UserService {
     }
   }
 
+  async convertToUserId(id: string, ctx: Context) {
+    let userId: number = Number(id);
+
+    if (!Number.isInteger(userId)) {
+      const user = await ctx.prisma.user.findUnique({
+        where: { email: id },
+      });
+
+      userId = Number(user?.id);
+    }
+
+    return userId;
+  }
+
   async createUser(data: Prisma.UserCreateInput, ctx: Context): Promise<User> {
     try {
       return ctx.prisma.user.create({

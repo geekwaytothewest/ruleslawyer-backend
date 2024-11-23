@@ -46,7 +46,7 @@ describe('UserController', () => {
 
       const u = await controller.getUserById('1');
 
-      expect(u.id).toBe(1);
+      expect(u?.id).toBe(1);
     });
 
     it('should get a user by email', async () => {
@@ -67,7 +67,7 @@ describe('UserController', () => {
 
       const u = await controller.getUserById('test@geekway.com');
 
-      expect(u.id).toBe(1);
+      expect(u?.id).toBe(1);
     });
 
     it('should throw a not found error', async () => {

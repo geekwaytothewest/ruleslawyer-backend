@@ -6,7 +6,7 @@ import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 
 @Injectable()
-export class ConventionGuard implements CanActivate {
+export class ConventionReadGuard implements CanActivate {
   ctx: Context;
 
   constructor(
@@ -21,6 +21,14 @@ export class ConventionGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
     let conId = context.getArgByIndex(0).params?.id;
+
+    if (!user) {
+      return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
+    }
 
     if (!conId) {
       conId = context.getArgByIndex(0).params?.conId;
@@ -43,7 +51,11 @@ export class ConventionGuard implements CanActivate {
       this.ctx,
     );
 
-    if (con?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+    if (
+      con?.users?.filter(
+        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.attendee),
+      ).length > 0
+    ) {
       return true;
     }
 

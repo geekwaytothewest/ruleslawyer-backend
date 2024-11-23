@@ -1,0 +1,15 @@
+meta {
+  name: Games Search
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{apiUrl}}/game/search/{{gameName}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  gameName: Catan
+}

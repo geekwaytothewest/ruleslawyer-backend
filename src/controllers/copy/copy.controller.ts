@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CopyGuard } from '../../guards/copy/copy.guard';
@@ -26,6 +34,15 @@ export class CopyController {
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
+  @Get(':id/withCheckOuts')
+  async getCopyWithCheckOuts(@Param('id') id: number) {
+    return await this.copyService.copyWithCheckouts(
+      { id: Number(id) },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, CopyGuard)
   @Put(':id')
   async updateCopy(
     @Param('id') id: number,
@@ -40,5 +57,11 @@ export class CopyController {
       },
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, CopyGuard)
+  @Delete(':id')
+  async deleteCopy(@Param('id') id: number) {
+    return await this.copyService.deleteCopy(Number(id), this.ctx);
   }
 }

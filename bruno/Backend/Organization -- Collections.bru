@@ -1,0 +1,15 @@
+meta {
+  name: Organization -- Collections
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{apiUrl}}/org/{{id}}/collections
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  id: 1
+}

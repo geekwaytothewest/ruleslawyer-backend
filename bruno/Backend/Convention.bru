@@ -1,0 +1,15 @@
+meta {
+  name: Convention
+  type: http
+  seq: 38
+}
+
+get {
+  url: {{apiUrl}}/con/{{id}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  id: 1
+}

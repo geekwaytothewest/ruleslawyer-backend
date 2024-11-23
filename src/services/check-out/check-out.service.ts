@@ -32,7 +32,7 @@ export class CheckOutService {
         take: 10,
         include: {
           attendee: true,
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -63,7 +63,7 @@ export class CheckOutService {
         take: 10,
         include: {
           attendee: true,
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -84,7 +84,7 @@ export class CheckOutService {
     try {
       return ctx.prisma.checkOut.findMany({
         include: {
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -103,6 +103,36 @@ export class CheckOutService {
     }
   }
 
+  getCheckOutsByCollectionId(conId: number, collId: number, ctx: Context) {
+    this.logger.log(`Getting checkouts for conId=${conId}`);
+    try {
+      return ctx.prisma.checkOut.findMany({
+        include: {
+          copy: {
+            include: {
+              collection: true,
+              game: true,
+            },
+          },
+          players: {
+            include: {
+              attendee: true,
+            },
+          },
+          attendee: true,
+        },
+        where: {
+          copy: {
+            collectionId: collId,
+          },
+        },
+      });
+    } catch (ex) {
+      this.logger.error(`Failed to get checkouts for conId=${conId}, ex=${ex}`);
+      return Promise.reject(ex);
+    }
+  }
+
   async checkOut(
     collectionId: number,
     copyBarcode: string,
@@ -110,6 +140,7 @@ export class CheckOutService {
     attendeeBarcode: string,
     overrideLimit: boolean,
     ctx: Context,
+    user: any,
   ) {
     try {
       this.logger.log(
@@ -173,6 +204,7 @@ export class CheckOutService {
           const game = await this.gameService.game(
             { id: checkoutCopy?.gameId },
             ctx,
+            user,
           );
 
           checkoutString = `Game: ${game?.name}, Barcode: ${checkoutCopy?.barcodeLabel}`;
@@ -344,7 +376,7 @@ export class CheckOutService {
       return ctx.prisma.checkOut.findMany({
         include: {
           attendee: true,
-          Copy: {
+          copy: {
             include: {
               collection: true,
               game: true,
@@ -359,7 +391,7 @@ export class CheckOutService {
               },
             },
             {
-              Copy: {
+              copy: {
                 collection: {
                   allowWinning: true,
                 },

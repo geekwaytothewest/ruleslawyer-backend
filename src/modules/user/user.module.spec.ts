@@ -4,7 +4,7 @@ import { UserModule } from './user.module';
 describe('UserModule', () => {
   it('should compile the module', async () => {
     const module = await Test.createTestingModule({
-      controllers: [UserModule],
+      imports: [UserModule],
     }).compile();
 
     expect(module).toBeDefined();

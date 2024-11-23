@@ -16,11 +16,13 @@ import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CollectionService } from '../../services/collection/collection.service';
-import { OrganizationGuard } from '../../guards/organization/organization.guard';
+import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
+import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { CopyGuard } from '../../guards/copy/copy.guard';
-import { CollectionGuard } from '../../guards/collection/collection.guard';
-import { ConventionGuard } from '../../guards/convention/convention.guard';
+import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
+import { ConventionReadGuard } from '../../guards/convention/convention-read.guard';
+import { ConventionWriteGuard } from '../../guards/convention/convention-write.guard';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { CheckOutGuard } from '../../guards/check-out/check-out.guard';
 import { CheckOutService } from '../../services/check-out/check-out.service';
@@ -31,6 +33,9 @@ import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { PrizeEntryGuard } from '../../guards/prize-entry/prize-entry.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
+import { User } from '../../modules/authz/user.decorator';
+import { stringify } from 'csv-stringify/sync';
+import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
 
 @Controller()
 export class LegacyController {
@@ -55,11 +60,11 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @Get('org/:orgId/con/:conId/copycollections')
   async getCopyCollections(@Param('orgId') orgId: number) {
     this.logger.log(`Getting collections for orgId=${orgId}`);
-    const collections = await this.collectionService.collectionsByOrg(
+    const collections = await this.collectionService.collectionsByOrgWithCopies(
       Number(orgId),
       this.ctx,
     );
@@ -174,7 +179,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, CollectionGuard)
+  @UseGuards(JwtAuthGuard, CollectionWriteGuard)
   @Post('org/:orgId/con/:conId/copycollections/:colId/copies')
   async addCopy(
     @Param('orgId') orgId: number,
@@ -209,6 +214,7 @@ export class LegacyController {
             },
             create: {
               name: copy.title,
+              organizationId: orgId,
             },
           },
         },
@@ -292,7 +298,7 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Post('org/:orgId/con/:conId/attendees')
   async addAttendee(
     @Param('conId') conId: number,
@@ -336,7 +342,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Put('org/:orgId/con/:conId/attendees/:badgeNumber')
   async updateAttendee(
     @Param('badgeNumber') badgeNumber: string,
@@ -427,8 +433,8 @@ export class LegacyController {
           },
           Copy: {
             Collection: {
-              ID: c.Copy?.collection?.id,
-              Name: c.Copy?.collection?.name,
+              ID: c.copy?.collection?.id,
+              Name: c.copy?.collection?.name,
             },
             CurrentCheckout: {
               Attendee: {
@@ -447,13 +453,13 @@ export class LegacyController {
               },
             },
             Game: {
-              ID: c.Copy?.game.id,
-              Name: c.Copy?.game.name,
+              ID: c.copy?.game.id,
+              Name: c.copy?.game.name,
             },
-            ID: c.Copy?.barcodeLabel,
+            ID: c.copy?.barcodeLabel,
             IsCheckedOut: true,
-            Title: c.Copy?.game.name,
-            Winnable: c.Copy?.winnable,
+            Title: c.copy?.game.name,
+            Winnable: c.copy?.winnable,
           },
           ID: c.id,
           Length: {
@@ -511,8 +517,8 @@ export class LegacyController {
           },
           Copy: {
             Collection: {
-              ID: c.Copy?.collection?.id,
-              Name: c.Copy?.collection?.name,
+              ID: c.copy?.collection?.id,
+              Name: c.copy?.collection?.name,
             },
             CurrentCheckout: {
               Attendee: {
@@ -531,13 +537,13 @@ export class LegacyController {
               },
             },
             Game: {
-              ID: c.Copy?.game.id,
-              Name: c.Copy?.game.name,
+              ID: c.copy?.game.id,
+              Name: c.copy?.game.name,
             },
-            ID: c.Copy?.barcodeLabel,
+            ID: c.copy?.barcodeLabel,
             IsCheckedOut: true,
-            Title: c.Copy?.game.name,
-            Winnable: c.Copy?.winnable,
+            Title: c.copy?.game.name,
+            Winnable: c.copy?.winnable,
           },
           ID: c.id,
           Length: {
@@ -789,6 +795,7 @@ export class LegacyController {
     },
     @Param('orgId') orgId: number,
     @Param('conId') conId: number,
+    @User() user: any,
   ) {
     this.logger.log(
       `Checkout requested for barcode=${body.libraryId}, attendeeBadgeNumber=${body.attendeeBadgeNumber}, overrideLimit=${body.overrideLimit}`,
@@ -847,8 +854,9 @@ export class LegacyController {
         );
 
         const game = await this.gameService.game(
-          { id: checkoutCopy?.gameId },
+          { id: checkoutCopy?.gameId, organizationId: Number(orgId) },
           this.ctx,
+          user,
         );
 
         checkoutString = `Game: ${game?.name}, Barcode: ${checkoutCopy?.barcodeLabel}`;
@@ -916,6 +924,7 @@ export class LegacyController {
       attendee.barcode,
       body.overrideLimit,
       this.ctx,
+      user,
     );
     this.logger.log(
       `Copy with copyId=${copy.id} successfully checked out to attendee with attendeeBadgeNumber=${body.attendeeBadgeNumber}, checkout.id=${checkOut.id}`,
@@ -1131,17 +1140,17 @@ export class LegacyController {
           },
           Copy: {
             Game: {
-              ID: e.Copy?.game.id,
-              Name: e.Copy?.game.name,
+              ID: e.copy?.game.id,
+              Name: e.copy?.game.name,
             },
             Collection: {
-              ID: e.Copy?.collection?.id,
-              Name: e.Copy?.collection?.name,
-              AllowWinning: e.Copy?.collection?.allowWinning,
+              ID: e.copy?.collection?.id,
+              Name: e.copy?.collection?.name,
+              AllowWinning: e.copy?.collection?.allowWinning,
             },
-            ID: e.Copy?.id,
-            Title: e.Copy?.game.name,
-            Winnable: e.Copy?.winnable,
+            ID: e.copy?.id,
+            Title: e.copy?.game.name,
+            Winnable: e.copy?.winnable,
           },
           ID: e.id,
         };
@@ -1149,7 +1158,7 @@ export class LegacyController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionReadGuard)
   @Get('org/:orgId/con/:conId/plays')
   async getPlays(@Param('conId') conId: number) {
     this.logger.log(`Getting plays for conId=${conId}`);
@@ -1163,12 +1172,59 @@ export class LegacyController {
           return {
             ID: p.id,
             CheckoutID: p.id,
-            GameID: p.Copy?.gameId,
-            GameName: p.Copy?.game.name,
+            GameID: p.copy?.gameId,
+            GameName: p.copy?.game.name,
             Collection: {
-              ID: p.Copy?.collection?.id,
-              Name: p.Copy?.collection?.name,
-              AllowWinning: p.Copy?.collection?.allowWinning,
+              ID: p.copy?.collection?.id,
+              Name: p.copy?.collection?.name,
+              AllowWinning: p.copy?.collection?.allowWinning,
+              Color: null,
+            },
+            Checkout: {
+              ID: p.id,
+              TimeOut: p.checkOut,
+              TimeIn: p.checkIn,
+            },
+            Players: p.players?.map((player) => {
+              return {
+                ID: player.attendee.badgeNumber.toString(),
+                Name: player.attendee.badgeName,
+                WantsToWin: player.wantToWin,
+                Rating: player.rating,
+              };
+            }),
+          };
+        }),
+      },
+    };
+  }
+  @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @Get('org/:orgId/con/:conId/coll/:collId/plays')
+  async getCollPlays(
+    @Param('conId') conId: number,
+    @Param('collId') collId: number,
+  ) {
+    this.logger.log(`Getting plays for conId=${conId}`);
+    const plays = await this.checkOutService.getCheckOutsByCollectionId(
+      conId,
+      collId,
+      this.ctx,
+    );
+    this.logger.log(`Got ${plays.length} plays for conId=${conId}`);
+
+    return {
+      Errors: [],
+      Result: {
+        Plays: plays.map((p) => {
+          return {
+            ID: p.id,
+            CheckoutID: p.id,
+            GameID: p.copy?.gameId,
+            GameName: p.copy?.game.name,
+            Collection: {
+              ID: p.copy?.collection?.id,
+              Name: p.copy?.collection?.name,
+              AllowWinning: p.copy?.collection?.allowWinning,
               Color: null,
             },
             Checkout: {
@@ -1221,7 +1277,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/importCollection')
   async importCollection(
     @Req() request: fastify.FastifyRequest,
@@ -1250,7 +1306,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/addCollection')
   async addCollection(
     @Param('orgId') orgId: number,
@@ -1271,7 +1327,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/collection/:colId')
   async updateCollection(
     @Param('orgId') orgId: number,
@@ -1295,7 +1351,7 @@ export class LegacyController {
   @Get('org/:orgId/con/:conId/games')
   async getGames(@Param('orgId') orgId: number) {
     this.logger.log(`Getting games for orgId=${orgId}`);
-    const games = await this.gameService.games(this.ctx);
+    const games = await this.gameService.games(orgId, this.ctx);
     this.logger.log(`${games?.length} games found for orgId=${orgId}`);
     this.logger.log(`Getting copies for orgId=${orgId}`);
     const copies = await this.copyService.searchCopies(
@@ -1344,18 +1400,76 @@ export class LegacyController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('org/:orgId/con/:conId/coll/:collId/games')
+  async getGamesByCollectionId(
+    @Param('orgId') orgId: number,
+    @Param('collId') collId: number,
+  ) {
+    this.logger.log(`Getting games for orgId=${orgId}`);
+    const games = await this.gameService.games(orgId, this.ctx);
+    this.logger.log(`${games?.length} games found for orgId=${orgId}`);
+    this.logger.log(`Getting copies for orgId=${orgId}`);
+    const copies = await this.copyService.searchCopies(
+      {
+        organizationId: Number(orgId),
+        collectionId: Number(collId),
+      },
+      this.ctx,
+    );
+    this.logger.log(`${copies?.length} copies found for orgId=${orgId}`);
+
+    return {
+      Errors: [],
+      Result: {
+        Games: games.map((g) => {
+          return {
+            ID: g.id,
+            Name: g.name,
+            Copies: copies
+              .filter((c) => c.gameId === g.id)
+              .map((c) => {
+                return {
+                  ID: c.barcodeLabel,
+                  IsCheckedOut:
+                    c.checkOuts.filter((co) => co.checkOut !== null).length > 0,
+                  Title: c.game.name,
+                  Winnable: c.winnable,
+                  Collection: {
+                    ID: c.collection?.id,
+                    Name: c.collection?.name,
+                    AllowWinning: c.collection?.allowWinning,
+                    Color: null,
+                  },
+                  CurrentCheckout: c.checkOuts.filter(
+                    (co) => co.checkOut === null,
+                  )[0],
+                  Game: {
+                    ID: c.game.id,
+                    Name: c.game.name,
+                    Copies: null,
+                  },
+                };
+              }),
+          };
+        }),
+      },
+    };
+  }
+
   //This route is used by the legacy admin app's games page
   //It was renamed to gameList to not interfere with the pnwpicker code which uses 'games' as its route
   @UseGuards(JwtAuthGuard)
   @Get('org/:orgId/con/:conId/gameList')
-  async getGameList() {
+  async getGameList(@Param('orgId') orgId: number) {
     this.logger.log(`Getting game list`);
-    return this.gameService.games(this.ctx);
+    return this.gameService.games(orgId, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Put('org/:orgId/con/:conId/gameList/:gameId')
   async updateGame(
+    @Param('orgId') orgId: number,
     @Param('gameId') gameId: number,
     @Body()
     game: {
@@ -1367,6 +1481,7 @@ export class LegacyController {
       {
         where: {
           id: Number(gameId),
+          organizationId: Number(orgId),
         },
         data: {
           name: game.title,
@@ -1376,7 +1491,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Post('org/:orgId/con/:conId/copycollections/:collId/copies/upload')
   async uploadCopies(
     @Req() request: fastify.FastifyRequest,
@@ -1402,7 +1517,7 @@ export class LegacyController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Put('org/:orgId/con/:conId/attendees/import')
   async importAttendees(
     @Req() request: fastify.FastifyRequest,
@@ -1428,7 +1543,8 @@ export class LegacyController {
       this.ctx,
     );
   }
-  @UseGuards(JwtAuthGuard, ConventionGuard)
+
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
   async syncTabletopEvents(
     @Param('conId') conId: number,
@@ -1449,5 +1565,37 @@ export class LegacyController {
       Number(conId),
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @Get('org/:orgId/con/:conId/coll/:collId/exportPlays')
+  async exportPlaysByCollectionId(
+    @Param('conId') conId: number,
+    @Param('collId') collId: number,
+  ) {
+    const checkOuts = await this.checkOutService.getCheckOutsByCollectionId(
+      Number(conId),
+      Number(collId),
+      this.ctx,
+    );
+
+    const collName = checkOuts[0].copy?.collection.name;
+
+    const csv = stringify(
+      checkOuts.map((co) => {
+        return [
+          co.copy?.game.name,
+          co.copy?.barcodeLabel,
+          co.attendee.badgeName,
+          co.checkOut,
+          co.checkIn,
+        ];
+      }),
+    );
+
+    return {
+      csvText: csv,
+      collectionName: collName,
+    };
   }
 }
