@@ -303,6 +303,13 @@ export class CheckOutService {
         where: {
           id: checkOutId,
         },
+        include: {
+          copy: {
+            include: {
+              game: true,
+            }
+          }
+        }
       });
 
       if (!checkOut?.checkIn) {
@@ -324,6 +331,11 @@ export class CheckOutService {
           `Attempt to submit play with checkoutId=${checkOutId} with no players`,
         );
         return Promise.reject('no players');
+      }
+
+      if (players.length > (checkOut.copy?.game.maxPlayers ?? 4) + 1) {
+        this.logger.error(`Attempt to submit play with more players than maxPlayers + 1`)
+        return Promise.reject('too many players');
       }
 
       for (const p of players) {
