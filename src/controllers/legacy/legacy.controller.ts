@@ -214,7 +214,7 @@ export class LegacyController {
             },
             create: {
               name: copy.title,
-              organizationId: orgId,
+              organizationId: Number(orgId),
             },
           },
         },
