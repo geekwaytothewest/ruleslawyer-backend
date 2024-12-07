@@ -31,10 +31,6 @@ export class ConventionWriteGuard implements CanActivate {
     }
 
     if (!conId) {
-      conId = context.getArgByIndex(0).params?.conId;
-    }
-
-    if (!conId) {
       return false;
     }
 

@@ -1142,6 +1142,7 @@ export class LegacyController {
             Game: {
               ID: e.copy?.game.id,
               Name: e.copy?.game.name,
+              MaxPlayers: e.copy?.game.maxPlayers,
             },
             Collection: {
               ID: e.copy?.collection?.id,
@@ -1466,7 +1467,27 @@ export class LegacyController {
     return this.gameService.games(orgId, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @Post('org/:orgId/con/:conId/gameList')
+  async addGame(
+    @Param('orgId') orgId: number,
+    @Body() game: {
+      title: string;
+    }
+  ) {
+    this.logger.log(`Adding game with title ${game.title}`);
+
+    return this.gameService.createGame({
+      name: game.title,
+      organization: {
+        connect: {
+          id: orgId,
+        }
+      }
+    }, this.ctx)
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Put('org/:orgId/con/:conId/gameList/:gameId')
   async updateGame(
     @Param('orgId') orgId: number,
