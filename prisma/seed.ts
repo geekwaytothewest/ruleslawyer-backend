@@ -457,7 +457,7 @@ async function main() {
       theme: 'Geekway to the Dragon Hoard',
       tteConventionId: '7B897EE6-30BF-11EF-B3C9-95421E8F6007',
       startDate: '2025-01-17T10:00:00.000Z',
-      endDate: '2024-01-1T18:00:00.000Z',
+      endDate: '2024-01-19T18:00:00.000Z',
       typeId: conventionTypeMini.id,
     },
   });
