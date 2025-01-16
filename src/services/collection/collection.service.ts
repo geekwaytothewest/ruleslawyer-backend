@@ -375,7 +375,7 @@ export class CollectionService {
                       create: {
                         name: r[0],
                         organizationId: Number(orgId),
-                        maxPlayers: r[2],
+                        maxPlayers: r[2] + 1,
                       },
                       where: {
                         name: r[0],
