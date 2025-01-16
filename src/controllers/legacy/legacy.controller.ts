@@ -1207,8 +1207,8 @@ export class LegacyController {
   ) {
     this.logger.log(`Getting plays for conId=${conId}`);
     const plays = await this.checkOutService.getCheckOutsByCollectionId(
-      conId,
-      collId,
+      Number(conId),
+      Number(collId),
       this.ctx,
     );
     this.logger.log(`Got ${plays.length} plays for conId=${conId}`);
