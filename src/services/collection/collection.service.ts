@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
-import { Collection, Prisma } from '@prisma/client';
+import { Collection, Copy, Prisma } from '@prisma/client';
 import { CopyService } from '../copy/copy.service';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 
@@ -364,9 +364,11 @@ export class CollectionService {
           }
 
           for (const r of records) {
+            let newCopy: Copy | null = null;
+
             try {
               this.logger.log(`Creating copy with record=${r}`);
-              await this.copyService.createCopy(
+              newCopy = await this.copyService.createCopy(
                 {
                   barcodeLabel: r[1],
                   barcode: '*' + r[1].padStart(5, '0') + '*',
@@ -375,7 +377,7 @@ export class CollectionService {
                       create: {
                         name: r[0],
                         organizationId: Number(orgId),
-                        maxPlayers: Number(r[2]) + 1,
+                        maxPlayers: Number(r[2]),
                       },
                       where: {
                         name: r[0],
@@ -403,6 +405,33 @@ export class CollectionService {
               this.logger.error(
                 `Failed to create copy with record=${r}; continuing to create remaining copies`,
               );
+            }
+
+            //Check for an update to maxPlayers for the game
+            let gameToUpdate = await ctx.prisma.game.findUnique({
+              where: {
+                id: newCopy?.gameId,
+              },
+            });
+
+            if (gameToUpdate?.maxPlayers != Number(r[2])) {
+              try {
+                this.logger.log(
+                  `Updating game with id=${newCopy?.gameId} with maxPlayers=${r[2]}`,
+                );
+                await ctx.prisma.game.update({
+                  where: {
+                    id: newCopy?.gameId,
+                  },
+                  data: {
+                    maxPlayers: Number(r[2]),
+                  },
+                });
+              } catch (ex) {
+                this.logger.error(
+                  `Failed to update game with id=${newCopy?.gameId} with maxPlayers=${r[2]}`,
+                );
+              }
             }
           }
 
