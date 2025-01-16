@@ -849,22 +849,18 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
 
-      const mockExecutionContext = createMock<ExecutionContext>({
-        getArgByIndex() {
-          return {
-            user: {
-              user: {
-                id: 1,
-              },
-            },
-          };
+      const req = {
+        user: {
+          user: {
+            id: 1,
+          },
         },
-      });
+      };
 
       const bigResponse = await controller.getAttendees(
         1,
         '',
-        mockExecutionContext,
+        req,
       );
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
@@ -896,22 +892,18 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
 
-      const mockExecutionContext = createMock<ExecutionContext>({
-        getArgByIndex() {
-          return {
-            user: {
-              user: {
-                id: 1,
-              },
-            },
-          };
+      const req = {
+        user: {
+          user: {
+            id: 1,
+          },
         },
-      });
+      };
 
       const bigResponse = await controller.getAttendees(
         1,
         'asdf',
-        mockExecutionContext,
+        req,
       );
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
