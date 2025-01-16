@@ -80,7 +80,7 @@ const routes = [
         mount: true,
         generateId: true,
         idGenerator: (req: FastifyRequest) =>
-          req.headers['X-Request-Id'] ?? uuidv4(),
+          (req.headers['X-Request-Id'] as string) ?? uuidv4(),
       },
     }),
   ],
