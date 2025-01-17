@@ -31,7 +31,11 @@ export class ConventionWriteGuard implements CanActivate {
     }
 
     if (!conId) {
-      return false;
+      conId = context.getArgByIndex(0).params?.conId;
+
+      if (!conId) {
+        return false;
+      }
     }
 
     const conWithUsers = Prisma.validator<Prisma.ConventionDefaultArgs>()({
