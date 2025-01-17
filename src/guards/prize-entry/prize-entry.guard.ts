@@ -55,26 +55,12 @@ export class PrizeEntryGuard implements CanActivate {
       return false;
     }
 
-    if (
-      convention?.playAndWinCollectionId === Number(collectionId)
-    ) {
-      const users = convention?.users?.filter(
-        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.attendee),
-      );
+    const users = convention?.users?.filter(
+      (u) => u.userId === user.id && (u.admin || u.geekGuide || u.attendee),
+    );
 
-      if (users && users.length > 0) {
-        return true;
-      }
-    }
-
-    if (!collectionId && convention?.playAndWinCollectionId === null) {
-      const users = convention?.users?.filter(
-        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.attendee),
-      );
-
-      if (users && users.length > 0) {
-        return true;
-      }
+    if (users && users.length > 0) {
+      return true;
     }
 
     const organization = await this.organizationService.organizationWithUsers(
