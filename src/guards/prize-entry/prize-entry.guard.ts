@@ -56,7 +56,6 @@ export class PrizeEntryGuard implements CanActivate {
     }
 
     if (
-      collectionId &&
       convention?.playAndWinCollectionId === Number(collectionId)
     ) {
       const users = convention?.users?.filter(
