@@ -119,12 +119,19 @@ export class CheckOutService {
               attendee: true,
             },
           },
-          attendee: true,
+          attendee: {
+            include: {
+              convention: true,
+            }
+          },
         },
         where: {
           copy: {
             collectionId: collId,
           },
+          attendee: {
+            conventionId: conId,
+          }
         },
       });
     } catch (ex) {
