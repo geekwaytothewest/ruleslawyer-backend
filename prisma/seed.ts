@@ -916,50 +916,50 @@ async function main() {
 
   await prisma.userOrganizationPermissions.deleteMany({
     where: {
-      userId: mmStu.id
-    }
+      userId: mmStu.id,
+    },
   });
 
   await prisma.userOrganizationPermissions.deleteMany({
     where: {
-      userId: kellie.id
-    }
+      userId: kellie.id,
+    },
   });
 
   await prisma.userOrganizationPermissions.deleteMany({
     where: {
-      userId: libby.id
-    }
+      userId: libby.id,
+    },
   });
 
   await prisma.userOrganizationPermissions.deleteMany({
     where: {
-      userId: elzie.id
-    }
+      userId: elzie.id,
+    },
   });
 
   await prisma.userConventionPermissions.deleteMany({
     where: {
-      userId: mmStu.id
-    }
-  })
-
-  await prisma.userConventionPermissions.deleteMany({
-    where: {
-      userId: kellie.id
-    }
+      userId: mmStu.id,
+    },
   });
 
   await prisma.userConventionPermissions.deleteMany({
     where: {
-      userId: libby.id
-    }
+      userId: kellie.id,
+    },
   });
 
   await prisma.userConventionPermissions.deleteMany({
     where: {
-      userId: elzie.id
-    }
+      userId: libby.id,
+    },
+  });
+
+  await prisma.userConventionPermissions.deleteMany({
+    where: {
+      userId: elzie.id,
+    },
   });
 
   await prisma.userConventionPermissions.upsert({
@@ -1064,103 +1064,117 @@ async function main() {
     },
   });
 
-  await prisma.conventionCollections.upsert({
-    where: {
-      conventionId_collectionId: {
-        collectionId: 4,
-        conventionId: mmStoreLibrary.id
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 4,
+          conventionId: mmStoreLibrary.id,
+        },
       },
-    },
-    update: {},
-    create: {
-      collectionId: 4,
-      conventionId: mmStoreLibrary.id
-    },
-  });
-
-  await prisma.conventionCollections.upsert({
-    where: {
-      conventionId_collectionId: {
+      update: {},
+      create: {
         collectionId: 4,
-        conventionId: mmStoreLibrary.id
+        conventionId: mmStoreLibrary.id,
       },
-    },
-    update: {},
-    create: {
-      collectionId: 4,
-      conventionId: mmStoreLibrary.id
-    },
-  });
+    });
+  } catch (e) {}
 
-  await prisma.conventionCollections.upsert({
-    where: {
-      conventionId_collectionId: {
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 4,
+          conventionId: mmStoreLibrary.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 4,
+        conventionId: mmStoreLibrary.id,
+      },
+    });
+  } catch (e) {}
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 5,
+          conventionId: mmStoreLibrary.id,
+        },
+      },
+      update: {},
+      create: {
         collectionId: 5,
-        conventionId: mmStoreLibrary.id
+        conventionId: mmStoreLibrary.id,
       },
-    },
-    update: {},
-    create: {
-      collectionId: 5,
-      conventionId: mmStoreLibrary.id
-    },
-  });
+    });
+  } catch (e) {}
 
-  await prisma.conventionCollections.upsert({
-    where: {
-      conventionId_collectionId: {
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 1,
+          conventionId: geekwayPrime2025.id,
+        },
+      },
+      update: {},
+      create: {
         collectionId: 1,
-        conventionId: geekwayPrime2025.id
+        conventionId: geekwayPrime2025.id,
       },
-    },
-    update: {},
-    create: {
-      collectionId: 1,
-      conventionId: geekwayPrime2025.id
-    },
-  });
+    });
+  } catch (e) {}
 
-  await prisma.conventionCollections.upsert({
-    where: {
-      conventionId_collectionId: {
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 2,
+          conventionId: geekwayPrime2025.id,
+        },
+      },
+      update: {},
+      create: {
         collectionId: 2,
-        conventionId: geekwayPrime2025.id
+        conventionId: geekwayPrime2025.id,
       },
-    },
-    update: {},
-    create: {
-      collectionId: 2,
-      conventionId: geekwayPrime2025.id
-    },
-  });
+    });
+  } catch (e) {}
 
-  await prisma.conventionCollections.upsert({
-    where: {
-      conventionId_collectionId: {
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 4,
+          conventionId: geekwayPrime2025.id,
+        },
+      },
+      update: {},
+      create: {
         collectionId: 4,
-        conventionId: geekwayPrime2025.id
+        conventionId: geekwayPrime2025.id,
       },
-    },
-    update: {},
-    create: {
-      collectionId: 4,
-      conventionId: geekwayPrime2025.id
-    },
-  });
+    });
+  } catch (e) {}
 
-  await prisma.conventionCollections.upsert({
-    where: {
-      conventionId_collectionId: {
-        collectionId: 5,
-        conventionId: geekwayPrime2025.id
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 5,
+          conventionId: geekwayPrime2025.id,
+        },
       },
-    },
-    update: {},
-    create: {
-      collectionId: 5,
-      conventionId: geekwayPrime2025.id
-    },
-  });
+      update: {},
+      create: {
+        collectionId: 5,
+        conventionId: geekwayPrime2025.id,
+      },
+    });
+  } catch (e) {}
 }
 
 main()
