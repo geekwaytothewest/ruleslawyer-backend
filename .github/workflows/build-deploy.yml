@@ -21,7 +21,8 @@ env:
   ROLE_TO_ASSUME: ${{ inputs.environment == 'prod' && secrets.PROD_ROLE_ARN || secrets.NONPROD_ROLE_ARN }}
 
 permissions:
-  contents: read
+      id-token: write   # This is required for requesting the JWT
+      contents: read
 
 jobs:
   build-and-deploy:
