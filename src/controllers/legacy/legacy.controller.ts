@@ -705,7 +705,7 @@ export class LegacyController {
             collection: {
               organizationId: Number(orgId),
               conventions: {
-                conventionId: Number(conId),
+                id: Number(conId),
               },
             },
           },
