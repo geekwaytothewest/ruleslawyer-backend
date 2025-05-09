@@ -914,49 +914,49 @@ async function main() {
     },
   });
 
-  await prisma.userOrganizationPermissions.delete({
+  await prisma.userOrganizationPermissions.deleteMany({
     where: {
       userId: mmStu.id
     }
   });
 
-  await prisma.userOrganizationPermissions.delete({
+  await prisma.userOrganizationPermissions.deleteMany({
     where: {
       userId: kellie.id
     }
   });
 
-  await prisma.userOrganizationPermissions.delete({
+  await prisma.userOrganizationPermissions.deleteMany({
     where: {
       userId: libby.id
     }
   });
 
-  await prisma.userOrganizationPermissions.delete({
+  await prisma.userOrganizationPermissions.deleteMany({
     where: {
       userId: elzie.id
     }
   });
 
-  await prisma.userConventionPermissions.delete({
+  await prisma.userConventionPermissions.deleteMany({
     where: {
       userId: mmStu.id
     }
   })
 
-  await prisma.userConventionPermissions.delete({
+  await prisma.userConventionPermissions.deleteMany({
     where: {
       userId: kellie.id
     }
   });
 
-  await prisma.userConventionPermissions.delete({
+  await prisma.userConventionPermissions.deleteMany({
     where: {
       userId: libby.id
     }
   });
 
-  await prisma.userConventionPermissions.delete({
+  await prisma.userConventionPermissions.deleteMany({
     where: {
       userId: elzie.id
     }
