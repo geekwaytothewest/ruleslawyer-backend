@@ -695,6 +695,7 @@ export class LegacyController {
   async searchCopies(
     @Query('query') query: string,
     @Param('orgId') orgId: number,
+    @Param('conId') conId: number,
   ) {
     this.logger.log(`Searching copies for orgId=${orgId}, query=${query}`);
     const copies = await this.copyService.searchCopies(
@@ -703,6 +704,9 @@ export class LegacyController {
           {
             collection: {
               organizationId: Number(orgId),
+              conventions: {
+                conventionId: Number(conId),
+              },
             },
           },
           {
