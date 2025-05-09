@@ -21,8 +21,7 @@ env:
   ROLE_TO_ASSUME: ${{ inputs.environment == 'prod' && secrets.PROD_ROLE_ARN || secrets.NONPROD_ROLE_ARN }}
 
 permissions:
-      id-token: write   # This is required for requesting the JWT
-      contents: read
+  contents: read
 
 jobs:
   build-and-deploy:
@@ -34,11 +33,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4.2.0
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: ${{ env.ROLE_TO_ASSUME }}
           role-duration-seconds: 1200
 
