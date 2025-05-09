@@ -56,7 +56,7 @@ services:
       - ../frontends/play-prize-entry/.env
 
   frontend:
-    profiles: ['frontend', 'frontends', 'ruleslawyer', 'all']
+    profiles: ['frontend', 'ruleslawyer', 'all']
     container_name: ruleslawyer-frontend
     build:
       context: ../ruleslawyer-frontend
