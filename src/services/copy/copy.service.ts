@@ -166,6 +166,7 @@ export class CopyService {
           collection: {
             include: {
               organization: true,
+              conventions: true,
             },
           },
           game: true,

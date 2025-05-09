@@ -1063,6 +1063,104 @@ async function main() {
       attendee: true,
     },
   });
+
+  await prisma.conventionCollections.upsert({
+    where: {
+      conventionId_collectionId: {
+        collectionId: 4,
+        conventionId: mmStoreLibrary.id
+      },
+    },
+    update: {},
+    create: {
+      collectionId: 4,
+      conventionId: mmStoreLibrary.id
+    },
+  });
+
+  await prisma.conventionCollections.upsert({
+    where: {
+      conventionId_collectionId: {
+        collectionId: 4,
+        conventionId: mmStoreLibrary.id
+      },
+    },
+    update: {},
+    create: {
+      collectionId: 4,
+      conventionId: mmStoreLibrary.id
+    },
+  });
+
+  await prisma.conventionCollections.upsert({
+    where: {
+      conventionId_collectionId: {
+        collectionId: 5,
+        conventionId: mmStoreLibrary.id
+      },
+    },
+    update: {},
+    create: {
+      collectionId: 5,
+      conventionId: mmStoreLibrary.id
+    },
+  });
+
+  await prisma.conventionCollections.upsert({
+    where: {
+      conventionId_collectionId: {
+        collectionId: 1,
+        conventionId: geekwayPrime2025.id
+      },
+    },
+    update: {},
+    create: {
+      collectionId: 1,
+      conventionId: geekwayPrime2025.id
+    },
+  });
+
+  await prisma.conventionCollections.upsert({
+    where: {
+      conventionId_collectionId: {
+        collectionId: 2,
+        conventionId: geekwayPrime2025.id
+      },
+    },
+    update: {},
+    create: {
+      collectionId: 2,
+      conventionId: geekwayPrime2025.id
+    },
+  });
+
+  await prisma.conventionCollections.upsert({
+    where: {
+      conventionId_collectionId: {
+        collectionId: 4,
+        conventionId: geekwayPrime2025.id
+      },
+    },
+    update: {},
+    create: {
+      collectionId: 4,
+      conventionId: geekwayPrime2025.id
+    },
+  });
+
+  await prisma.conventionCollections.upsert({
+    where: {
+      conventionId_collectionId: {
+        collectionId: 5,
+        conventionId: geekwayPrime2025.id
+      },
+    },
+    update: {},
+    create: {
+      collectionId: 5,
+      conventionId: geekwayPrime2025.id
+    },
+  });
 }
 
 main()
