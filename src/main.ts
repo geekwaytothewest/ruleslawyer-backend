@@ -7,6 +7,8 @@ import {
 import multipart from '@fastify/multipart';
 import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 import * as fastify from 'fastify';
+const plugin = require('fastify-server-timeout')
+
 
 async function bootstrap() {
   const fastifyInstance = fastify({ logger: true });
@@ -14,6 +16,9 @@ async function bootstrap() {
     if (opts.path === '/api/status') {
       opts.logLevel = 'silent';
     }
+  });
+  fastifyInstance.register(plugin, {
+    serverTimeout: 1000 * 60 * 5, // 5 minutes
   });
   const logger = new RuleslawyerLogger('NESTJS');
   const app = await NestFactory.create<NestFastifyApplication>(
