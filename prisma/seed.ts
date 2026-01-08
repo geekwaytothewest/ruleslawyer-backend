@@ -496,7 +496,9 @@ async function main() {
         organizationId: geekway.id,
       },
     },
-    update: {},
+    update: {
+      typeId: conventionTypeMini.id,
+    },
     create: {
       name: 'Geekway Mini 2026',
       organizationId: geekway.id,
@@ -504,7 +506,7 @@ async function main() {
       tteConventionId: '92DB1D20-846F-11F0-BC85-5136BAD07C23',
       startDate: '2026-01-09T10:00:00.000Z',
       endDate: '2026-01-11T17:00:00.000Z',
-      typeId: conventionTypePrime.id,
+      typeId: conventionTypeMini.id,
     },
   });
 
