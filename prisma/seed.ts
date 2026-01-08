@@ -1312,6 +1312,22 @@ async function main() {
       },
     });
   } catch (e) {}
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 15,
+          conventionId: geekwayMini2026.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 15,
+        conventionId: geekwayMini2026.id,
+      },
+    });
+  } catch (e) {}
 }
 
 main()
