@@ -476,7 +476,7 @@ async function main() {
       },
     },
     update: {
-      typeId: conventionTypeMini.id,
+      typeId: conventionTypePrime.id,
     },
     create: {
       name: 'Geekway to the West 2025',
@@ -485,7 +485,7 @@ async function main() {
       tteConventionId: '46F73CEE-4083-11EF-9E30-CB11F56173A2',
       startDate: '2025-05-15T08:00:00.000Z',
       endDate: '2025-05-18T18:00:00.000Z',
-      typeId: conventionTypeMini.id,
+      typeId: conventionTypePrime.id,
     },
   });
 
