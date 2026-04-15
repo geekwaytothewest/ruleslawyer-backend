@@ -38,6 +38,8 @@ async function bootstrap() {
       `${process.env.RULESLAWYER_FRONTEND_ORIGIN}`,
       `${process.env.RULESLAWYER_FRONTEND_ORIGIN2}`,
     ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
   await app.listen(`${process.env.FASTIFY_PORT}`, '0.0.0.0');
   logger.log(`listening on: ${process.env.FASTIFY_PORT}`);

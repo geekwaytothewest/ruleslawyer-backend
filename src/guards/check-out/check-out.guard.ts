@@ -19,6 +19,11 @@ export class CheckOutGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest();
+    if (request.method === 'OPTIONS') {
+      return true;
+    }
+
     const user = context.getArgByIndex(0).user?.user;
     let organizationId = context.getArgByIndex(0).params?.id;
     const collectionId = context.getArgByIndex(0).params?.colId;
