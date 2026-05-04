@@ -222,6 +222,15 @@ export class AttendeeService {
           },
         });
 
+        const newBadge = await prisma.attendee.findUnique({
+          where: {
+            conventionId_badgeNumber: {
+              conventionId: conventionId,
+              badgeNumber: badgeReplacementData.toBadgeNumber,
+            },
+          },
+        });
+
         if (!oldBadge) {
           throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
         }
@@ -256,6 +265,15 @@ export class AttendeeService {
                 id: Number(oldBadge.pronounsId)
               }
             }
+          }
+        });
+
+        await prisma.checkOut.updateMany({
+          where: {
+            attendeeId: oldBadge.id,
+          },
+          data: {
+            attendeeId: newBadge?.id,
           }
         });
       });

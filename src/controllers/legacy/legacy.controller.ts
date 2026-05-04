@@ -1674,7 +1674,7 @@ export class LegacyController {
       toBadgeNumber: string;
     },
   ) {
-    this.logger.log(`Transferring badge from ${body.fromBadgeNumber} to ${body.toBadgeNumber} for conId=${conId}`);
+    this.logger.log(`Replacing badge from ${body.fromBadgeNumber} to ${body.toBadgeNumber} for conId=${conId}`);
     return this.attendeeService.badgeReplacement(
       Number(conId),
       body,
