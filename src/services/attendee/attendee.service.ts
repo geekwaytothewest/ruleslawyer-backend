@@ -158,8 +158,7 @@ export class AttendeeService {
     fromBadgeNumber: string;
     newBadgeFirstName: string;
     newBadgeLastName: string;
-    newBadgeLegalName: string;
-    newPronouns: string;
+    newBadgePronouns: string;
   }, ctx: Context) {
     try {
       this.logger.log(
@@ -168,7 +167,7 @@ export class AttendeeService {
         )}`,
       );
 
-      ctx.prisma.attendee.update({
+      return ctx.prisma.attendee.update({
         where: {
           conventionId_badgeNumber: {
             conventionId: conventionId,
@@ -178,12 +177,21 @@ export class AttendeeService {
         data: {
           badgeFirstName: badgeTransferData.newBadgeFirstName,
           badgeLastName: badgeTransferData.newBadgeLastName,
-          badgeLegalName: badgeTransferData.newBadgeLegalName,
+          legalName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
           badgeName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
           pronouns: {
-            connect: {
-              pronouns: badgeTransferData.newPronouns,
-            }
+            connectOrCreate: {
+              create: {
+                pronouns: badgeTransferData.newBadgePronouns
+                  ? badgeTransferData.newBadgePronouns
+                  : 'Prefer Not To Say',
+              },
+              where: {
+                pronouns: badgeTransferData.newBadgePronouns
+                  ? badgeTransferData.newBadgePronouns
+                  : 'Prefer Not To Say',
+              },
+            },
           },
         }
       });
@@ -212,7 +220,7 @@ export class AttendeeService {
         )}`,
       );
 
-      ctx.prisma.$transaction(async (prisma) => {
+      return ctx.prisma.$transaction(async (prisma) => {
         const oldBadge = await prisma.attendee.findUnique({
           where: {
             conventionId_badgeNumber: {
@@ -235,6 +243,14 @@ export class AttendeeService {
           throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
         }
 
+        if (!newBadge) {
+          throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
+        }
+
+        if (!newBadge.badgeName.startsWith('Attendee Blank')) {
+          throw new Error(`Badge replacement can only be done to unassigned badges.`);
+        }
+
         await prisma.attendee.update({
           where: {
             conventionId_badgeNumber: {
@@ -243,6 +259,8 @@ export class AttendeeService {
             },
           },
           data: {
+            badgeLastName: oldBadge.badgeLastName + ' (Lost Badge)',
+            badgeName: oldBadge.badgeName + ' (Lost Badge)',
             eligibleForPrizes: false,
             lostBadge: true
           }
@@ -258,7 +276,7 @@ export class AttendeeService {
           data: {
             badgeFirstName: oldBadge.badgeFirstName,
             badgeLastName: oldBadge.badgeLastName,
-            badgeLegalName: oldBadge.legalName,
+            legalName: oldBadge.legalName,
             badgeName: oldBadge.badgeName,
             pronouns: {
               connect: {

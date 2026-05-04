@@ -1652,11 +1652,10 @@ export class LegacyController {
       fromBadgeNumber: string;
       newBadgeFirstName: string;
       newBadgeLastName: string;
-      newBadgeLegalName: string;
-      newPronouns: string;
+      newBadgePronouns: string;
     },
   ) {
-    this.logger.log(`Transferring badge ${body.fromBadgeNumber} to ${body.newBadgeLegalName} for conId=${conId}`);
+    this.logger.log(`Transferring badge ${body.fromBadgeNumber} to ${body.newBadgeFirstName} ${body.newBadgeLastName} for conId=${conId}`);
     return this.attendeeService.badgeTransfer(
       Number(conId),
       body,
