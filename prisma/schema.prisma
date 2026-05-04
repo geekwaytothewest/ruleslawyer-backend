@@ -26,31 +26,33 @@ model User {
 }
 
 model Attendee {
-  id               Int        @id @default(autoincrement())
-  convention       Convention @relation(fields: conventionId, references: [id])
-  conventionId     Int
-  badgeName        String
-  badgeFirstName   String
-  badgeLastName    String
-  legalName        String
-  user             User?      @relation(fields: userId, references: [id])
-  userId           Int?
-  badgeNumber      String
-  barcode          String
-  badgeType        BadgeType? @relation(fields: badgeTypeId, references: [id])
-  badgeTypeId      Int?
-  tteBadgeNumber   Int?
-  tteBadgeId       String?
-  email            String?
-  pronouns         Pronouns?  @relation(fields: pronounsId, references: [id])
-  pronounsId       Int?
-  checkedIn        Boolean    @default(false)
-  printed          Boolean    @default(false)
-  registrationCode String?
-  copies           Copy[]
-  checkOuts        CheckOut[]
-  players          Player[]
-  merch            String?
+  id                  Int        @id @default(autoincrement())
+  convention          Convention @relation(fields: conventionId, references: [id])
+  conventionId        Int
+  badgeName           String
+  badgeFirstName      String
+  badgeLastName       String
+  legalName           String
+  user                User?      @relation(fields: userId, references: [id])
+  userId              Int?
+  badgeNumber         String
+  barcode             String
+  badgeType           BadgeType? @relation(fields: badgeTypeId, references: [id])
+  badgeTypeId         Int?
+  tteBadgeNumber      Int?
+  tteBadgeId          String?
+  email               String?
+  pronouns            Pronouns?  @relation(fields: pronounsId, references: [id])
+  pronounsId          Int?
+  checkedIn           Boolean    @default(false)
+  printed             Boolean    @default(false)
+  registrationCode    String?
+  copies              Copy[]
+  checkOuts           CheckOut[]
+  players             Player[]
+  merch               String?
+  eligibleForPrizes   Boolean     @default(true)
+  lostBadge           Boolean     @default(false)
 
   @@unique([conventionId, badgeNumber])
   @@unique([conventionId, barcode])
