@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
+import { from } from 'rxjs';
 
 @Injectable()
 export class AttendeeService {
@@ -148,6 +149,157 @@ export class AttendeeService {
         `Failed to update attendee with data=${JSON.stringify(
           data,
         )}, where=${JSON.stringify(where)}, ex=${ex}`,
+      );
+      return Promise.reject(ex);
+    }
+  }
+
+  async badgeTransfer(conventionId: number, badgeTransferData: {
+    fromBadgeNumber: string;
+    newBadgeFirstName: string;
+    newBadgeLastName: string;
+    newBadgePronouns: string;
+  }, ctx: Context) {
+    try {
+      this.logger.log(
+        `Updating badge transfer for conventionId=${conventionId}, badgeTransferData=${JSON.stringify(
+          badgeTransferData,
+        )}`,
+      );
+
+      return ctx.prisma.attendee.update({
+        where: {
+          conventionId_badgeNumber: {
+            conventionId: conventionId,
+            badgeNumber: badgeTransferData.fromBadgeNumber,
+          },
+        },
+        data: {
+          badgeFirstName: badgeTransferData.newBadgeFirstName,
+          badgeLastName: badgeTransferData.newBadgeLastName,
+          legalName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
+          badgeName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
+          pronouns: {
+            connectOrCreate: {
+              create: {
+                pronouns: badgeTransferData.newBadgePronouns
+                  ? badgeTransferData.newBadgePronouns
+                  : 'Prefer Not To Say',
+              },
+              where: {
+                pronouns: badgeTransferData.newBadgePronouns
+                  ? badgeTransferData.newBadgePronouns
+                  : 'Prefer Not To Say',
+              },
+            },
+          },
+        }
+      });
+    } catch (ex) {
+      this.logger.error(
+        `Failed to update badge transfer for conventionId=${conventionId}, badgeTransferData=${JSON.stringify(
+          badgeTransferData,
+        )}, ex=${ex}`,
+      );
+      return Promise.reject(ex);
+    }
+  }
+
+  async badgeReplacement(
+    conventionId: number,
+    badgeReplacementData: {
+      fromBadgeNumber: string;
+      toBadgeNumber: string;
+    },
+    ctx: Context
+  ) {
+    try {
+      this.logger.log(
+        `Updating badge replacement for conventionId=${conventionId}, badgeReplacementData=${JSON.stringify(
+          badgeReplacementData,
+        )}`,
+      );
+
+      return ctx.prisma.$transaction(async (prisma) => {
+        const oldBadge = await prisma.attendee.findUnique({
+          where: {
+            conventionId_badgeNumber: {
+              conventionId: conventionId,
+              badgeNumber: badgeReplacementData.fromBadgeNumber,
+            },
+          },
+        });
+
+        const newBadge = await prisma.attendee.findUnique({
+          where: {
+            conventionId_badgeNumber: {
+              conventionId: conventionId,
+              badgeNumber: badgeReplacementData.toBadgeNumber,
+            },
+          },
+        });
+
+        if (!oldBadge) {
+          throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
+        }
+
+        if (!newBadge) {
+          throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
+        }
+
+        if (!newBadge.badgeName.startsWith('Attendee Blank')) {
+          throw new Error(`Badge replacement can only be done to unassigned badges.`);
+        }
+
+        await prisma.attendee.update({
+          where: {
+            conventionId_badgeNumber: {
+              conventionId: conventionId,
+              badgeNumber: badgeReplacementData.fromBadgeNumber,
+            },
+          },
+          data: {
+            badgeLastName: oldBadge.badgeLastName + ' (Lost Badge)',
+            badgeName: oldBadge.badgeName + ' (Lost Badge)',
+            eligibleForPrizes: false,
+            lostBadge: true
+          }
+        });
+
+        await prisma.attendee.update({
+          where: {
+            conventionId_badgeNumber: {
+              conventionId: conventionId,
+              badgeNumber: badgeReplacementData.toBadgeNumber,
+            },
+          },
+          data: {
+            badgeFirstName: oldBadge.badgeFirstName,
+            badgeLastName: oldBadge.badgeLastName,
+            legalName: oldBadge.legalName,
+            badgeName: oldBadge.badgeName,
+            pronouns: {
+              connect: {
+                id: Number(oldBadge.pronounsId)
+              }
+            }
+          }
+        });
+
+        await prisma.checkOut.updateMany({
+          where: {
+            attendeeId: oldBadge.id,
+          },
+          data: {
+            attendeeId: newBadge?.id,
+          }
+        });
+      });
+    } catch (ex) {
+      this.logger.error(
+        `Failed to update badge replacement for conventionId=${conventionId}, badgeReplacementData=${JSON.stringify(
+          badgeReplacementData,
+        )}, ex=${ex}`,
       );
       return Promise.reject(ex);
     }

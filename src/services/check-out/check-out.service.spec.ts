@@ -77,6 +77,8 @@ describe('CheckOutService', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -127,6 +129,8 @@ describe('CheckOutService', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -191,6 +195,8 @@ describe('CheckOutService', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -291,6 +297,8 @@ describe('CheckOutService', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);

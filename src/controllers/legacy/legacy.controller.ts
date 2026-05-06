@@ -1625,4 +1625,59 @@ export class LegacyController {
       collectionName: collName,
     };
   }
+
+  @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @Get('org/:orgId/con/:conId/attendees/badgeNumber/:badgeNumber')
+  async getAttendeeByBadgeNumber(
+    @Param('conId') conId: number,
+    @Param('badgeNumber') badgeNumber: string
+  ) {
+    return this.attendeeService.attendee(
+      {
+        conventionId_badgeNumber: {
+          badgeNumber: badgeNumber,
+          conventionId: Number(conId),
+        },
+      },
+      this.ctx
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @Put('org/:orgId/con/:conId/attendees/badgeTransfer')
+  async badgeTransfer(
+    @Param('conId') conId: number,
+    @Body()
+    body: {
+      fromBadgeNumber: string;
+      newBadgeFirstName: string;
+      newBadgeLastName: string;
+      newBadgePronouns: string;
+    },
+  ) {
+    this.logger.log(`Transferring badge ${body.fromBadgeNumber} to ${body.newBadgeFirstName} ${body.newBadgeLastName} for conId=${conId}`);
+    return this.attendeeService.badgeTransfer(
+      Number(conId),
+      body,
+      this.ctx
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @Put('org/:orgId/con/:conId/attendees/badgeReplacement')
+  async badgeReplacement(
+    @Param('conId') conId: number,
+    @Body()
+    body: {
+      fromBadgeNumber: string;
+      toBadgeNumber: string;
+    },
+  ) {
+    this.logger.log(`Replacing badge from ${body.fromBadgeNumber} to ${body.toBadgeNumber} for conId=${conId}`);
+    return this.attendeeService.badgeReplacement(
+      Number(conId),
+      body,
+      this.ctx
+    );
+  }
 }

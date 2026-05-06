@@ -511,6 +511,8 @@ describe('ConventionService', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -554,6 +556,8 @@ describe('ConventionService', () => {
           printed: false,
           registrationCode: 'fakecode',
           merch: null,
+          eligibleForPrizes: true,
+          lostBadge: false,
         },
         {
           id: 1,
@@ -574,6 +578,8 @@ describe('ConventionService', () => {
           printed: false,
           registrationCode: 'fakecode',
           merch: null,
+          eligibleForPrizes: true,
+          lostBadge: false,
         },
       ]);
 
