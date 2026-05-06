@@ -844,6 +844,8 @@ describe('LegacyController', () => {
           printed: false,
           registrationCode: 'fake code',
           merch: null,
+          eligibleForPrizes: true,
+          lostBadge: false,
         },
       ];
 
@@ -887,6 +889,8 @@ describe('LegacyController', () => {
           printed: false,
           registrationCode: 'fake code',
           merch: null,
+          eligibleForPrizes: true,
+          lostBadge: false,
         },
       ];
 
@@ -931,6 +935,8 @@ describe('LegacyController', () => {
         printed: false,
         registrationCode: 'fake code',
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.create.mockResolvedValue(attendee);
@@ -966,6 +972,8 @@ describe('LegacyController', () => {
         printed: false,
         registrationCode: 'fake code',
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.update.mockResolvedValue(attendee);
@@ -1058,6 +1066,8 @@ describe('LegacyController', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -1185,6 +1195,8 @@ describe('LegacyController', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);
@@ -1315,6 +1327,8 @@ describe('LegacyController', () => {
           },
         ],
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       };
 
       mockCtx.prisma.attendee.findUnique.mockResolvedValue(attendee);

@@ -275,6 +275,8 @@ describe('ConventionController', () => {
         printed: false,
         registrationCode: 'fakecode',
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       });
 
       const attendee = await controller.createAttendee(1, {
@@ -315,6 +317,8 @@ describe('ConventionController', () => {
         printed: false,
         registrationCode: 'fakecode',
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       });
 
       expect(
@@ -358,6 +362,8 @@ describe('ConventionController', () => {
           printed: false,
           registrationCode: 'fakecode',
           merch: null,
+          eligibleForPrizes: true,
+          lostBadge: false,
         },
         {
           id: 1,
@@ -378,6 +384,8 @@ describe('ConventionController', () => {
           printed: false,
           registrationCode: 'fakecode',
           merch: null,
+          eligibleForPrizes: true,
+          lostBadge: false,
         },
       ]);
 

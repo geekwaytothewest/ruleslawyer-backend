@@ -43,6 +43,8 @@ describe('AttendeeService', () => {
         printed: false,
         registrationCode: 'asdf',
         barcode: '*000001*',
+        eligibleForPrizes: true,
+        lostBadge: false,
       });
 
       const attendee = await service.createAttendee(
@@ -88,6 +90,8 @@ describe('AttendeeService', () => {
         printed: false,
         registrationCode: 'asdf',
         barcode: '*000001*',
+        eligibleForPrizes: true,
+        lostBadge: false,
       });
 
       expect(service.attendee({ id: 1 }, ctx)).resolves.toBeTruthy();
@@ -116,6 +120,8 @@ describe('AttendeeService', () => {
           registrationCode: 'asdf',
           barcode: '*000001*',
           merch: null,
+          eligibleForPrizes: true,
+          lostBadge: false,
         },
       ]);
 
@@ -146,6 +152,8 @@ describe('AttendeeService', () => {
         registrationCode: 'asdf',
         barcode: '*000001*',
         merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
       });
 
       const attendee = await service.updateAttendee(
