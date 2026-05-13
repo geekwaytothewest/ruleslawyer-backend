@@ -280,7 +280,7 @@ export class ConventionService {
 
           count++;
 
-          if (count % 500 === 0) {
+          if (count % 100 === 0) {
             this.logger.log(`Status Update: Built attendees for badge ${count} of ${tteBadges.length}`);
           }
 
