@@ -18,7 +18,7 @@ async function bootstrap() {
     }
   });
   fastifyInstance.register(plugin, {
-    serverTimeout: 1000 * 60 * 120, // 129 minutes
+    serverTimeout: 1000 * 60 * 120, // 120 minutes
     handlerTimeout: 0, // disable handler timeout
   });
   const logger = new RuleslawyerLogger('NESTJS');
