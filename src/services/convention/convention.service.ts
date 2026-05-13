@@ -276,7 +276,7 @@ export class ConventionService {
         let count = 0;
         const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         for (const b of tteBadges) {
-          await sleep(100); // avoid hitting TTE rate limits
+          await sleep(300); // avoid hitting TTE rate limits
           const badgeNumber =
             convention.startDate.getFullYear().toString().substring(2) +
             convention.typeId +
