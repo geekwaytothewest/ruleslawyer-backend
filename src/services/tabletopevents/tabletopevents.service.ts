@@ -90,7 +90,7 @@ export class TabletopeventsService {
 
           badges.push(...badgePage.data.result.items);
 
-          await this.sleep(1000);
+          await this.sleep(300);
         }
 
         return resolve(badges);
