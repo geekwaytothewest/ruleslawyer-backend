@@ -510,6 +510,27 @@ async function main() {
     },
   });
 
+  const geekwayPrime2026 = await prisma.convention.upsert({
+    where: {
+      name_organizationId: {
+        name: 'Geekway to the West 2026',
+        organizationId: geekway.id,
+      },
+    },
+    update: {
+      typeId: conventionTypePrime.id,
+    },
+    create: {
+      name: 'Geekway to the West 2026',
+      organizationId: geekway.id,
+      theme: 'Geekway to the Painbow',
+      tteConventionId: '662377B8-BEBD-11F0-AE5C-E819A8A32801',
+      startDate: '2026-05-14T08:00:00.000Z',
+      endDate: '2026-05-17T17:00:00.000Z',
+      typeId: conventionTypePrime.id,
+    },
+  });
+
   await prisma.userOrganizationPermissions.upsert({
     where: {
       userId_organizationId: {
@@ -1189,6 +1210,108 @@ async function main() {
     },
   });
 
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: mattie.id,
+        conventionId: geekwayPrime2026.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mattie.id,
+      conventionId: geekwayPrime2026.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: admin.id,
+        conventionId: geekwayPrime2026.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: admin.id,
+      conventionId: geekwayPrime2026.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: matt.id,
+        conventionId: geekwayPrime2026.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: matt.id,
+      conventionId: geekwayPrime2026.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: mark.id,
+        conventionId: geekwayPrime2026.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: mark.id,
+      conventionId: geekwayPrime2026.id,
+      admin: true,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: guide.id,
+        conventionId: geekwayPrime2026.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: guide.id,
+      conventionId: geekwayPrime2026.id,
+      admin: false,
+      geekGuide: true,
+      attendee: false,
+    },
+  });
+
+  await prisma.userConventionPermissions.upsert({
+    where: {
+      userId_conventionId: {
+        userId: kiosk.id,
+        conventionId: geekwayPrime2026.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: kiosk.id,
+      conventionId: geekwayPrime2026.id,
+      admin: false,
+      geekGuide: false,
+      attendee: true,
+    },
+  });
+
   try {
     await prisma.conventionCollections.upsert({
       where: {
@@ -1329,6 +1452,101 @@ async function main() {
       create: {
         collectionId: 15,
         conventionId: geekwayMini2026.id,
+      },
+    });
+  } catch (e) {}
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 1,
+          conventionId: geekwayPrime2026.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 1,
+        conventionId: geekwayPrime2026.id,
+      },
+    });
+  } catch (e) {}
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 2,
+          conventionId: geekwayPrime2026.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 2,
+        conventionId: geekwayPrime2026.id,
+      },
+    });
+  } catch (e) {}
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 4,
+          conventionId: geekwayPrime2026.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 4,
+        conventionId: geekwayPrime2026.id,
+      },
+    });
+  } catch (e) {}
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 5,
+          conventionId: geekwayPrime2026.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 5,
+        conventionId: geekwayPrime2026.id,
+      },
+    });
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 17,
+          conventionId: geekwayPrime2026.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 17,
+        conventionId: geekwayPrime2026.id,
+      },
+    });
+  } catch (e) {}
+
+  try {
+    await prisma.conventionCollections.upsert({
+      where: {
+        conventionId_collectionId: {
+          collectionId: 16,
+          conventionId: geekwayPrime2026.id,
+        },
+      },
+      update: {},
+      create: {
+        collectionId: 16,
+        conventionId: geekwayPrime2026.id,
       },
     });
   } catch (e) {}
