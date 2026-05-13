@@ -19,6 +19,7 @@ async function bootstrap() {
   });
   fastifyInstance.register(plugin, {
     serverTimeout: 1000 * 60 * 40, // 40 minutes
+    handlerTimeout: 0, // disable handler timeout
   });
   const logger = new RuleslawyerLogger('NESTJS');
   const app = await NestFactory.create<NestFastifyApplication>(
