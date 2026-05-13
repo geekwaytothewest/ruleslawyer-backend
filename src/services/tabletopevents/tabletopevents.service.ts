@@ -80,7 +80,7 @@ export class TabletopeventsService {
 
         badges.push(...badgePage.data.result.items);
 
-        await this.sleep(1000);
+        await this.sleep(300);
 
         for (let i = 2; i <= badgePage.data.result.paging.total_pages; i++) {
           badgePage = await this.httpService.get(

@@ -256,7 +256,7 @@ export class ConventionService {
           );
         } else {
           this.logger.log(
-            `Getting badge for tteConventionId=${convention.tteConventionId}`,
+            `Getting badge list for tteConventionId=${convention.tteConventionId}`,
           );
           tteBadges = await this.tteService.getBadges(
             convention.tteConventionId,
