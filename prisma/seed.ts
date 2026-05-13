@@ -1518,6 +1518,7 @@ async function main() {
         conventionId: geekwayPrime2026.id,
       },
     });
+  } catch (e) {}
 
   try {
     await prisma.conventionCollections.upsert({
