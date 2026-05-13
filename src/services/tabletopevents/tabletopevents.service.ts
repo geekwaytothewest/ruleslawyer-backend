@@ -83,6 +83,12 @@ export class TabletopeventsService {
         await this.sleep(300);
 
         for (let i = 2; i <= badgePage.data.result.paging.total_pages; i++) {
+          if (i % 10 === 0) {
+            this.logger.log(
+              `Status Update: Getting badge list for tteConventionId=${tteConventionId}, page ${i} of ${badgePage.data.result.paging.total_pages}`,
+            );
+          }
+
           badgePage = await this.httpService.get(
             this.tteApiUrl +
               `convention/${tteConventionId}/badges?session_id=${session}&_page_number=${i}`,
