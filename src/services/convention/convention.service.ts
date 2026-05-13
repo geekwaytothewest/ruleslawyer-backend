@@ -351,8 +351,13 @@ export class ConventionService {
         this.logger.log(`Synced ${attendees?.length} attendees`);
         return resolve(attendees.length);
       } catch (ex) {
+        let message = '';
+        if (ex instanceof Error) {
+          message = ex.message;
+        }
+
         this.logger.error(
-          `Failed to import attendees for conventionId=${conventionId}`,
+          `Failed to import attendees for conventionId=${conventionId} ${message}`,
         );
         return reject(ex);
       }
