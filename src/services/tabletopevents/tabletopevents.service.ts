@@ -80,7 +80,7 @@ export class TabletopeventsService {
 
         badges.push(...badgePage.data.result.items);
 
-        await this.sleep(300);
+        await this.sleep(200);
 
         for (let i = 2; i <= badgePage.data.result.paging.total_pages; i++) {
           if (i % 10 === 0) {
@@ -96,7 +96,7 @@ export class TabletopeventsService {
 
           badges.push(...badgePage.data.result.items);
 
-          await this.sleep(300);
+          await this.sleep(200);
         }
 
         return resolve(badges);
