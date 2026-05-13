@@ -272,76 +272,78 @@ export class ConventionService {
         }
 
         this.logger.log(`Getting attendees for ${tteBadges.length} badges`);
-        const attendees = await Promise.all(
-          tteBadges.map(async (b) => {
-            const badgeNumber =
-              convention.startDate.getFullYear().toString().substring(2) +
-              convention.typeId +
-              b.badge_number.toString().padStart(4, '0');
+        const attendees: Prisma.AttendeeCreateInput[] = [];
+        let count = 0;
+        const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        for (const b of tteBadges) {
+          await sleep(100); // avoid hitting TTE rate limits
+          const badgeNumber =
+            convention.startDate.getFullYear().toString().substring(2) +
+            convention.typeId +
+            b.badge_number.toString().padStart(4, '0');
 
-            const badgeType: string = tteBadgeTypes.filter(
-              (bt) => bt.id === b.badgetype_id,
-            )[0].name;
+          const badgeType: string = tteBadgeTypes.filter(
+            (bt) => bt.id === b.badgetype_id,
+          )[0].name;
 
-            const soldProducts = await this.tteService.getSoldProducts(
-              b.id,
-              session,
-            );
+          const soldProducts = await this.tteService.getSoldProducts(
+            b.id,
+            session,
+          );
 
-            if (badgeType.includes('Patron')) {
-              soldProducts.push('Patron');
-            }
+          if (badgeType.includes('Patron')) {
+            soldProducts.push('Patron');
+          }
 
-            const merch = soldProducts
-              .map((s) => s.productvariant?.name)
-              .join(', ');
+          const merch = soldProducts
+            .map((s) => s.productvariant?.name)
+            .join(', ');
 
-            return <Prisma.AttendeeCreateInput>{
-              convention: {
-                connect: {
-                  id: Number(conventionId),
+          attendees.push(<Prisma.AttendeeCreateInput>{
+            convention: {
+              connect: {
+                id: Number(conventionId),
+              },
+            },
+            badgeName: b.name,
+            badgeFirstName: b.firstname,
+            badgeLastName: b.lastname,
+            legalName: b.custom_fields.LegalName
+              ? b.custom_fields.LegalName
+              : b.name,
+            badgeType: {
+              connectOrCreate: {
+                create: {
+                  name: badgeType,
+                },
+                where: {
+                  name: badgeType,
                 },
               },
-              badgeName: b.name,
-              badgeFirstName: b.firstname,
-              badgeLastName: b.lastname,
-              legalName: b.custom_fields.LegalName
-                ? b.custom_fields.LegalName
-                : b.name,
-              badgeType: {
-                connectOrCreate: {
-                  create: {
-                    name: badgeType,
-                  },
-                  where: {
-                    name: badgeType,
-                  },
+            },
+            registrationCode: crypto.randomUUID(),
+            email: b.email,
+            badgeNumber: badgeNumber,
+            barcode: '*' + badgeNumber + '*',
+            tteBadgeNumber: b.badge_number,
+            tteBadgeId: b.id,
+            pronouns: {
+              connectOrCreate: {
+                create: {
+                  pronouns: b.custom_fields?.PreferredPronouns
+                    ? b.custom_fields.PreferredPronouns
+                    : 'Prefer Not To Say',
+                },
+                where: {
+                  pronouns: b.custom_fields?.PreferredPronouns
+                    ? b.custom_fields.PreferredPronouns
+                    : 'Prefer Not To Say',
                 },
               },
-              registrationCode: crypto.randomUUID(),
-              email: b.email,
-              badgeNumber: badgeNumber,
-              barcode: '*' + badgeNumber + '*',
-              tteBadgeNumber: b.badge_number,
-              tteBadgeId: b.id,
-              pronouns: {
-                connectOrCreate: {
-                  create: {
-                    pronouns: b.custom_fields?.PreferredPronouns
-                      ? b.custom_fields.PreferredPronouns
-                      : 'Prefer Not To Say',
-                  },
-                  where: {
-                    pronouns: b.custom_fields?.PreferredPronouns
-                      ? b.custom_fields.PreferredPronouns
-                      : 'Prefer Not To Say',
-                  },
-                },
-              },
-              merch: merch,
-            };
-          }),
-        );
+            },
+            merch: merch,
+          });
+        }
 
         this.logger.log(`Syncing ${attendees?.length} attendees`);
         for (const a of attendees) {
