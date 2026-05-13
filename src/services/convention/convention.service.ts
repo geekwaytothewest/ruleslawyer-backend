@@ -277,6 +277,13 @@ export class ConventionService {
         const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         for (const b of tteBadges) {
           await sleep(300); // avoid hitting TTE rate limits
+
+          count++;
+
+          if (count % 500 === 0) {
+            this.logger.log(`Status Update: Built attendees for badge ${count} of ${tteBadges.length}`);
+          }
+
           const badgeNumber =
             convention.startDate.getFullYear().toString().substring(2) +
             convention.typeId +
