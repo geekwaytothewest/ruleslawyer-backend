@@ -1124,7 +1124,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
-  @Get('org/:orgId/con/:conId/checkouts')
+  @Get('org/:orgId/con/:conId/prizeEntryCheckouts')
   async getPrizeEntries(@Query('badgeId') badgeId: string) {
     this.logger.log(`Getting prize entries for badgeId=${badgeId}`);
     const prizeEntries = await this.checkOutService.getAttendeePrizeEntries(
