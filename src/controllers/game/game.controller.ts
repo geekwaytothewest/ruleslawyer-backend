@@ -80,7 +80,11 @@ export class GameController {
         include: {
           copies: {
             include: {
-              checkOuts: true,
+              checkOuts: {
+                orderBy: {
+                  checkOut: 'desc',
+                }
+              }
             },
             where: {
               OR: [
