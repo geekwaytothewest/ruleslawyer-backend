@@ -567,7 +567,6 @@ export class LegacyController {
     @Param('copyBarcode') copyBarcode: string,
   ) {
     const copyBarcodeStrippedZeroes = Number(copyBarcode)?.toString();
-    this.logger.log(`Getting copy with barcode=${copyBarcode}`);
     this.logger.log(
       `Retrieving with organizationId_barcode=${copyBarcodeStrippedZeroes}`,
     );
@@ -600,10 +599,37 @@ export class LegacyController {
       this.logger.error(
         `Copy not found with organizationId_barcode=${copyBarcodeStrippedZeroes} or organizationId_barcodeLabel=${copyBarcodeStrippedZeroes}`,
       );
-      throw new NotFoundException({
-        Errors: ['Could not find a copy with that ID'],
-        Result: null,
-      });
+
+      this.logger.log(`Getting copy with barcode=${copyBarcode} without stripped zeroes.`);
+      copy = await this.copyService.copyWithCheckOutsGameAndCollection(
+        {
+          organizationId_barcode: {
+            organizationId: Number(orgId),
+            barcode: copyBarcode,
+          },
+        },
+        this.ctx,
+      );
+
+      if (!copy) {
+        this.logger.log(`Getting copy using barcode label with barcode=${copyBarcode} without stripped zeroes.`);
+        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
+          {
+            organizationId_barcodeLabel: {
+              organizationId: Number(orgId),
+              barcodeLabel: copyBarcode,
+            },
+          },
+          this.ctx,
+        );
+      }
+
+      if (!copy) {
+        throw new NotFoundException({
+          Errors: ['Could not find a copy with that ID'],
+          Result: null,
+        });
+      }
     }
 
     this.logger.log(
