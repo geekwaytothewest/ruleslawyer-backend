@@ -247,7 +247,7 @@ export class AttendeeService {
           throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
         }
 
-        if (!newBadge.badgeName.startsWith('Attendee Blank') || !newBadge.badgeName.startsWith('Blank Vendor')) {
+        if (!newBadge.badgeName.startsWith('Attendee Blank') && !newBadge.badgeName.startsWith('Blank Vendor')) {
           throw new Error(`Badge replacement can only be done to unassigned badges.`);
         }
 
