@@ -54,7 +54,11 @@ export class CollectionService {
       include: {
         copies: {
           include: {
-            checkOuts: true,
+            checkOuts: {
+              orderBy: {
+                checkOut: 'desc',
+              },
+            },
             game: true,
           },
           where: {
@@ -117,6 +121,9 @@ export class CollectionService {
             checkOuts: {
               include: {
                 attendee: true,
+              },
+              orderBy: {
+                checkOut: 'desc',
               },
             },
             collection: true,
