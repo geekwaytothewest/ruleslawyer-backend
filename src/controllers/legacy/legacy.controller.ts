@@ -603,13 +603,26 @@ export class LegacyController {
       this.logger.log(`Getting copy with barcode=${copyBarcode} without stripped zeroes.`);
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
-          organizationId_barcodeLabel: {
+          organizationId_barcode: {
             organizationId: Number(orgId),
-            barcodeLabel: copyBarcode,
+            barcode: copyBarcode,
           },
         },
         this.ctx,
       );
+
+      if (!copy) {
+        this.logger.log(`Getting copy using barcode label with barcode=${copyBarcode} without stripped zeroes.`);
+        copy = await this.copyService.copyWithCheckOutsGameAndCollection(
+          {
+            organizationId_barcodeLabel: {
+              organizationId: Number(orgId),
+              barcodeLabel: copyBarcode,
+            },
+          },
+          this.ctx,
+        );
+      }
 
       if (!copy) {
         throw new NotFoundException({
