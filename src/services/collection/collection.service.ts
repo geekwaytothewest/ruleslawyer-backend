@@ -15,21 +15,6 @@ export class CollectionService {
       include: {
         _count: true,
         conventions: true,
-        copies: {
-          include: {
-            game: true,
-            checkOuts: {
-              orderBy: {
-                checkOut: 'desc',
-              },
-            },
-          },
-          orderBy: {
-            game: {
-              name: 'asc',
-            },
-          },
-        },
       },
     };
 
@@ -58,6 +43,7 @@ export class CollectionService {
               orderBy: {
                 checkOut: 'desc',
               },
+              take: 1,
             },
             game: true,
           },
