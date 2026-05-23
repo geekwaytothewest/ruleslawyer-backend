@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:lts-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -8,7 +8,7 @@ RUN npm install --legacy-peer-deps
 
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:lts-alpine
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
