@@ -2,9 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Game, Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
+import { BoardGameGeekService } from '../boardgamegeek/boardgamegeek.service';
 
 @Injectable()
 export class GameService {
+  constructor(
+    private readonly boardGameGeekService: BoardGameGeekService,
+  ) {}
+
   private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(
     GameService.name,
   );
@@ -129,4 +134,51 @@ export class GameService {
   async deleteGame(id: number, ctx: Context) {
     return ctx.prisma.game.delete({ where: { id: Number(id) } });
   }
-}
+
+  async connectBGGGameByName(id: number, name: string, ctx: Context) {
+      try {
+        this.logger.log(
+          `Connecting game with name=${name} from BoardGameGeek API...`,
+        );
+
+        const game = await this.boardGameGeekService.getBoardGameIdByName(name);
+
+        if (!game) {
+          this.logger.warn(
+            `No boardgame found with name=${name} from BoardGameGeek API.`,
+          );
+          return null;
+        }
+
+        const gameData = await this.boardGameGeekService.getBoardGameByBGGId(game) as any;
+
+        const imageResponse = gameData?.thumbnail
+          ? await this.boardGameGeekService.getImage(gameData.thumbnail)
+          : null;
+
+        return ctx.prisma.game.update({
+          where: { id: Number(id) },
+          data: {
+            bggId: game,
+            minPlayers: gameData?.minplayers?.['@_value'] ? parseInt(gameData.minplayers['@_value']) : null,
+            maxPlayers: gameData?.maxplayers?.['@_value'] ? parseInt(gameData.maxplayers['@_value']) : null,
+            minTime: gameData?.minplaytime?.['@_value'] ? parseInt(gameData.minplaytime['@_value']) : null,
+            maxTime: gameData?.maxplaytime?.['@_value'] ? parseInt(gameData.maxplaytime['@_value']) : null,
+            longDescription: gameData?.description ?? null,
+            publisher: gameData?.link?.filter((link: { '@_type': string; '@_value': string }) => link['@_type'] === 'boardgamepublisher').map((link: { '@_type': string; '@_value': string }) => link['@_value']).join(', ') || null,
+            designer: gameData?.link?.filter((link: { '@_type': string; '@_value': string }) => link['@_type'] === 'boardgamedesigner').map((link: { '@_type': string; '@_value': string }) => link['@_value']).join(', ') || null,
+            artist: gameData?.link?.filter((link: { '@_type': string; '@_value': string }) => link['@_type'] === 'boardgameartist').map((link: { '@_type': string; '@_value': string }) => link['@_value']).join(', ') || null,
+            minAge: gameData?.minage?.['@_value'] ? parseInt(gameData.minage['@_value']) : null,
+            weight: gameData?.statistics?.ratings?.averageweight?.['@_value'] ? parseFloat(gameData.statistics.ratings.averageweight['@_value']) : null,
+            coverArt: imageResponse as Prisma.Bytes | null,
+            lastBGGSync: new Date(),
+          },
+        });
+      } catch (error: any) {
+        this.logger.error(
+          `Error connecting game with name=${name} from BoardGameGeek API: ${error.message}`,
+        );
+        return Promise.reject(error);
+      }
+    }
+  }

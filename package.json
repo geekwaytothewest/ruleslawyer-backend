@@ -40,6 +40,7 @@
     "cloc": "^2.4.0-cloc",
     "csv": "^6.3.11",
     "dotenv": "^16.5.0",
+    "fast-xml-parser": "^5.8.0",
     "fastify-multipart": "^5.4.0",
     "fastify-server-timeout": "^0.1.1",
     "jwks-rsa": "^3.2.0",

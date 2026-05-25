@@ -280,4 +280,28 @@ export class GameController {
       this.ctx,
     );
   }
+
+  @UseGuards(JwtAuthGuard, GameGuard)
+  @Put(':id/connectBGGByName')
+  async connectBGGGameByName(
+    @Param('id') id: number,
+    @User() user: any,
+  ) {
+    const game = await this.gameService.game(
+      {
+        id: Number(id),
+      },
+      this.ctx,
+      user,
+    );
+
+    if (!game) {
+      this.logger.warn(
+        `Game with id=${id} not found.`,
+      );
+      return null;
+    }
+
+    return this.gameService.connectBGGGameByName(id, game.name, this.ctx);
+  }
 }

@@ -1,0 +1,20 @@
+meta {
+  name: Game -- Connect BGG By Name
+  type: http
+  seq: 39
+}
+
+put {
+  url: {{apiUrl}}/game/{{id}}/connectBGGByName?id=48
+  body: none
+  auth: inherit
+}
+
+params:query {
+  id: 48
+}
+
+vars:pre-request {
+  id: 48
+}
+​
