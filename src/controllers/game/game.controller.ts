@@ -74,7 +74,10 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getGames(@User() user: any) {
+  async getGames(
+    @User() user: any,
+    @Query('orgId') orgId: string,
+  ) {
     return this.gameService.search(
       {
         include: {
@@ -90,24 +93,41 @@ export class GameController {
               OR: [
                 {
                   organization: {
-                    users: {
-                      some: {
-                        userId: user.id,
+                    OR: [
+                      {
+                        users: {
+                          some: {
+                            userId: user.id,
+                          },
+                        },
                       },
-                    },
+                      {
+                        ownerId: user.id,
+                      },
+                    ],
+                    AND: [
+                      orgId && !Number.isNaN(Number(orgId))
+                        ? { id: Number(orgId) }
+                        : { id: { in: [] } },
+                    ],
                   },
                 },
                 {
                   collection: {
                     conventions: {
                       some: {
-                        convention: {
-                          users: {
-                            some: {
-                              userId: user.id,
+                      convention: {
+                        AND: [
+                          {
+                            users: {
+                              some: { userId: user.id },
                             },
                           },
-                        },
+                          orgId && !Number.isNaN(Number(orgId))
+                            ? { organizationId: Number(orgId) }
+                            : { id: { in: [] } },
+                        ],
+                      },
                       },
                     },
                   },
@@ -120,11 +140,23 @@ export class GameController {
           OR: [
             {
               organization: {
-                users: {
-                  some: {
-                    userId: user.id,
+                OR: [
+                  {
+                    users: {
+                      some: {
+                        userId: user.id,
+                      },
+                    },
                   },
-                },
+                  {
+                    ownerId: user.id,
+                  },
+                ],
+                AND: [
+                  orgId && !Number.isNaN(Number(orgId))
+                  ? { id: Number(orgId) }
+                  : { id: { in: [] } },
+                ],
               },
             },
             {
@@ -162,6 +194,7 @@ export class GameController {
     @User() user: any,
     @Query('limit') limit: string,
     @Query('filter') filter: string,
+    @Query('orgId') orgId: string,
   ) {
     const query: Prisma.GameFindManyArgs = {
       include: {
@@ -176,11 +209,23 @@ export class GameController {
         OR: [
           {
             organization: {
-              users: {
-                some: {
-                  userId: user.id,
+              OR: [
+                {
+                  users: {
+                    some: {
+                      userId: user.id,
+                    },
+                  },
                 },
-              },
+                {
+                  ownerId: user.id,
+                },
+              ],
+              AND: [
+                orgId && !Number.isNaN(Number(orgId))
+                  ? { id: Number(orgId) }
+                  : { id: { in: [] } },
+              ],
             },
           },
           {
@@ -190,11 +235,16 @@ export class GameController {
                   conventions: {
                     some: {
                       convention: {
-                        users: {
-                          some: {
-                            userId: user.id,
+                        AND: [
+                          {
+                            users: {
+                              some: { userId: user.id },
+                            },
                           },
-                        },
+                          orgId && !Number.isNaN(Number(orgId))
+                            ? { organizationId: Number(orgId) }
+                            : { id: { in: [] } },
+                        ],
                       },
                     },
                   },
@@ -237,7 +287,11 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/copies')
-  async getCopies(@Param('id') id: number, @User() user: any) {
+  async getCopies(
+    @Param('id') id: number,
+    @Query('orgId') orgId: string,
+    @User() user: any
+  ) {
     return this.copyService.searchCopies(
       {
         AND: [
@@ -258,6 +312,11 @@ export class GameController {
                       ownerId: user.id,
                     },
                   ],
+                  AND: [
+                    ...(orgId && !Number.isNaN(Number(orgId))
+                      ? [{ id: Number(orgId) }]
+                      : []),
+                  ],
                 },
               },
               {
@@ -265,9 +324,16 @@ export class GameController {
                   conventions: {
                     some: {
                       convention: {
-                        users: {
-                          some: { userId: user.id },
-                        },
+                        AND: [
+                          {
+                            users: {
+                              some: { userId: user.id },
+                            },
+                          },
+                          orgId && !Number.isNaN(Number(orgId))
+                            ? { organizationId: Number(orgId) }
+                            : { id: { in: [] } },
+                        ],
                       },
                     },
                   },
