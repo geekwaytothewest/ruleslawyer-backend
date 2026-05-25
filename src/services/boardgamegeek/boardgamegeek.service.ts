@@ -16,6 +16,37 @@ export class BoardGameGeekService {
 
   constructor(private readonly httpService: HttpService) {}
 
+  async getBoardGameBatchByBGGIds(
+    bggIds: number[],
+  ): Promise<any[]> {
+    const games: any[] = [];
+
+    if (bggIds.length > 20) {
+      this.logger.warn(
+        `Batch request for boardgames with bggIds=${bggIds} exceeds BoardGameGeek API limit of 20 IDs per request. Only processing the first 20 IDs.`,
+      );
+
+      throw new Error('Batch request exceeds BoardGameGeek API limit of 20 IDs per request.');
+    }
+
+    for (const bggId of bggIds) {
+      try {
+        const game = await this.httpService.get(
+          this.bggApiUrl + `thing?id=${bggIds.map((id) => id).join(',')}&type=boardgame`,
+          { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+        );
+
+        games.push(game);
+      } catch (error: any) {
+        this.logger.error(
+          `Error retrieving boardgame with bggId=${bggId} from BoardGameGeek API: ${error.message}`,
+        );
+      }
+    }
+
+    return games;
+  }
+
   async getBoardGameByBGGId(
     bggId: number,
   ) {
