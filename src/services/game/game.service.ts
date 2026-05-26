@@ -362,7 +362,8 @@ export class GameService {
       }, []);
 
       for (const batch of batches) {
-        await this.sleep(1000);
+        // Adaptive pace: baseline 1s, raised automatically if BGG 429s mid-run.
+        await this.sleep(this.boardGameGeekService.throttleDelayMs);
         const gameDataBatch = await this.boardGameGeekService.getBoardGameBatchByBGGIds(batch.map((game) => game.bggId)) as any[];
 
         for (const game of batch) {
