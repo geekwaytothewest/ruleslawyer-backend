@@ -143,6 +143,7 @@ model Collection {
   copies         Copy[]
   public         Boolean                 @default(false)
   allowWinning   Boolean                 @default(false)
+  archived       Boolean                 @default(false)
   conventions    ConventionCollections[]
 
   @@unique([organizationId, name])
