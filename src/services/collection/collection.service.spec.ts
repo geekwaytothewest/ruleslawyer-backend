@@ -391,6 +391,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const findManyResolved = [
