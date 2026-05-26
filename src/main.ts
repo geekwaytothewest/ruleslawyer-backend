@@ -7,7 +7,6 @@ import {
 import multipart from '@fastify/multipart';
 import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 import * as fastify from 'fastify';
-const plugin = require('fastify-server-timeout')
 
 
 async function bootstrap() {
@@ -17,10 +16,9 @@ async function bootstrap() {
       opts.logLevel = 'silent';
     }
   });
-  fastifyInstance.register(plugin, {
-    serverTimeout: 1000 * 60 * 120, // 120 minutes
-    handlerTimeout: 0, // disable handler timeout
-  });
+  // Long-running jobs (attendee imports, BGG sync) now run in the background
+  // and return 202 immediately, so the server no longer needs an extended
+  // request timeout to keep those connections alive.
   const logger = new RuleslawyerLogger('NESTJS');
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,

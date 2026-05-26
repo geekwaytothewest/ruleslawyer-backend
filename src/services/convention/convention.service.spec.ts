@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConventionService } from './convention.service';
 import { MockContext, Context, createMockContext } from '../prisma/context';
@@ -454,6 +455,217 @@ describe('ConventionService', () => {
           ctx,
         ),
       ).resolves.toBe(1);
+    });
+
+    it('should fetch sold products convention-wide and group them by badge for multi-badge imports', async () => {
+      mockCtx.prisma.attendee.deleteMany.mockResolvedValueOnce({ count: 10 });
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce({
+        id: 1,
+        typeId: 1,
+        organizationId: 1,
+        name: 'Test Convention',
+        theme: 'Test Theme',
+        logo: Buffer.from(''),
+        logoSquare: Buffer.from(''),
+        icon: '',
+        startDate: new Date(),
+        endDate: new Date(),
+        tteConventionId: 'fakeid',
+        annual: '1st Testable',
+        size: 300,
+        registrationUrl: 'fakeurl',
+        cancelled: false,
+      });
+
+      jest.spyOn(service['tteService'], 'getSession').mockResolvedValueOnce({
+        session_id: 'validsessionmaybelol2',
+      });
+
+      jest
+        .spyOn(service['tteService'], 'getBadgeTypes')
+        .mockResolvedValueOnce([{ id: 1, name: 'General Admission' }]);
+
+      const perBadgeSpy = jest.spyOn(service['tteService'], 'getSoldProducts');
+      const conventionWideSpy = jest
+        .spyOn(service['tteService'], 'getConventionSoldProducts')
+        .mockResolvedValue([
+          { badge_id: 'badge-a', productvariant: { name: 'product A1' } },
+          { badge_id: 'badge-b', productvariant: { name: 'product B1' } },
+          { badge_id: 'badge-a', productvariant: { name: 'product A2' } },
+        ]);
+
+      jest.spyOn(service['tteService'], 'getBadges').mockResolvedValue([
+        {
+          id: 'badge-a',
+          name: 'Attendee A',
+          badgetype_id: 1,
+          email: 'a@geekway.com',
+          badge_number: 1,
+          custom_fields: { PreferredPronouns: 'she/her' },
+        },
+        {
+          id: 'badge-b',
+          name: 'Attendee B',
+          badgetype_id: 1,
+          email: 'b@geekway.com',
+          badge_number: 2,
+          custom_fields: { PreferredPronouns: 'they/them' },
+        },
+      ]);
+
+      const syncSpy = jest
+        .spyOn(service['attendeeService'], 'syncAttendee')
+        .mockResolvedValue(undefined as any);
+
+      await expect(
+        service.importAttendees(
+          { userName: '', password: '', apiKey: '' },
+          1,
+          ctx,
+        ),
+      ).resolves.toBe(2);
+
+      // One convention-wide sweep, never a per-badge fetch.
+      expect(conventionWideSpy).toHaveBeenCalledTimes(1);
+      expect(perBadgeSpy).not.toHaveBeenCalled();
+
+      // Sold products were grouped back onto the correct badge.
+      const synced = syncSpy.mock.calls.map((c) => c[0] as any);
+      const attendeeA = synced.find((a) => a.email === 'a@geekway.com');
+      const attendeeB = synced.find((a) => a.email === 'b@geekway.com');
+      expect(attendeeA.merch).toBe('product A1, product A2');
+      expect(attendeeB.merch).toBe('product B1');
+    });
+
+    it('appends "Patron" to merch for patron badge types without leaving stray separators', async () => {
+      mockCtx.prisma.attendee.deleteMany.mockResolvedValueOnce({ count: 10 });
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce({
+        id: 1,
+        typeId: 1,
+        organizationId: 1,
+        name: 'Test Convention',
+        theme: 'Test Theme',
+        logo: Buffer.from(''),
+        logoSquare: Buffer.from(''),
+        icon: '',
+        startDate: new Date(),
+        endDate: new Date(),
+        tteConventionId: 'fakeid',
+        annual: '1st Testable',
+        size: 300,
+        registrationUrl: 'fakeurl',
+        cancelled: false,
+      });
+
+      jest.spyOn(service['tteService'], 'getSession').mockResolvedValueOnce({
+        session_id: 'validsessionmaybelol2',
+      });
+
+      jest
+        .spyOn(service['tteService'], 'getBadgeTypes')
+        .mockResolvedValueOnce([{ id: 1, name: 'Patron badge type' }]);
+
+      jest
+        .spyOn(service['tteService'], 'getConventionSoldProducts')
+        .mockResolvedValue([
+          { badge_id: 'badge-a', productvariant: { name: 'product A1' } },
+        ]);
+
+      jest.spyOn(service['tteService'], 'getBadges').mockResolvedValue([
+        {
+          id: 'badge-a',
+          name: 'Attendee A',
+          badgetype_id: 1,
+          email: 'a@geekway.com',
+          badge_number: 1,
+          custom_fields: { PreferredPronouns: 'she/her' },
+        },
+        {
+          id: 'badge-b',
+          name: 'Attendee B',
+          badgetype_id: 1,
+          email: 'b@geekway.com',
+          badge_number: 2,
+          custom_fields: { PreferredPronouns: 'they/them' },
+        },
+      ]);
+
+      const syncSpy = jest
+        .spyOn(service['attendeeService'], 'syncAttendee')
+        .mockResolvedValue(undefined as any);
+
+      await expect(
+        service.importAttendees(
+          { userName: '', password: '', apiKey: '' },
+          1,
+          ctx,
+        ),
+      ).resolves.toBe(2);
+
+      const synced = syncSpy.mock.calls.map((c) => c[0] as any);
+      const attendeeA = synced.find((a) => a.email === 'a@geekway.com');
+      const attendeeB = synced.find((a) => a.email === 'b@geekway.com');
+      // Patron appended after real products...
+      expect(attendeeA.merch).toBe('product A1, Patron');
+      // ...and with no products, no leading/trailing separator.
+      expect(attendeeB.merch).toBe('Patron');
+    });
+  });
+
+  describe('startImportAttendees', () => {
+    it('launches the import in the background and returns "started"', () => {
+      const spy = jest
+        .spyOn(service, 'importAttendees')
+        .mockResolvedValue(1 as any);
+
+      const userData = { userName: '', password: '', apiKey: '' };
+      const result = service.startImportAttendees(userData, 1, ctx);
+
+      expect(result.status).toBe('started');
+      expect(spy).toHaveBeenCalledWith(userData, 1, ctx);
+    });
+
+    it('rejects a second concurrent import with 409', () => {
+      // First launch never settles, so the in-flight flag stays set.
+      jest
+        .spyOn(service, 'importAttendees')
+        .mockReturnValue(new Promise(() => {}) as any);
+
+      service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+
+      expect(() =>
+        service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx),
+      ).toThrow(ConflictException);
+    });
+  });
+
+  describe('startImportAttendeesCSV', () => {
+    it('launches the csv import in the background and returns "started"', () => {
+      const spy = jest
+        .spyOn(service, 'importAttendeesCSV')
+        .mockResolvedValue(1 as any);
+
+      const buffer = Buffer.from('Ada,Lovelace,101\n');
+      const result = service.startImportAttendeesCSV(buffer, 1, ctx);
+
+      expect(result.status).toBe('started');
+      expect(spy).toHaveBeenCalledWith(buffer, 1, ctx);
+    });
+
+    it('rejects a concurrent import (shared with TTE) with 409', () => {
+      jest
+        .spyOn(service, 'importAttendees')
+        .mockReturnValue(new Promise(() => {}) as any);
+      const csvSpy = jest.spyOn(service, 'importAttendeesCSV');
+
+      // A TTE import is already in flight...
+      service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+
+      // ...so a CSV import is refused and never launched.
+      expect(() =>
+        service.startImportAttendeesCSV(Buffer.from(''), 1, ctx),
+      ).toThrow(ConflictException);
+      expect(csvSpy).not.toHaveBeenCalled();
     });
   });
 

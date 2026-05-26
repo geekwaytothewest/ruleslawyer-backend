@@ -2455,34 +2455,42 @@ describe('LegacyController', () => {
       );
     });
 
-    it('should import attendees from the uploaded csv', async () => {
+    it('launches the csv import in the background and returns "started"', async () => {
       const req = {
         file: () => ({ toBuffer: () => Buffer.from('Ada,Lovelace,101\n') }),
       } as any;
-      mockCtx.prisma.attendee.create.mockResolvedValue({ id: 1 } as any);
+      const startSpy = jest
+        .spyOn(controller['conventionService'], 'startImportAttendeesCSV')
+        .mockReturnValue({ status: 'started', message: 'go' });
 
-      const count = await controller.importAttendees(req, 1);
+      const result = await controller.importAttendees(req, 1);
 
-      expect(count).toBe(1);
+      expect(result.status).toBe('started');
+      expect(startSpy).toHaveBeenCalledWith(
+        Buffer.from('Ada,Lovelace,101\n'),
+        1,
+        controller['ctx'],
+      );
     });
   });
 
   describe('syncTabletopEvents', () => {
-    it('should delegate to the convention service', async () => {
+    it('launches the import in the background and returns "started"', async () => {
       const spy = jest
-        .spyOn(controller['conventionService'], 'importAttendees')
-        .mockResolvedValue(5 as any);
+        .spyOn(controller['conventionService'], 'startImportAttendees')
+        .mockReturnValue({ status: 'started', message: 'go' });
 
-      const result = await controller.syncTabletopEvents(1, {
+      const userData = {
         userName: 'u',
         password: 'p',
         apiKey: 'k',
         tteBadgeNumber: 1,
         tteBadgeId: 'x',
-      });
+      };
+      const result = await controller.syncTabletopEvents(1, userData);
 
-      expect(result).toBe(5);
-      expect(spy).toHaveBeenCalled();
+      expect(result.status).toBe('started');
+      expect(spy).toHaveBeenCalledWith(userData, 1, controller['ctx']);
     });
   });
 

@@ -242,17 +242,22 @@ describe('ConventionController', () => {
 
       mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(convention);
 
-      jest
-        .spyOn(controller['conventionService'], 'importAttendees')
-        .mockResolvedValueOnce(1);
+      const startSpy = jest
+        .spyOn(controller['conventionService'], 'startImportAttendees')
+        .mockReturnValue({ status: 'started', message: 'go' });
 
-      const attendeeCount = await controller.importAttendees(1, {
+      const userData = {
         apiKey: 'fake api key',
         userName: 'fake username',
         password: 'fake password',
-      });
+      };
 
-      expect(attendeeCount).toBe(1);
+      // Launches in the background and returns "started" immediately rather
+      // than holding the request open until the import finishes.
+      const result = await controller.importAttendees(1, userData);
+
+      expect(result.status).toBe('started');
+      expect(startSpy).toHaveBeenCalledWith(userData, 1, controller['ctx']);
     });
   });
 
@@ -439,11 +444,20 @@ describe('ConventionController', () => {
         .switchToHttp()
         .getRequest() as fastify.FastifyRequest;
 
-      mockCtx.prisma.attendee.create.mockResolvedValue({ id: 1 } as any);
+      const startSpy = jest
+        .spyOn(controller['conventionService'], 'startImportAttendeesCSV')
+        .mockReturnValue({ status: 'started', message: 'go' });
 
-      const count = await controller.importAttendeesCSV(req, 1);
+      // The controller still reads the upload into a buffer synchronously,
+      // then hands it to the background launcher and returns "started".
+      const result = await controller.importAttendeesCSV(req, 1);
 
-      expect(count).toBe(1);
+      expect(result.status).toBe('started');
+      expect(startSpy).toHaveBeenCalledWith(
+        Buffer.from('Ada,Lovelace,101\n'),
+        1,
+        controller['ctx'],
+      );
     });
   });
 

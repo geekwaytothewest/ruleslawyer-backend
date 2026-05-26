@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
@@ -1571,6 +1572,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @HttpCode(202)
   @Put('org/:orgId/con/:conId/attendees/import')
   async importAttendees(
     @Req() request: fastify.FastifyRequest,
@@ -1590,7 +1592,9 @@ export class LegacyController {
       `File input validated; importing collection for orgId=${conId}}`,
     );
 
-    return this.conventionService.importAttendeesCSV(
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.conventionService.startImportAttendeesCSV(
       buffer,
       Number(conId),
       this.ctx,
@@ -1598,6 +1602,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @HttpCode(202)
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
   async syncTabletopEvents(
     @Param('conId') conId: number,
@@ -1613,7 +1618,9 @@ export class LegacyController {
     this.logger.log(
       `Syncing attendees with Tabletop Events for conId=${conId}, username=${userData.userName}`,
     );
-    return this.conventionService.importAttendees(
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.conventionService.startImportAttendees(
       userData,
       Number(conId),
       this.ctx,
