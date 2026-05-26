@@ -201,12 +201,7 @@ export class GameService {
     }
   }
 
-  async connectBGGGameByName(
-    id: number,
-    name: string,
-    ctx: Context,
-    imageJobs?: { id: number; thumbnail: string }[],
-  ) {
+  async connectBGGGameByName(id: number, name: string, ctx: Context) {
     try {
       this.logger.log(
         `Connecting game with name=${name} from BoardGameGeek API...`,
@@ -223,13 +218,7 @@ export class GameService {
 
       const gameData = await this.boardGameGeekService.getBoardGameByBGGId(game) as any;
 
-      // If a collector is supplied, defer the image and queue it for the
-      // bounded-concurrency pass; otherwise download inline (single-game calls).
-      const result = await this.bggUpdate(id, gameData, ctx, !!imageJobs);
-      if (imageJobs && gameData?.thumbnail) {
-        imageJobs.push({ id, thumbnail: gameData.thumbnail });
-      }
-      return result;
+      return this.bggUpdate(id, gameData, ctx);
     } catch (error: any) {
       this.logger.error(
         `Error connecting game with name=${name} from BoardGameGeek API: ${error.message}`,
@@ -388,19 +377,18 @@ export class GameService {
         }
       }
 
-      const gamesWithoutBGGId = await ctx.prisma.game.findMany({
+      // Games still without a bggId could not be matched by the rank dump
+      // (unranked/obscure titles, or no dumpUrl was supplied). This route does
+      // NOT fall back to per-game BGG search — connect those individually via
+      // the single-game connectBGGByName endpoint.
+      const unresolved = await ctx.prisma.game.count({
         where: { organizationId: orgId, bggId: null },
       });
 
-      if (gamesWithoutBGGId.length > 0) {
+      if (unresolved > 0) {
         this.logger.log(
-          `Falling back to per-game name search for ${gamesWithoutBGGId.length} unresolved game(s).`,
+          `${unresolved} game(s) have no bggId after the rank dump${dumpUrl ? '' : ' (no dumpUrl was supplied)'} and were left unconnected; use the single-game connect endpoint for those.`,
         );
-      }
-
-      for (const game of gamesWithoutBGGId) {
-        await this.connectBGGGameByName(game.id, game.name, ctx, imageJobs);
-        await this.sleep(1000);
       }
 
       // Download all deferred cover thumbnails concurrently.

@@ -19,3 +19,20 @@ body:json {
 vars:pre-request {
   orgId: 1
 }
+
+docs {
+  # Sync & Connect games with BoardGameGeek
+
+  `dumpUrl` is the BGG "bg_ranks" data dump, used to resolve game names to
+  bggIds locally (no per-game search calls).
+
+  ## Where to get the dumpUrl
+  1. Log into BoardGameGeek (the download is gated behind a login).
+  2. Go to https://boardgamegeek.com/data_dumps/bg_ranks
+  3. Click the download button and copy the **signed S3 URL** it points to.
+  4. Paste that URL into the `dumpUrl` body field below.
+
+  Note: the signed URL is time-limited and expires, so grab a fresh one each
+  run. Omitting `dumpUrl` skips the dump and falls back to per-game name search
+  (much slower).
+}
