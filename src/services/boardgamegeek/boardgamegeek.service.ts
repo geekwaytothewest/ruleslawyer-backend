@@ -41,12 +41,68 @@ export class BoardGameGeekService {
 
   constructor(private readonly httpService: HttpService) {}
 
+  // Adaptive inter-request throttle (step 5). 429s push the recommended delay
+  // up multiplicatively; clean responses ease it back down (AIMD). Callers that
+  // pace a loop (e.g. the bulk sync) read `throttleDelayMs` between requests.
+  private static readonly BASE_DELAY_MS = 1000;
+  private static readonly MAX_DELAY_MS = 8000;
+  private static readonly DECAY_STEP_MS = 250;
+  private throttleMs = BoardGameGeekService.BASE_DELAY_MS;
+
+  /** Current recommended delay between requests, raised after recent 429s. */
+  get throttleDelayMs(): number {
+    return this.throttleMs;
+  }
+
+  /** Reset the adaptive throttle to its baseline (call at the start of a run). */
+  resetThrottle(): void {
+    this.throttleMs = BoardGameGeekService.BASE_DELAY_MS;
+  }
+
+  private noteRateLimited(): void {
+    this.throttleMs = Math.min(
+      Math.round(this.throttleMs * 1.5),
+      BoardGameGeekService.MAX_DELAY_MS,
+    );
+    this.logger.warn(
+      `BGG rate-limited (429); raising inter-request delay to ${this.throttleMs}ms for the rest of the run.`,
+    );
+  }
+
+  private noteSuccess(): void {
+    if (this.throttleMs > BoardGameGeekService.BASE_DELAY_MS) {
+      this.throttleMs = Math.max(
+        BoardGameGeekService.BASE_DELAY_MS,
+        this.throttleMs - BoardGameGeekService.DECAY_STEP_MS,
+      );
+    }
+  }
+
+  /** Backoff for one retry: honor Retry-After if present, else exponential. */
+  private retryDelayMs(error: any, attempt: number, baseDelayMs: number): number {
+    const retryAfter = error?.response?.headers?.['retry-after'];
+    if (retryAfter !== undefined) {
+      const seconds = Number(retryAfter);
+      if (!Number.isNaN(seconds)) {
+        return Math.max(0, seconds * 1000);
+      }
+      const dateMs = Date.parse(retryAfter);
+      if (!Number.isNaN(dateMs)) {
+        return Math.max(0, dateMs - Date.now());
+      }
+    }
+    return baseDelayMs * 2 ** attempt;
+  }
+
   /**
-   * GETs a BGG xmlapi2 URL, transparently handling the API's 202 "queued"
-   * response: BGG returns 202 while it builds the result and expects the client
-   * to retry. Retries with exponential backoff; after exhausting retries it
-   * returns the last (still-202) response so the caller parses it as empty,
-   * but logs a distinct warning so a queue timeout isn't mistaken for "not found".
+   * GETs a BGG xmlapi2 URL, transparently handling the two transient responses
+   * BGG returns under load:
+   *   - 202 "queued": a 2xx; the result isn't built yet. Retry with backoff;
+   *     after retries, return the (empty) response but log a distinct warning.
+   *   - 429 "rate limited": a thrown 4xx. Retry honoring Retry-After (else
+   *     exponential backoff) and bump the adaptive throttle; after retries,
+   *     re-throw so the caller's existing error handling stands.
+   * Any other error is re-thrown unchanged.
    */
   private async getWithRetry(
     url: string,
@@ -55,9 +111,29 @@ export class BoardGameGeekService {
     baseDelayMs = 1000,
   ): Promise<any> {
     for (let attempt = 0; ; attempt++) {
-      const response = await this.httpService.get(url, config);
+      let response: any;
+      try {
+        response = await this.httpService.get(url, config);
+      } catch (error: any) {
+        if (error?.response?.status === 429) {
+          this.noteRateLimited();
+          if (attempt < maxRetries) {
+            const delay = this.retryDelayMs(error, attempt, baseDelayMs);
+            this.logger.log(
+              `BGG 429 (rate limited) for ${url}; retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries}).`,
+            );
+            await this.sleep(delay);
+            continue;
+          }
+          this.logger.warn(
+            `BGG still 429 (rate limited) after ${maxRetries} retries for ${url}; giving up.`,
+          );
+        }
+        throw error;
+      }
 
       if (response.status !== 202) {
+        this.noteSuccess();
         return response;
       }
 

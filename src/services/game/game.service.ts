@@ -332,6 +332,10 @@ export class GameService {
         `Syncing and connecting games with BoardGameGeek API...`,
       );
 
+      // Start each run from the baseline pace; the throttle adapts upward if
+      // BGG starts returning 429s during this run.
+      this.boardGameGeekService.resetThrottle();
+
       // Resolve missing bggIds locally from the rank dump first, so the work
       // below collapses into the fast batch path instead of per-game searches.
       if (dumpUrl) {
