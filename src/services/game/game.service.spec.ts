@@ -339,6 +339,21 @@ describe('GameService', () => {
     });
   });
 
+  describe('searchWithCount', () => {
+    it('returns the page data alongside the total matching count', async () => {
+      mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 42] as any);
+
+      const query = { where: { name: { contains: 'cat' } }, take: 25, skip: 0 };
+      const result = await service.searchWithCount(query, ctx);
+
+      expect(result).toEqual({ data: [{ id: 1 }], total: 42 });
+      expect(mockCtx.prisma.game.findMany).toHaveBeenCalledWith(query);
+      expect(mockCtx.prisma.game.count).toHaveBeenCalledWith({
+        where: query.where,
+      });
+    });
+  });
+
   describe('deleteGame', () => {
     it('deletes by numeric id', async () => {
       mockCtx.prisma.game.delete.mockResolvedValue({ id: 1 } as any);

@@ -22,6 +22,10 @@ import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { GameGuard } from '../../guards/game/game.guard';
 import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
 
+// Upper bound on rows returned by the withCopies endpoint, including when the
+// client asks for "All". Prevents oversized responses that fail to serialize.
+const MAX_GAMES_LIMIT = 1000;
+
 @Controller()
 export class GameController {
   ctx: Context;
@@ -197,6 +201,7 @@ export class GameController {
     @Query('limit') limit: string,
     @Query('filter') filter: string,
     @Query('orgId') orgId: string,
+    @Query('page') page: string,
   ) {
     const query: Prisma.GameFindManyArgs = {
       include: {
@@ -261,9 +266,26 @@ export class GameController {
       },
     };
 
-    if (limit && !Number.isNaN(Number(limit))) {
-      query.take = Number(limit);
-    }
+    // Always bound the page size. Without a `take`, "All" (or any non-numeric
+    // value) makes Prisma fetch every game with its nested copies/checkOuts,
+    // producing a payload too large for JSON.stringify to serialize
+    // (RangeError: Invalid string length). A numeric limit is clamped to the
+    // cap; "All"/invalid falls back to the cap itself.
+    const requested = Number(limit);
+    const pageSize =
+      limit && !Number.isNaN(requested)
+        ? Math.min(requested, MAX_GAMES_LIMIT)
+        : MAX_GAMES_LIMIT;
+
+    // 1-based page number; anything missing/invalid/below 1 means the first page.
+    const requestedPage = Number(page);
+    const currentPage =
+      page && !Number.isNaN(requestedPage) && requestedPage >= 1
+        ? Math.floor(requestedPage)
+        : 1;
+
+    query.take = pageSize;
+    query.skip = (currentPage - 1) * pageSize;
 
     if (filter) {
       query.where = {
@@ -278,7 +300,19 @@ export class GameController {
       };
     }
 
-    return this.gameService.search(query, this.ctx);
+    const { data, total } = await this.gameService.searchWithCount(
+      query,
+      this.ctx,
+    );
+
+    return {
+      data,
+      total,
+      page: currentPage,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+      hasMore: currentPage * pageSize < total,
+    };
   }
 
   @UseGuards(JwtAuthGuard, GameGuard)

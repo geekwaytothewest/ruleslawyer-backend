@@ -141,22 +141,67 @@ describe('GameController', () => {
   });
 
   describe('getGamesWithCopies', () => {
-    it('should search games with copies', async () => {
-      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+    it('should search games with copies and return pagination metadata', async () => {
+      mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 1] as any);
 
-      const games = await controller.getGamesWithCopies({ id: 1 }, '', '', '1');
+      const result = await controller.getGamesWithCopies(
+        { id: 1 },
+        '',
+        '',
+        '1',
+        '',
+      );
 
-      expect(games.length).toBe(1);
+      expect(result.data.length).toBe(1);
+      expect(result.total).toBe(1);
+      expect(result.page).toBe(1);
+      expect(result.hasMore).toBe(false);
     });
 
     it('should apply the limit and filter when provided', async () => {
-      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+      mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 1] as any);
 
-      await controller.getGamesWithCopies({ id: 1 }, '25', 'catan', '1');
+      await controller.getGamesWithCopies({ id: 1 }, '25', 'catan', '1', '');
 
       const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
       expect(args.take).toBe(25);
+      expect(args.skip).toBe(0);
       expect(args.where.OR).toBeDefined();
+    });
+
+    it('should compute skip from the page number and report hasMore', async () => {
+      mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 60] as any);
+
+      const result = await controller.getGamesWithCopies(
+        { id: 1 },
+        '25',
+        '',
+        '1',
+        '2',
+      );
+
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(args.take).toBe(25);
+      expect(args.skip).toBe(25);
+      expect(result.page).toBe(2);
+      expect(result.totalPages).toBe(3);
+      expect(result.hasMore).toBe(true);
+    });
+
+    it('should cap the page size for non-numeric limits like "All"', async () => {
+      mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 1] as any);
+
+      const result = await controller.getGamesWithCopies(
+        { id: 1 },
+        'All',
+        '',
+        '1',
+        '',
+      );
+
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(args.take).toBe(1000);
+      expect(result.pageSize).toBe(1000);
     });
   });
 

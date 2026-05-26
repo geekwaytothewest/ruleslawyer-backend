@@ -103,6 +103,26 @@ export class GameService {
     }
   }
 
+  /**
+   * Like {@link search}, but also returns the total number of games matching
+   * the query's `where` clause (ignoring `take`/`skip`) so callers can build
+   * pagination metadata. The list and count run in a single transaction for a
+   * consistent snapshot.
+   */
+  async searchWithCount(query: Prisma.GameFindManyArgs, ctx: Context) {
+    try {
+      this.logger.log(`Searching games (paginated)`);
+      const [data, total] = await ctx.prisma.$transaction([
+        ctx.prisma.game.findMany(query),
+        ctx.prisma.game.count({ where: query.where }),
+      ]);
+      return { data, total };
+    } catch (ex) {
+      this.logger.error(`Failed to search games (paginated), ex=${ex}`);
+      return Promise.reject(ex);
+    }
+  }
+
   async createGame(
     data: Prisma.GameCreateInput,
     ctx: Context,
@@ -209,6 +229,8 @@ export class GameService {
       this.logger.log(
         `Connecting game with name=${name} from BoardGameGeek API...`,
       );
+
+      name = normalizeBggName(name);
 
       const game = await this.boardGameGeekService.getBoardGameIdByName(name);
 
@@ -406,6 +428,7 @@ export class GameService {
       for (const batch of batches) {
         // Adaptive pace: baseline 1s, raised automatically if BGG 429s mid-run.
         await this.sleep(this.boardGameGeekService.throttleDelayMs);
+
         const gameDataBatch = await this.boardGameGeekService.getBoardGameBatchByBGGIds(batch.map((game) => game.bggId)) as any[];
 
         for (const game of batch) {
@@ -413,6 +436,7 @@ export class GameService {
 
           if (gameData) {
             await this.bggUpdate(game.id, gameData, ctx, true);
+
             if (gameData?.thumbnail) {
               imageJobs.push({ id: game.id, thumbnail: gameData.thumbnail });
             }

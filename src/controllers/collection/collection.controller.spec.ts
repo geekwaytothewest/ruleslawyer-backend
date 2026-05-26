@@ -65,7 +65,7 @@ describe('CollectionController', () => {
         .spyOn(collectionService, 'collectionCopiesByGames')
         .mockResolvedValue({ id: 1, games: [] } as any);
 
-      const result = await controller.collectionCopiesByGames(1, 10, '');
+      const result = await controller.collectionCopiesByGames(1, 10, '', 2);
 
       expect(result).toEqual({ id: 1, games: [] });
       expect(collectionService.collectionCopiesByGames).toHaveBeenCalledWith(
@@ -73,6 +73,7 @@ describe('CollectionController', () => {
         10,
         '',
         ctx,
+        2,
       );
     });
   });

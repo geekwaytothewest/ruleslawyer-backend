@@ -39,6 +39,33 @@ describe('CollectionService', () => {
     });
   });
 
+  describe('collectionCopiesByGames', () => {
+    it('caps the page size and returns pagination metadata', async () => {
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Test Collection',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+      mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 2500] as any);
+
+      // limit above the cap; second page requested
+      const result = await service.collectionCopiesByGames(1, 5000, '', ctx, 2);
+
+      const gameArgs = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(gameArgs.take).toBe(1000);
+      expect(gameArgs.skip).toBe(1000);
+
+      expect(result.games).toEqual([{ id: 1 }]);
+      expect(result.total).toBe(2500);
+      expect(result.page).toBe(2);
+      expect(result.pageSize).toBe(1000);
+      expect(result.totalPages).toBe(3);
+      expect(result.hasMore).toBe(true);
+    });
+  });
+
   describe('collectionsByOrg', () => {
     it('should return all an org collections', async () => {
       mockCtx.prisma.collection.findMany.mockResolvedValue([

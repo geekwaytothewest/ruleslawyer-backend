@@ -31,6 +31,9 @@ describe('BoardGameGeekService', () => {
     it.each([
       ['CATAN', 'catan'],
       ['The Settlers of Catan', 'settlers of catan'],
+      ['Castles of Burgundy, The', 'castles of burgundy'],
+      ['Princes of Florence, The', 'princes of florence'],
+      ['Ancient World, The (2nd Edition)', 'ancient world 2nd edition'],
       ['A Feast for Odin', 'feast for odin'],
       ['Café', 'cafe'],
       ['Ticket to Ride: Europe', 'ticket to ride europe'],
@@ -153,24 +156,24 @@ describe('BoardGameGeekService', () => {
 
   describe('adaptive throttle', () => {
     it('starts at the baseline delay', () => {
-      expect(service.throttleDelayMs).toBe(1000);
+      expect(service.throttleDelayMs).toBe(2000);
     });
 
     it('raises the delay after a 429 and resets on demand', async () => {
       http.get.mockRejectedValueOnce(rateLimited()).mockResolvedValueOnce(ok('<items/>'));
       await service.getBoardGameBatchByBGGIds([13]);
 
-      expect(service.throttleDelayMs).toBeGreaterThan(1000);
+      expect(service.throttleDelayMs).toBeGreaterThan(2000);
 
       service.resetThrottle();
-      expect(service.throttleDelayMs).toBe(1000);
+      expect(service.throttleDelayMs).toBe(2000);
     });
 
     it('caps the delay under sustained 429s', async () => {
       http.get.mockRejectedValue(rateLimited());
       await service.getBoardGameBatchByBGGIds([13]);
       expect(service.throttleDelayMs).toBeLessThanOrEqual(8000);
-      expect(service.throttleDelayMs).toBeGreaterThan(1000);
+      expect(service.throttleDelayMs).toBeGreaterThan(2000);
     });
   });
 

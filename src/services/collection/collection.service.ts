@@ -5,6 +5,12 @@ import { Collection, Copy, Prisma } from '@prisma/client';
 import { CopyService } from '../copy/copy.service';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 
+// Upper bound on games returned per page by collectionCopiesByGames, including
+// when no/invalid limit is supplied. Without a bound, Prisma fetches every game
+// in the collection with its nested copies/checkOuts, producing a payload too
+// large for JSON.stringify to serialize (RangeError: Invalid string length).
+const MAX_COLLECTION_GAMES_LIMIT = 1000;
+
 @Injectable()
 export class CollectionService {
   constructor(private readonly copyService: CopyService) {}
@@ -26,6 +32,7 @@ export class CollectionService {
     limit: number,
     filter: string,
     ctx: Context,
+    page?: number,
   ) {
     const query: Prisma.CollectionFindUniqueArgs = {
       where: {
@@ -65,10 +72,6 @@ export class CollectionService {
       },
     };
 
-    if (limit && !Number.isNaN(Number(limit))) {
-      gameQuery.take = Number(limit);
-    }
-
     if (filter) {
       gameQuery.where = {
         AND: [
@@ -90,7 +93,35 @@ export class CollectionService {
       };
     }
 
-    collection.games = await ctx.prisma.game.findMany(gameQuery);
+    // Always bound the page size; a numeric limit is clamped to the cap,
+    // anything missing/invalid falls back to the cap itself.
+    const requested = Number(limit);
+    const pageSize =
+      limit && !Number.isNaN(requested)
+        ? Math.min(requested, MAX_COLLECTION_GAMES_LIMIT)
+        : MAX_COLLECTION_GAMES_LIMIT;
+
+    // 1-based page number; missing/invalid/below 1 means the first page.
+    const requestedPage = Number(page);
+    const currentPage =
+      page && !Number.isNaN(requestedPage) && requestedPage >= 1
+        ? Math.floor(requestedPage)
+        : 1;
+
+    gameQuery.take = pageSize;
+    gameQuery.skip = (currentPage - 1) * pageSize;
+
+    const [games, total] = await ctx.prisma.$transaction([
+      ctx.prisma.game.findMany(gameQuery),
+      ctx.prisma.game.count({ where: gameQuery.where }),
+    ]);
+
+    collection.games = games;
+    collection.total = total;
+    collection.page = currentPage;
+    collection.pageSize = pageSize;
+    collection.totalPages = Math.ceil(total / pageSize);
+    collection.hasMore = currentPage * pageSize < total;
 
     return collection;
   }

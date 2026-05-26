@@ -54,12 +54,14 @@ export class CollectionController {
     @Param('colId') colId: number,
     @Query('limit') limit: number,
     @Query('filter') filter: string,
+    @Query('page') page: number,
   ) {
     const col = this.collectionService.collectionCopiesByGames(
       Number(colId),
       limit,
       filter,
       this.ctx,
+      page,
     );
 
     if (!col) {

@@ -13,14 +13,23 @@ export interface RankDumpEntry {
 
 /**
  * Normalizes a game name for fuzzy matching against the BGG rank dump:
- * lowercases, strips diacritics and punctuation, drops a leading article,
- * and collapses whitespace. Used on both the dump names and our own names.
+ * lowercases, strips diacritics and punctuation, drops articles, and collapses
+ * whitespace. Used on both the dump names and our own names.
+ *
+ * Articles are handled in two forms so our library's sort-name convention
+ * matches BGG's natural order:
+ *   - a comma-delimited sort suffix ("Castles of Burgundy, The", or mid-string
+ *     before a parenthetical like "Ancient World, The (2nd Edition)") is
+ *     stripped first, while the comma is still present to mark it; then
+ *   - a leading article ("The Castles of Burgundy") is stripped.
+ * BGG's own leading article is likewise stripped, so both sides converge.
  */
 export function normalizeBggName(name: string): string {
   return (name ?? '')
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
+    .replace(/,\s*(the|a|an)\b/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/^(the|a|an)\s+/, '')
@@ -31,6 +40,7 @@ export function normalizeBggName(name: string): string {
 @Injectable()
 export class BoardGameGeekService {
   bggApiUrl = 'https://boardgamegeek.com/xmlapi2/';
+
   private readonly xmlParser = new XMLParser({ ignoreAttributes: false, isArray: (name) => name === 'item' });
 
   private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(
@@ -44,7 +54,7 @@ export class BoardGameGeekService {
   // Adaptive inter-request throttle (step 5). 429s push the recommended delay
   // up multiplicatively; clean responses ease it back down (AIMD). Callers that
   // pace a loop (e.g. the bulk sync) read `throttleDelayMs` between requests.
-  private static readonly BASE_DELAY_MS = 1000;
+  private static readonly BASE_DELAY_MS = 2000;
   private static readonly MAX_DELAY_MS = 8000;
   private static readonly DECAY_STEP_MS = 250;
   private throttleMs = BoardGameGeekService.BASE_DELAY_MS;
@@ -246,7 +256,7 @@ export class BoardGameGeekService {
           `Getting boardgame with name=url${name} from BoardGameGeek API...`,
         );
         const game = await this.getWithRetry(
-          this.bggApiUrl + `search?query=${encodeURIComponent(name)}&type=boardgame`,
+          this.bggApiUrl + `search?query=${encodeURIComponent(name)}`,
           { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
         );
 
@@ -339,6 +349,7 @@ export class BoardGameGeekService {
       }
 
       const key = normalizeBggName(row.name);
+
       if (!key) {
         continue;
       }
@@ -367,9 +378,11 @@ export class BoardGameGeekService {
   async getImage(url: string): Promise<Buffer | null> {
     try {
       const response = await this.httpService.get(url, { responseType: 'arraybuffer' });
+
       return Buffer.from(response.data);
     } catch (error: any) {
       this.logger.error(`Error fetching image from ${url}: ${error.message}`);
+
       return null;
     }
   }
