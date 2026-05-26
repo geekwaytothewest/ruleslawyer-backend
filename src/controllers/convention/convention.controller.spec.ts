@@ -5,7 +5,9 @@ import {
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
-import { BadGatewayException } from '@nestjs/common';
+import { BadGatewayException, ExecutionContext } from '@nestjs/common';
+import { createMock } from '@golevelup/ts-jest';
+import fastify = require('fastify');
 import { ConventionModule } from '../../modules/convention/convention.module';
 
 describe('ConventionController', () => {
@@ -390,6 +392,103 @@ describe('ConventionController', () => {
       ]);
 
       expect(controller.exportBadgeFile(1)).resolves.toBeTruthy();
+    });
+  });
+
+  describe('getConventions', () => {
+    it('should return the conventions visible to the user', async () => {
+      mockCtx.prisma.convention.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const cons = await controller.getConventions({ id: 1 });
+
+      expect(cons.length).toBe(1);
+    });
+  });
+
+  describe('importAttendeesCSV', () => {
+    it('should reject when the file is missing', async () => {
+      const execCtx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => null,
+          }),
+        }),
+      });
+
+      const req = execCtx
+        .switchToHttp()
+        .getRequest() as fastify.FastifyRequest;
+
+      await expect(controller.importAttendeesCSV(req, 1)).rejects.toBe(
+        'missing file',
+      );
+    });
+
+    it('should import attendees from the uploaded csv', async () => {
+      const execCtx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => ({
+              toBuffer: () => Buffer.from('Ada,Lovelace,101\n'),
+            }),
+          }),
+        }),
+      });
+
+      const req = execCtx
+        .switchToHttp()
+        .getRequest() as fastify.FastifyRequest;
+
+      mockCtx.prisma.attendee.create.mockResolvedValue({ id: 1 } as any);
+
+      const count = await controller.importAttendeesCSV(req, 1);
+
+      expect(count).toBe(1);
+    });
+  });
+
+  describe('createCollection', () => {
+    it('should create a collection', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        name: 'New',
+        organizationId: 1,
+        public: false,
+        allowWinning: true,
+      });
+
+      const result = (await controller.createCollection(1, {
+        name: 'New',
+        allowWinning: true,
+      })) as any;
+
+      expect(result?.id).toBe(1);
+    });
+  });
+
+  describe('attachCollection', () => {
+    it('should attach a collection to the convention', async () => {
+      mockCtx.prisma.conventionCollections.create.mockResolvedValue({
+        conventionId: 1,
+        collectionId: 2,
+      } as any);
+
+      const result = await controller.attachCollection(1, 2);
+
+      expect(result.collectionId).toBe(2);
+    });
+  });
+
+  describe('detachCollection', () => {
+    it('should detach a collection from the convention', async () => {
+      mockCtx.prisma.conventionCollections.delete.mockResolvedValue({
+        conventionId: 1,
+        collectionId: 2,
+      } as any);
+
+      const result = await controller.detachCollection(1, 2);
+
+      expect(result.collectionId).toBe(2);
     });
   });
 });

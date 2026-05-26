@@ -94,4 +94,49 @@ describe('OrganizationService', () => {
       expect(org?.collections.length).toBe(1);
     });
   });
+
+  describe('allOrganizations', () => {
+    it('should return every organization', async () => {
+      mockCtx.prisma.organization.findMany.mockResolvedValue([
+        { id: 1, name: 'A', ownerId: 1 },
+        { id: 2, name: 'B', ownerId: 2 },
+      ]);
+
+      const orgs = await service.allOrganizations(ctx);
+
+      expect(orgs?.length).toBe(2);
+    });
+  });
+
+  describe('organizationByOwner', () => {
+    it('should return organizations owned by the user', async () => {
+      mockCtx.prisma.organization.findMany.mockResolvedValue([
+        { id: 1, name: 'A', ownerId: 7 },
+      ]);
+
+      const orgs = await service.organizationByOwner(7, ctx);
+
+      expect(orgs.length).toBe(1);
+      expect(mockCtx.prisma.organization.findMany).toHaveBeenCalledWith({
+        where: { ownerId: 7 },
+      });
+    });
+  });
+
+  describe('createOrganization', () => {
+    it('should create an organization with the given name and owner', async () => {
+      mockCtx.prisma.organization.create.mockResolvedValue({
+        id: 1,
+        name: 'New Org',
+        ownerId: 3,
+      });
+
+      const org = await service.createOrganization('New Org', 3, ctx);
+
+      expect(org.id).toBe(1);
+      expect(mockCtx.prisma.organization.create).toHaveBeenCalledWith({
+        data: { name: 'New Org', ownerId: 3 },
+      });
+    });
+  });
 });

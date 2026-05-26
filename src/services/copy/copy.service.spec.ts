@@ -237,4 +237,35 @@ describe('CopyService', () => {
       expect(copies.length).toBe(1);
     });
   });
+
+  describe('copyWithCheckouts', () => {
+    it('should return a copy including its checkouts ordered by checkout date', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue({
+        id: 1,
+        checkOuts: [{ id: 1 }],
+      } as any);
+
+      const copy = await service.copyWithCheckouts({ id: 1 }, ctx);
+
+      expect(copy?.checkOuts.length).toBe(1);
+      expect(mockCtx.prisma.copy.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: { checkOuts: { orderBy: { checkOut: 'desc' } } },
+        }),
+      );
+    });
+  });
+
+  describe('deleteCopy', () => {
+    it('should delete a copy by id', async () => {
+      mockCtx.prisma.copy.delete.mockResolvedValue({ id: 1 } as any);
+
+      const result = await service.deleteCopy(1, ctx);
+
+      expect(result.id).toBe(1);
+      expect(mockCtx.prisma.copy.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+    });
+  });
 });

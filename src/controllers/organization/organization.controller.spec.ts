@@ -442,4 +442,123 @@ describe('OrganizationController', () => {
       );
     });
   });
+
+  describe('organization', () => {
+    it('should return an organization', async () => {
+      mockCtx.prisma.organization.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Geekway',
+        ownerId: 1,
+      });
+
+      const org = await controller.organization(1);
+
+      expect(org?.id).toBe(1);
+    });
+  });
+
+  describe('getConventionTypes', () => {
+    it('should return the convention types for an org', async () => {
+      mockCtx.prisma.conventionType.findMany.mockResolvedValue([
+        { id: 1 },
+      ] as any);
+
+      const types = (await controller.getConventionTypes(1)) as any[];
+
+      expect(types.length).toBe(1);
+    });
+  });
+
+  describe('getConventions', () => {
+    it('should return the conventions for an org', async () => {
+      mockCtx.prisma.convention.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const cons = (await controller.getConventions(1)) as any[];
+
+      expect(cons.length).toBe(1);
+    });
+  });
+
+  describe('getCollections', () => {
+    it('should return the collections for an org', async () => {
+      mockCtx.prisma.collection.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const cols = (await controller.getCollections(1)) as any[];
+
+      expect(cols.length).toBe(1);
+    });
+  });
+
+  describe('getGames', () => {
+    it('should return the games for an org', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const games = await controller.getGames(1);
+
+      expect(games.length).toBe(1);
+    });
+  });
+
+  describe('getGamesWithCopies', () => {
+    it('should return the games with copies for an org', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const games = await controller.getGamesWithCopies(1, { id: 1 });
+
+      expect(games.length).toBe(1);
+    });
+  });
+
+  describe('searchGames', () => {
+    it('should search games by name', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const games = await controller.searchGames('catan');
+
+      expect(games.length).toBe(1);
+    });
+  });
+
+  describe('autocompleteGames', () => {
+    it('should autocomplete games by name', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const games = await controller.autocompleteGames('cat');
+
+      expect(games.length).toBe(1);
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(args.take).toBe(10);
+    });
+  });
+
+  describe('createCollection', () => {
+    it('should reject when name is not set', async () => {
+      await expect(
+        controller.createCollection(1, { allowWinning: true } as any),
+      ).rejects.toBe('name not set');
+    });
+
+    it('should reject when allowWinning is not a boolean', async () => {
+      await expect(
+        controller.createCollection(1, { name: 'New' } as any),
+      ).rejects.toBe('allowWinning not set');
+    });
+
+    it('should create a collection when the body is valid', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        name: 'New',
+        organizationId: 1,
+        public: false,
+        allowWinning: true,
+      });
+
+      const result = (await controller.createCollection(1, {
+        name: 'New',
+        allowWinning: true,
+      } as any)) as any;
+
+      expect(result?.id).toBe(1);
+    });
+  });
 });

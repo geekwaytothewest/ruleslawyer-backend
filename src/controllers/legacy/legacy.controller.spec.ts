@@ -2178,4 +2178,311 @@ describe('LegacyController', () => {
       ).toBeTruthy();
     });
   });
+
+  const playRow = {
+    id: 1,
+    checkOut: new Date(),
+    checkIn: null,
+    copy: {
+      gameId: 1,
+      game: { id: 1, name: 'Catan' },
+      collection: { id: 1, name: 'Library', allowWinning: true },
+    },
+    players: [
+      {
+        attendee: { badgeNumber: '101', badgeName: 'Ada' },
+        wantToWin: true,
+        rating: 5,
+      },
+    ],
+  };
+
+  const copyRow = {
+    gameId: 1,
+    barcodeLabel: '1',
+    winnable: false,
+    checkOuts: [{ checkOut: new Date() }],
+    game: { id: 1, name: 'Catan' },
+    collection: { id: 1, name: 'Library', allowWinning: true },
+  };
+
+  describe('getPlays', () => {
+    it('should map checkouts into legacy play objects', async () => {
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue([playRow] as any);
+
+      const result = await controller.getPlays(1);
+
+      expect(result.Result.Plays).toHaveLength(1);
+      expect(result.Result.Plays[0].GameName).toBe('Catan');
+      expect(result.Result.Plays[0].Players?.[0].Name).toBe('Ada');
+    });
+  });
+
+  describe('getCollPlays', () => {
+    it('should map collection checkouts into legacy play objects', async () => {
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue([playRow] as any);
+
+      const result = await controller.getCollPlays(1, 2);
+
+      expect(result.Result.Plays).toHaveLength(1);
+      expect(result.Result.Plays[0].Collection.Name).toBe('Library');
+    });
+  });
+
+  describe('addCollection', () => {
+    it('should create a collection', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        name: 'New',
+        organizationId: 1,
+        public: false,
+        allowWinning: true,
+      });
+
+      const result = (await controller.addCollection(1, {
+        name: 'New',
+        allowWinning: true,
+      })) as any;
+
+      expect(result?.id).toBe(1);
+    });
+  });
+
+  describe('updateCollection', () => {
+    it('should update a collection', async () => {
+      mockCtx.prisma.collection.update.mockResolvedValue({
+        id: 1,
+        name: 'Updated',
+        organizationId: 1,
+        public: false,
+        allowWinning: false,
+      });
+
+      const result = (await controller.updateCollection(1, 1, {
+        name: 'Updated',
+        allowWinning: false,
+      })) as any;
+
+      expect(result?.name).toBe('Updated');
+    });
+  });
+
+  describe('getGames', () => {
+    it('should return games with their copies', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([
+        { id: 1, name: 'Catan' },
+      ] as any);
+      mockCtx.prisma.copy.findMany.mockResolvedValue([copyRow] as any);
+
+      const result = await controller.getGames(1);
+
+      expect(result.Result.Games).toHaveLength(1);
+      expect(result.Result.Games[0].Copies).toHaveLength(1);
+    });
+  });
+
+  describe('getGamesByCollectionId', () => {
+    it('should return games with copies filtered by collection', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([
+        { id: 1, name: 'Catan' },
+      ] as any);
+      mockCtx.prisma.copy.findMany.mockResolvedValue([copyRow] as any);
+
+      const result = await controller.getGamesByCollectionId(1, 2);
+
+      expect(result.Result.Games[0].Copies[0].Title).toBe('Catan');
+    });
+  });
+
+  describe('getGameList', () => {
+    it('should return the raw game list', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const games = await controller.getGameList(1);
+
+      expect(games.length).toBe(1);
+    });
+  });
+
+  describe('addGame', () => {
+    it('should create a game from a title', async () => {
+      mockCtx.prisma.game.create.mockResolvedValue({ id: 1 } as any);
+
+      const game = await controller.addGame(1, { title: 'Catan' });
+
+      expect(game?.id).toBe(1);
+      const args = mockCtx.prisma.game.create.mock.calls[0][0] as any;
+      expect(args.data.name).toBe('Catan');
+    });
+  });
+
+  describe('updateGame', () => {
+    it('should update a game title', async () => {
+      mockCtx.prisma.game.update.mockResolvedValue({ id: 1 } as any);
+
+      const game = await controller.updateGame(1, 1, { title: 'New Title' });
+
+      expect(game?.id).toBe(1);
+      const args = mockCtx.prisma.game.update.mock.calls[0][0] as any;
+      expect(args.data.name).toBe('New Title');
+    });
+  });
+
+  describe('getAttendeeByBadgeNumber', () => {
+    it('should look up an attendee by convention and badge number', async () => {
+      mockCtx.prisma.attendee.findUnique.mockResolvedValue({ id: 1 } as any);
+
+      const attendee = await controller.getAttendeeByBadgeNumber(1, '101');
+
+      expect(attendee?.id).toBe(1);
+      const args = mockCtx.prisma.attendee.findUnique.mock.calls[0][0] as any;
+      expect(args.where.conventionId_badgeNumber.badgeNumber).toBe('101');
+    });
+  });
+
+  describe('badgeTransfer', () => {
+    it('should delegate to the attendee service', async () => {
+      mockCtx.prisma.attendee.update.mockResolvedValue({ id: 1 } as any);
+
+      const result = await controller.badgeTransfer(1, {
+        fromBadgeNumber: '101',
+        newBadgeFirstName: 'Ada',
+        newBadgeLastName: 'Lovelace',
+        newBadgePronouns: 'she/her',
+      });
+
+      expect(result.id).toBe(1);
+    });
+  });
+
+  describe('badgeReplacement', () => {
+    it('should delegate to the attendee service', async () => {
+      const spy = jest
+        .spyOn(controller['attendeeService'], 'badgeReplacement')
+        .mockResolvedValue(undefined as any);
+
+      await controller.badgeReplacement(1, {
+        fromBadgeNumber: '101',
+        toBadgeNumber: '102',
+      });
+
+      expect(spy).toHaveBeenCalledWith(
+        1,
+        { fromBadgeNumber: '101', toBadgeNumber: '102' },
+        ctx,
+      );
+    });
+  });
+
+  describe('exportPlaysByCollectionId', () => {
+    it('should build a csv export for the collection', async () => {
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue([
+        {
+          id: 1,
+          checkOut: new Date(),
+          checkIn: null,
+          copy: {
+            game: { name: 'Catan' },
+            barcodeLabel: '1',
+            collection: { name: 'Library' },
+          },
+          attendee: { badgeName: 'Ada' },
+        },
+      ] as any);
+
+      const result = await controller.exportPlaysByCollectionId(1, 2);
+
+      expect(result.collectionName).toBe('Library');
+      expect(result.csvText).toBeDefined();
+    });
+  });
+
+  describe('importCollection', () => {
+    it('should reject when the file is missing', async () => {
+      const req = { file: () => null } as any;
+
+      await expect(controller.importCollection(req, 1)).rejects.toBe(
+        'missing file',
+      );
+    });
+
+    it('should delegate to the collection service when a file is present', async () => {
+      const req = {
+        file: () => ({
+          toBuffer: () => Buffer.from('data'),
+          fields: { name: 'Coll' },
+        }),
+      } as any;
+      const spy = jest
+        .spyOn(controller['collectionService'], 'importCollection')
+        .mockResolvedValue({ importCount: 1 } as any);
+
+      await controller.importCollection(req, 1);
+
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('uploadCopies', () => {
+    it('should reject when the file is missing', async () => {
+      const req = { file: () => null } as any;
+
+      await expect(controller.uploadCopies(req, 1, 2)).rejects.toBe(
+        'missing file',
+      );
+    });
+
+    it('should delegate to the collection service when a file is present', async () => {
+      const req = {
+        file: () => ({ toBuffer: () => Buffer.from('data') }),
+      } as any;
+      const spy = jest
+        .spyOn(controller['collectionService'], 'uploadCopies')
+        .mockResolvedValue({} as any);
+
+      await controller.uploadCopies(req, 1, 2);
+
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('importAttendees', () => {
+    it('should reject when the file is missing', async () => {
+      const req = { file: () => null } as any;
+
+      await expect(controller.importAttendees(req, 1)).rejects.toBe(
+        'missing file',
+      );
+    });
+
+    it('should import attendees from the uploaded csv', async () => {
+      const req = {
+        file: () => ({ toBuffer: () => Buffer.from('Ada,Lovelace,101\n') }),
+      } as any;
+      mockCtx.prisma.attendee.create.mockResolvedValue({ id: 1 } as any);
+
+      const count = await controller.importAttendees(req, 1);
+
+      expect(count).toBe(1);
+    });
+  });
+
+  describe('syncTabletopEvents', () => {
+    it('should delegate to the convention service', async () => {
+      const spy = jest
+        .spyOn(controller['conventionService'], 'importAttendees')
+        .mockResolvedValue(5 as any);
+
+      const result = await controller.syncTabletopEvents(1, {
+        userName: 'u',
+        password: 'p',
+        apiKey: 'k',
+        tteBadgeNumber: 1,
+        tteBadgeId: 'x',
+      });
+
+      expect(result).toBe(5);
+      expect(spy).toHaveBeenCalled();
+    });
+  });
 });

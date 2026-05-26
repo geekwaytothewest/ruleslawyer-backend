@@ -586,4 +586,110 @@ describe('ConventionService', () => {
       expect(service.exportBadgeFile(1, ctx)).resolves.toBeTruthy();
     });
   });
+
+  describe('updateConvention', () => {
+    it('should update a convention', async () => {
+      mockCtx.prisma.convention.update.mockResolvedValue({ id: 1 } as any);
+
+      const result = await service.updateConvention(1, { name: 'New' }, ctx);
+
+      expect(result.id).toBe(1);
+      expect(mockCtx.prisma.convention.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { name: 'New' },
+      });
+    });
+  });
+
+  describe('conventionsByOrg', () => {
+    it('should return conventions for an org ordered by start date', async () => {
+      mockCtx.prisma.convention.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const result = await service.conventionsByOrg(1, ctx);
+
+      expect(result.length).toBe(1);
+      expect(mockCtx.prisma.convention.findMany).toHaveBeenCalledWith({
+        where: { organizationId: 1 },
+        orderBy: { startDate: 'desc' },
+      });
+    });
+  });
+
+  describe('conventions', () => {
+    it('should return conventions visible to the user', async () => {
+      mockCtx.prisma.convention.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const result = await service.conventions({ id: 1 }, ctx);
+
+      expect(result.length).toBe(1);
+      const args = mockCtx.prisma.convention.findMany.mock.calls[0][0] as any;
+      expect(args.where.OR).toHaveLength(2);
+      expect(args.orderBy).toEqual({ startDate: 'desc' });
+    });
+  });
+
+  describe('attachCollection', () => {
+    it('should link a collection to a convention', async () => {
+      mockCtx.prisma.conventionCollections.create.mockResolvedValue({
+        conventionId: 1,
+        collectionId: 2,
+      } as any);
+
+      const result = await service.attachCollection(1, 2, ctx);
+
+      expect(result.collectionId).toBe(2);
+      expect(mockCtx.prisma.conventionCollections.create).toHaveBeenCalledWith({
+        data: { collectionId: 2, conventionId: 1 },
+      });
+    });
+  });
+
+  describe('detachCollection', () => {
+    it('should unlink a collection from a convention', async () => {
+      mockCtx.prisma.conventionCollections.delete.mockResolvedValue({
+        conventionId: 1,
+        collectionId: 2,
+      } as any);
+
+      const result = await service.detachCollection(1, 2, ctx);
+
+      expect(result.collectionId).toBe(2);
+      expect(mockCtx.prisma.conventionCollections.delete).toHaveBeenCalledWith({
+        where: {
+          conventionId_collectionId: { collectionId: 2, conventionId: 1 },
+        },
+      });
+    });
+  });
+
+  describe('importAttendeesCSV', () => {
+    it('should import each row as an attendee and resolve the count', async () => {
+      mockCtx.prisma.attendee.create.mockResolvedValue({ id: 1 } as any);
+
+      const csv = 'Ada,Lovelace,101\nGrace,Hopper,102\n';
+
+      const count = await service.importAttendeesCSV(csv, 1, ctx);
+
+      expect(count).toBe(2);
+      expect(mockCtx.prisma.attendee.create).toHaveBeenCalledTimes(2);
+    });
+
+    it('should keep going when an individual attendee fails to import', async () => {
+      mockCtx.prisma.attendee.create
+        .mockRejectedValueOnce(new Error('dup badge'))
+        .mockResolvedValueOnce({ id: 2 } as any);
+
+      const csv = 'Ada,Lovelace,101\nGrace,Hopper,102\n';
+
+      const count = await service.importAttendeesCSV(csv, 1, ctx);
+
+      expect(count).toBe(1);
+    });
+
+    it('should reject on an invalid csv', async () => {
+      await expect(
+        service.importAttendeesCSV('"unterminated', 1, ctx),
+      ).rejects.toBe('invalid csv file');
+    });
+  });
 });

@@ -303,5 +303,173 @@ describe('GameService', () => {
         data: { coverArt: expect.any(Buffer) },
       });
     });
+
+    it('does nothing when there are no jobs', async () => {
+      await (service as any).enrichCoverArt([], ctx, 5);
+
+      expect(bgg.getImage).not.toHaveBeenCalled();
+      expect(mockCtx.prisma.game.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('games', () => {
+    it('returns the games for an org ordered by name', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const games = await service.games(1, ctx);
+
+      expect(games.length).toBe(1);
+      expect(mockCtx.prisma.game.findMany).toHaveBeenCalledWith({
+        where: { organizationId: 1 },
+        orderBy: { name: 'asc' },
+      });
+    });
+  });
+
+  describe('search', () => {
+    it('passes the query straight through to findMany', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const where = { where: { name: { contains: 'cat' } } };
+      const result = await service.search(where, ctx);
+
+      expect(result.length).toBe(1);
+      expect(mockCtx.prisma.game.findMany).toHaveBeenCalledWith(where);
+    });
+  });
+
+  describe('deleteGame', () => {
+    it('deletes by numeric id', async () => {
+      mockCtx.prisma.game.delete.mockResolvedValue({ id: 1 } as any);
+
+      const result = await service.deleteGame(1, ctx);
+
+      expect(result.id).toBe(1);
+      expect(mockCtx.prisma.game.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+    });
+  });
+
+  describe('bggUpdate link parsing', () => {
+    it('joins publisher/designer/artist links and parses numeric fields', async () => {
+      const gameData = {
+        '@_id': '42',
+        thumbnail: 'http://img/42.jpg',
+        minplayers: { '@_value': '2' },
+        maxplayers: { '@_value': '4' },
+        minplaytime: { '@_value': '30' },
+        maxplaytime: { '@_value': '60' },
+        minage: { '@_value': '8' },
+        description: 'A great game',
+        statistics: { ratings: { averageweight: { '@_value': '2.5' } } },
+        link: [
+          { '@_type': 'boardgamepublisher', '@_value': 'Pub A' },
+          { '@_type': 'boardgamepublisher', '@_value': 'Pub B' },
+          { '@_type': 'boardgamedesigner', '@_value': 'Designer A' },
+          { '@_type': 'boardgameartist', '@_value': 'Artist A' },
+        ],
+      };
+      bgg.getImage.mockResolvedValue(Buffer.from('img'));
+
+      await service.bggUpdate(1, gameData, ctx);
+
+      const data = (mockCtx.prisma.game.update.mock.calls[0][0] as any).data;
+      expect(data.bggId).toBe(42);
+      expect(data.minPlayers).toBe(2);
+      expect(data.maxPlayers).toBe(4);
+      expect(data.minTime).toBe(30);
+      expect(data.maxTime).toBe(60);
+      expect(data.minAge).toBe(8);
+      expect(data.weight).toBe(2.5);
+      expect(data.publisher).toBe('Pub A, Pub B');
+      expect(data.designer).toBe('Designer A');
+      expect(data.artist).toBe('Artist A');
+    });
+  });
+
+  describe('connectBGGGameByName', () => {
+    it('returns null when no board game matches the name', async () => {
+      bgg.getBoardGameIdByName.mockResolvedValue(null as any);
+
+      const result = await service.connectBGGGameByName(1, 'Nope', ctx);
+
+      expect(result).toBeNull();
+      expect(mockCtx.prisma.game.update).not.toHaveBeenCalled();
+    });
+
+    it('updates the game when a match is found', async () => {
+      bgg.getBoardGameIdByName.mockResolvedValue(13 as any);
+      bgg.getBoardGameByBGGId.mockResolvedValue({ '@_id': '13' } as any);
+      bgg.getImage.mockResolvedValue(null as any);
+      mockCtx.prisma.game.update.mockResolvedValue({ id: 1 } as any);
+
+      await service.connectBGGGameByName(1, 'Catan', ctx);
+
+      expect(bgg.getBoardGameByBGGId).toHaveBeenCalledWith(13);
+      expect(mockCtx.prisma.game.update).toHaveBeenCalled();
+    });
+  });
+
+  describe('syncBGGGame', () => {
+    it('skips when the game has no bggId', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        bggId: null,
+      } as any);
+
+      const result = await service.syncBGGGame(1, 'Catan', ctx);
+
+      expect(result).toBeNull();
+      expect(bgg.getBoardGameByBGGId).not.toHaveBeenCalled();
+    });
+
+    it('updates the game from BGG when a bggId is present', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        bggId: 13,
+      } as any);
+      bgg.getBoardGameByBGGId.mockResolvedValue({ '@_id': '13' } as any);
+      bgg.getImage.mockResolvedValue(null as any);
+      mockCtx.prisma.game.update.mockResolvedValue({ id: 1 } as any);
+
+      await service.syncBGGGame(1, 'Catan', ctx);
+
+      expect(bgg.getBoardGameByBGGId).toHaveBeenCalledWith(13);
+      expect(mockCtx.prisma.game.update).toHaveBeenCalled();
+    });
+  });
+
+  describe('syncAndConnectGamesWithBGG', () => {
+    it('syncs games that already have a bggId and enriches their cover art', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([
+        { id: 1, bggId: 13 },
+      ] as any);
+      bgg.getBoardGameBatchByBGGIds.mockResolvedValue([
+        { '@_id': '13', thumbnail: 'http://img/13.jpg' },
+      ] as any);
+      bgg.getImage.mockResolvedValue(Buffer.from('img'));
+      mockCtx.prisma.game.update.mockResolvedValue({ id: 1 } as any);
+      mockCtx.prisma.game.count.mockResolvedValue(0);
+
+      await service.syncAndConnectGamesWithBGG(1, ctx);
+
+      expect(bgg.resetThrottle).toHaveBeenCalled();
+      expect(bgg.getBoardGameBatchByBGGIds).toHaveBeenCalledWith([13]);
+      // one update for the bggUpdate (deferred) + one for the cover art pass
+      expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(2);
+    });
+
+    it('warns but does not update when no BGG data matches a game in the batch', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([
+        { id: 1, bggId: 13 },
+      ] as any);
+      bgg.getBoardGameBatchByBGGIds.mockResolvedValue([] as any);
+      mockCtx.prisma.game.count.mockResolvedValue(1);
+
+      await service.syncAndConnectGamesWithBGG(1, ctx);
+
+      expect(mockCtx.prisma.game.update).not.toHaveBeenCalled();
+    });
   });
 });

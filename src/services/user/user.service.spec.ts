@@ -97,4 +97,24 @@ describe('UserService', () => {
       expect(await service.getUserCount(ctx)).toBe(1);
     });
   });
+
+  describe('convertToUserId', () => {
+    it('should return the numeric id directly when given a number', async () => {
+      const userId = await service.convertToUserId('5', ctx);
+
+      expect(userId).toBe(5);
+      expect(mockCtx.prisma.user.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should look up the user by email when given a non-numeric id', async () => {
+      mockCtx.prisma.user.findUnique.mockResolvedValue({ id: 42 } as any);
+
+      const userId = await service.convertToUserId('test@geekway.com', ctx);
+
+      expect(userId).toBe(42);
+      expect(mockCtx.prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@geekway.com' },
+      });
+    });
+  });
 });

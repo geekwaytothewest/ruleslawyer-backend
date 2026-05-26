@@ -592,6 +592,54 @@ describe('CheckOutService', () => {
     });
   });
 
+  describe('getCheckOuts', () => {
+    it('should get all checkouts for a convention', async () => {
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const result = await service.getCheckOuts(1, ctx);
+
+      expect(result.length).toBe(1);
+    });
+  });
+
+  describe('getCheckOutsByCollectionId', () => {
+    it('should get checkouts filtered by collection and convention', async () => {
+      mockCtx.prisma.checkOut.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const result = await service.getCheckOutsByCollectionId(1, 2, ctx);
+
+      expect(result.length).toBe(1);
+      const args = mockCtx.prisma.checkOut.findMany.mock.calls[0][0] as any;
+      expect(args.where.copy.collectionId).toBe(2);
+      expect(args.where.attendee.conventionId).toBe(1);
+    });
+  });
+
+  describe('submitPrizeEntry too many players', () => {
+    it('should reject when there are more players than maxPlayers + 1', async () => {
+      mockCtx.prisma.checkOut.findUnique.mockResolvedValue({
+        id: 1,
+        attendeeId: 1,
+        checkOut: new Date(),
+        checkIn: new Date(),
+        copyId: 1,
+        submitted: false,
+        copy: { game: { maxPlayers: 2 } },
+      } as any);
+
+      const players: Prisma.PlayerCreateManyInput[] = [
+        { checkOutId: 1, attendeeId: 1, wantToWin: false, rating: 5 },
+        { checkOutId: 1, attendeeId: 2, wantToWin: false, rating: 5 },
+        { checkOutId: 1, attendeeId: 3, wantToWin: false, rating: 5 },
+        { checkOutId: 1, attendeeId: 4, wantToWin: false, rating: 5 },
+      ];
+
+      expect(service.submitPrizeEntry(1, players, ctx)).rejects.toBe(
+        'too many players',
+      );
+    });
+  });
+
   describe('getAttendeePrizeEntries', () => {
     it('should get attendee prize entries', async () => {
       mockCtx.prisma.checkOut.findMany.mockResolvedValue([
