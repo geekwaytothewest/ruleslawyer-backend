@@ -7,29 +7,17 @@ auth:oauth2 {
   callback_url: {{process.env.CALLBACK_URL}}
   authorization_url: {{process.env.AUTHORIZATION_URL}}
   access_token_url: {{process.env.ACCESS_TOKEN_URL}}
-  refresh_token_url:
+  refresh_token_url: 
   client_id: {{process.env.CLIENT_ID}}
   client_secret: {{process.env.CLIENT_SECRET}}
   scope: openid profile email
-  state:
+  state: 
   pkce: true
   credentials_placement: body
   credentials_id: credentials
+  token_source: access_token
   token_placement: header
-  token_header_prefix:
+  token_header_prefix: Bearer
   auto_fetch_token: true
   auto_refresh_token: false
-}
-
-script:pre-request {
-  if (bru.getVar('oauth2_token')) {
-    req.setHeader('Authorization', 'Bearer ' + bru.getVar('oauth2_token'))
-  }
-}
-
-script:post-response {
-    var token = res.body.access_token;
-    if (token) {
-      bru.setVar('oauth2_token', token)
-    }
 }
