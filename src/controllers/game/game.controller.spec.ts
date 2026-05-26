@@ -47,6 +47,7 @@ describe('GameController', () => {
         shortDescription: 'Test Game Short Description',
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
+        yearPublished: null,
         organizationId: 1,
       });
 
@@ -82,6 +83,7 @@ describe('GameController', () => {
         shortDescription: 'Updated Short Description',
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
+        yearPublished: null,
         organizationId: 1,
       });
 
@@ -115,6 +117,7 @@ describe('GameController', () => {
         shortDescription: 'Test Game Short Description',
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
+        yearPublished: null,
         organizationId: 1,
       });
 

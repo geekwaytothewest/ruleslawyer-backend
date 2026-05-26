@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { XMLParser } from 'fast-xml-parser';
 import { parse } from 'csv-parse/sync';
-import AdmZip from 'adm-zip';
+import AdmZip = require('adm-zip');
 
 export interface RankDumpEntry {
   id: number;

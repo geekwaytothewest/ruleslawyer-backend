@@ -99,6 +99,7 @@ describe('CollectionService', () => {
         publisher: null,
         shortDescription: null,
         weight: null,
+        yearPublished: null,
         organizationId: 1,
       });
 
