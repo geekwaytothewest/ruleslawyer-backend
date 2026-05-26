@@ -169,7 +169,9 @@ export class BoardGameGeekService {
 
     try {
       const response = await this.getWithRetry(
-        this.bggApiUrl + `thing?id=${bggIds.join(',')}&type=boardgame`,
+        // No type filter: fetching by known id should return the thing whatever
+        // its type (e.g. boardgameexpansion), which `&type=boardgame` excludes.
+        this.bggApiUrl + `thing?id=${bggIds.join(',')}`,
         { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
       );
 
@@ -198,8 +200,16 @@ export class BoardGameGeekService {
         this.logger.log(
           `Getting boardgame with bggId=${bggId} from BoardGameGeek API...`,
         );
+
+        if (!process.env.BOARDGAMEGEEK_API_TOKEN) {
+          this.logger.error('BOARDGAMEGEEK_API_TOKEN is not set.');
+          return reject(new Error('BOARDGAMEGEEK_API_TOKEN is not set.'));
+        }
+
         const game = await this.getWithRetry(
-          this.bggApiUrl + `thing?id=${bggId}&type=boardgame`,
+          // No type filter (see batch method): expansions are excluded by
+          // `&type=boardgame`, but a lookup by known id should still resolve them.
+          this.bggApiUrl + `thing?id=${bggId}`,
           { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
         );
 
@@ -270,17 +280,48 @@ export class BoardGameGeekService {
   ): Promise<Map<string, RankDumpEntry[]>> {
     this.logger.log('Downloading BoardGameGeek rank data dump...');
 
-    const response = await this.httpService.get(dumpUrl, {
-      responseType: 'arraybuffer',
-    });
+    const expiredHint =
+      'The signed dump URL is likely invalid or expired (these links are short-lived) — ' +
+      'fetch a fresh one from boardgamegeek.com/data_dumps/bg_ranks.';
 
-    const zip = new AdmZip(Buffer.from(response.data));
+    let buffer: Buffer;
+    try {
+      const response = await this.httpService.get(dumpUrl, {
+        responseType: 'arraybuffer',
+      });
+      buffer = Buffer.from(response.data);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      throw new Error(
+        `Failed to download the BGG rank dump${status ? ` (HTTP ${status})` : ''}: ${error.message}. ${expiredHint}`,
+      );
+    }
+
+    // A real zip starts with the magic bytes "PK". If we got HTML/XML instead
+    // (an expired-link error page, a login redirect, etc.), fail clearly rather
+    // than with a cryptic adm-zip "no END header found" error.
+    if (buffer.length < 4 || buffer[0] !== 0x50 || buffer[1] !== 0x4b) {
+      const preview = buffer.toString('utf8', 0, 80).replace(/\s+/g, ' ').trim();
+      throw new Error(
+        `BGG rank dump URL did not return a zip (got ${buffer.length} bytes starting with "${preview}"). ${expiredHint}`,
+      );
+    }
+
+    let zip: AdmZip;
+    try {
+      zip = new AdmZip(buffer);
+    } catch (error: any) {
+      throw new Error(
+        `Failed to open the BGG rank dump as a zip archive: ${error.message}. The downloaded file may be corrupt.`,
+      );
+    }
+
     const csvEntry = zip
       .getEntries()
       .find((entry) => entry.entryName.toLowerCase().endsWith('.csv'));
 
     if (!csvEntry) {
-      throw new Error('No CSV file found in BoardGameGeek rank data dump.');
+      throw new Error('No CSV file found in the BoardGameGeek rank data dump zip.');
     }
 
     const records: Record<string, string>[] = parse(csvEntry.getData(), {

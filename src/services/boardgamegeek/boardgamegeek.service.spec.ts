@@ -20,6 +20,7 @@ describe('BoardGameGeekService', () => {
   let http: MockHttp;
 
   beforeEach(() => {
+    process.env.BOARDGAMEGEEK_API_TOKEN = 'test-token';
     http = { get: jest.fn() };
     service = new BoardGameGeekService(http as any);
     // Neutralize backoff sleeps so retry tests run instantly.
@@ -219,6 +220,28 @@ describe('BoardGameGeekService', () => {
       });
       await expect(service.getRankDumpIndex('https://signed-url')).rejects.toThrow(
         /No CSV file found/,
+      );
+    });
+
+    it('throws a clear error when the download fails (e.g. expired URL)', async () => {
+      const err: any = new Error('Request failed with status code 403');
+      err.response = { status: 403 };
+      http.get.mockRejectedValue(err);
+
+      await expect(service.getRankDumpIndex('https://expired')).rejects.toThrow(
+        /Failed to download the BGG rank dump \(HTTP 403\).*expired/s,
+      );
+    });
+
+    it('throws a clear error when the response is not a zip', async () => {
+      http.get.mockResolvedValue({
+        data: Buffer.from('<?xml version="1.0"?><Error><Code>AccessDenied</Code></Error>'),
+        status: 200,
+        headers: {},
+      });
+
+      await expect(service.getRankDumpIndex('https://not-a-zip')).rejects.toThrow(
+        /did not return a zip/,
       );
     });
   });
