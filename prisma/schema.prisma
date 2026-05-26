@@ -152,7 +152,7 @@ model Game {
   id               Int          @id @default(autoincrement())
   organization     Organization @relation(fields: organizationId, references: [id])
   organizationId   Int
-  bggId            Int?         @unique
+  bggId            Int?
   lastBGGSync      DateTime?
   name             String       @unique
   shortDescription String?
