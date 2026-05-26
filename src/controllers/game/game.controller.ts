@@ -19,7 +19,7 @@ import { CopyService } from '../../services/copy/copy.service';
 import { User } from '../../modules/authz/user.decorator';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { GameGuard } from '../../guards/game/game.guard';
-import { OrganizationWriteGuard } from 'src/guards/organization/organization-write.guard';
+import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
 
 @Controller()
 export class GameController {
