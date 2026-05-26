@@ -177,6 +177,11 @@ export class BoardGameGeekService {
       throw new Error('Batch request exceeds BoardGameGeek API limit of 20 IDs per request.');
     }
 
+    if (!process.env.BOARDGAMEGEEK_API_TOKEN) {
+      this.logger.error('BOARDGAMEGEEK_API_TOKEN is not set.');
+      throw new Error('BOARDGAMEGEEK_API_TOKEN is not set.');
+    }
+
     try {
       const response = await this.getWithRetry(
         // No type filter: fetching by known id should return the thing whatever
