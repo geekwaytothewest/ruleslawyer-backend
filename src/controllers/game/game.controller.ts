@@ -19,6 +19,7 @@ import { CopyService } from '../../services/copy/copy.service';
 import { User } from '../../modules/authz/user.decorator';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { GameGuard } from '../../guards/game/game.guard';
+import { OrganizationWriteGuard } from 'src/guards/organization/organization-write.guard';
 
 @Controller()
 export class GameController {
@@ -371,7 +372,7 @@ export class GameController {
     return this.gameService.connectBGGGameByName(id, game.name, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, GameGuard)
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @Put(':orgId/syncAndConnectGamesWithBGG')
   async syncAndConnectGamesWithBGG(
     @Param('orgId') orgId: number,
