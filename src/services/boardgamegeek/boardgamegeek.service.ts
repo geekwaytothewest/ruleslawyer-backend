@@ -41,6 +41,41 @@ export class BoardGameGeekService {
 
   constructor(private readonly httpService: HttpService) {}
 
+  /**
+   * GETs a BGG xmlapi2 URL, transparently handling the API's 202 "queued"
+   * response: BGG returns 202 while it builds the result and expects the client
+   * to retry. Retries with exponential backoff; after exhausting retries it
+   * returns the last (still-202) response so the caller parses it as empty,
+   * but logs a distinct warning so a queue timeout isn't mistaken for "not found".
+   */
+  private async getWithRetry(
+    url: string,
+    config: any,
+    maxRetries = 4,
+    baseDelayMs = 1000,
+  ): Promise<any> {
+    for (let attempt = 0; ; attempt++) {
+      const response = await this.httpService.get(url, config);
+
+      if (response.status !== 202) {
+        return response;
+      }
+
+      if (attempt >= maxRetries) {
+        this.logger.warn(
+          `BGG still returning 202 (queued) after ${maxRetries} retries for ${url}; giving up.`,
+        );
+        return response;
+      }
+
+      const delay = baseDelayMs * 2 ** attempt;
+      this.logger.log(
+        `BGG returned 202 (queued) for ${url}; retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries}).`,
+      );
+      await this.sleep(delay);
+    }
+  }
+
   async getBoardGameBatchByBGGIds(
     bggIds: number[],
   ): Promise<any[]> {
@@ -57,7 +92,7 @@ export class BoardGameGeekService {
     }
 
     try {
-      const response = await this.httpService.get(
+      const response = await this.getWithRetry(
         this.bggApiUrl + `thing?id=${bggIds.join(',')}&type=boardgame`,
         { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
       );
@@ -87,7 +122,7 @@ export class BoardGameGeekService {
         this.logger.log(
           `Getting boardgame with bggId=${bggId} from BoardGameGeek API...`,
         );
-        const game = await this.httpService.get(
+        const game = await this.getWithRetry(
           this.bggApiUrl + `thing?id=${bggId}&type=boardgame`,
           { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
         );
@@ -124,7 +159,7 @@ export class BoardGameGeekService {
         this.logger.log(
           `Getting boardgame with name=url${name} from BoardGameGeek API...`,
         );
-        const game = await this.httpService.get(
+        const game = await this.getWithRetry(
           this.bggApiUrl + `search?query=${encodeURIComponent(name)}&type=boardgame`,
           { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
         );
