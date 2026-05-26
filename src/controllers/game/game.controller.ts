@@ -370,4 +370,17 @@ export class GameController {
 
     return this.gameService.connectBGGGameByName(id, game.name, this.ctx);
   }
+
+  @UseGuards(JwtAuthGuard, GameGuard)
+  @Put(':orgId/syncAndConnectGamesWithBGG')
+  async syncAndConnectGamesWithBGG(
+    @Param('orgId') orgId: number,
+    @Body('dumpUrl') dumpUrl?: string,
+  ) {
+    return this.gameService.syncAndConnectGamesWithBGG(
+      Number(orgId),
+      this.ctx,
+      dumpUrl,
+    );
+  }
 }

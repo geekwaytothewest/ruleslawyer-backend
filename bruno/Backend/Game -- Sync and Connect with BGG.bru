@@ -1,0 +1,21 @@
+meta {
+  name: Game -- Sync and Connect with BGG
+  type: http
+  seq: 40
+}
+
+put {
+  url: {{apiUrl}}/game/{{orgId}}/syncAndConnectGamesWithBGG
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dumpUrl": "PASTE_SIGNED_BG_RANKS_URL_HERE"
+  }
+}
+
+vars:pre-request {
+  orgId: 1
+}

@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Game, Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
-import { BoardGameGeekService } from '../boardgamegeek/boardgamegeek.service';
+import {
+  BoardGameGeekService,
+  normalizeBggName,
+} from '../boardgamegeek/boardgamegeek.service';
 
 @Injectable()
 export class GameService {
@@ -137,8 +140,11 @@ export class GameService {
     return ctx.prisma.game.delete({ where: { id: Number(id) } });
   }
 
-  async bggUpdate(id, gameData, ctx) {
-    const imageResponse = gameData?.thumbnail
+  async bggUpdate(id, gameData, ctx, deferImage = false) {
+    // When deferImage is true, the (slow) thumbnail download is skipped and
+    // coverArt is left untouched, so a caller can fetch images separately with
+    // bounded concurrency. Otherwise behaves as before (inline download).
+    const imageResponse = !deferImage && gameData?.thumbnail
       ? await this.boardGameGeekService.getImage(gameData.thumbnail)
       : null;
 
@@ -156,13 +162,51 @@ export class GameService {
           artist: gameData?.link?.filter((link: { '@_type': string; '@_value': string }) => link['@_type'] === 'boardgameartist').map((link: { '@_type': string; '@_value': string }) => link['@_value']).join(', ') || null,
           minAge: gameData?.minage?.['@_value'] ? parseInt(gameData.minage['@_value']) : null,
           weight: gameData?.statistics?.ratings?.averageweight?.['@_value'] ? parseFloat(gameData.statistics.ratings.averageweight['@_value']) : null,
-          coverArt: imageResponse as Prisma.Bytes | null,
+          coverArt: deferImage ? undefined : (imageResponse as Prisma.Bytes | null),
           lastBGGSync: new Date(),
         },
       });
   }
 
-  async connectBGGGameByName(id: number, name: string, ctx: Context) {
+  /**
+   * Downloads cover thumbnails in bounded-concurrency batches against the image
+   * CDN and writes them to coverArt, off the critical path of the BGG API loop.
+   */
+  private async enrichCoverArt(
+    jobs: { id: number; thumbnail: string }[],
+    ctx: Context,
+    concurrency = 5,
+  ) {
+    if (jobs.length === 0) {
+      return;
+    }
+
+    this.logger.log(
+      `Downloading ${jobs.length} cover image(s) with concurrency=${concurrency}...`,
+    );
+
+    for (let i = 0; i < jobs.length; i += concurrency) {
+      const chunk = jobs.slice(i, i + concurrency);
+      await Promise.all(
+        chunk.map(async (job) => {
+          const image = await this.boardGameGeekService.getImage(job.thumbnail);
+          if (image) {
+            await ctx.prisma.game.update({
+              where: { id: job.id },
+              data: { coverArt: image as Prisma.Bytes },
+            });
+          }
+        }),
+      );
+    }
+  }
+
+  async connectBGGGameByName(
+    id: number,
+    name: string,
+    ctx: Context,
+    imageJobs?: { id: number; thumbnail: string }[],
+  ) {
     try {
       this.logger.log(
         `Connecting game with name=${name} from BoardGameGeek API...`,
@@ -179,7 +223,13 @@ export class GameService {
 
       const gameData = await this.boardGameGeekService.getBoardGameByBGGId(game) as any;
 
-      return this.bggUpdate(id, gameData, ctx);
+      // If a collector is supplied, defer the image and queue it for the
+      // bounded-concurrency pass; otherwise download inline (single-game calls).
+      const result = await this.bggUpdate(id, gameData, ctx, !!imageJobs);
+      if (imageJobs && gameData?.thumbnail) {
+        imageJobs.push({ id, thumbnail: gameData.thumbnail });
+      }
+      return result;
     } catch (error: any) {
       this.logger.error(
         `Error connecting game with name=${name} from BoardGameGeek API: ${error.message}`,
@@ -215,11 +265,93 @@ export class GameService {
     }
   }
 
-  async syncAndConnectGamesWithBGG(orgId: number, ctx: Context) {
+  /**
+   * Resolves bggIds for games that lack one by matching their names against the
+   * BGG rank data dump locally, avoiding a per-game search API call. `dumpUrl`
+   * is the signed, expiring download link from boardgamegeek.com/data_dumps/bg_ranks.
+   * Returns the number of games newly matched.
+   */
+  async backfillBggIdsFromRankDump(
+    orgId: number,
+    ctx: Context,
+    dumpUrl: string,
+  ): Promise<number> {
+    const games = await ctx.prisma.game.findMany({
+      where: { organizationId: orgId, bggId: null },
+    });
+
+    if (games.length === 0) {
+      return 0;
+    }
+
+    const index = await this.boardGameGeekService.getRankDumpIndex(dumpUrl);
+
+    let matched = 0;
+    let ambiguous = 0;
+    let unmatched = 0;
+
+    for (const game of games) {
+      const candidates = index.get(normalizeBggName(game.name));
+
+      if (!candidates?.length) {
+        unmatched++;
+        continue;
+      }
+
+      let chosen = candidates[0];
+      if (candidates.length > 1) {
+        // Prefer a candidate whose year matches; among the pool, pick the most
+        // popular (lowest rank number), treating unranked entries as least preferred.
+        const byYear = game.yearPublished
+          ? candidates.filter((c) => c.year === game.yearPublished)
+          : [];
+        const pool = byYear.length ? byYear : candidates;
+
+        chosen = pool.reduce((best, c) => {
+          if (c.rank == null) return best;
+          if (best.rank == null) return c;
+          return c.rank < best.rank ? c : best;
+        }, pool[0]);
+
+        ambiguous++;
+        this.logger.warn(
+          `Ambiguous rank-dump match for "${game.name}" (${candidates.length} candidates); chose bggId=${chosen.id}.`,
+        );
+      }
+
+      await ctx.prisma.game.update({
+        where: { id: game.id },
+        data: { bggId: chosen.id },
+      });
+      matched++;
+    }
+
+    this.logger.log(
+      `Rank-dump resolution: matched=${matched} (ambiguous=${ambiguous}), unmatched=${unmatched} of ${games.length}.`,
+    );
+
+    return matched;
+  }
+
+  async syncAndConnectGamesWithBGG(
+    orgId: number,
+    ctx: Context,
+    dumpUrl?: string,
+  ) {
     try {
       this.logger.log(
         `Syncing and connecting games with BoardGameGeek API...`,
       );
+
+      // Resolve missing bggIds locally from the rank dump first, so the work
+      // below collapses into the fast batch path instead of per-game searches.
+      if (dumpUrl) {
+        await this.backfillBggIdsFromRankDump(orgId, ctx, dumpUrl);
+      }
+
+      // Cover thumbnails are deferred during enrichment and downloaded in a
+      // bounded-concurrency pass at the end, keeping them off the BGG API loop.
+      const imageJobs: { id: number; thumbnail: string }[] = [];
 
       const gamesWithBGGId = await ctx.prisma.game.findMany({
         where: { organizationId: orgId, NOT: { bggId: null } },
@@ -241,10 +373,13 @@ export class GameService {
         const gameDataBatch = await this.boardGameGeekService.getBoardGameBatchByBGGIds(batch.map((game) => game.bggId)) as any[];
 
         for (const game of batch) {
-          const gameData = gameDataBatch.find((data) => data?.['@_id'] === game.bggId);
+          const gameData = gameDataBatch.find((data) => parseInt(data?.['@_id']) === game.bggId);
 
           if (gameData) {
-            await this.bggUpdate(game.id, gameData, ctx);
+            await this.bggUpdate(game.id, gameData, ctx, true);
+            if (gameData?.thumbnail) {
+              imageJobs.push({ id: game.id, thumbnail: gameData.thumbnail });
+            }
           } else {
             this.logger.warn(
               `No boardgame found with bggId=${game.bggId} from BoardGameGeek API for game with id=${game.id}. Skipping sync.`,
@@ -257,10 +392,19 @@ export class GameService {
         where: { organizationId: orgId, bggId: null },
       });
 
+      if (gamesWithoutBGGId.length > 0) {
+        this.logger.log(
+          `Falling back to per-game name search for ${gamesWithoutBGGId.length} unresolved game(s).`,
+        );
+      }
+
       for (const game of gamesWithoutBGGId) {
-        await this.connectBGGGameByName(game.id, game.name, ctx);
+        await this.connectBGGGameByName(game.id, game.name, ctx, imageJobs);
         await this.sleep(1000);
       }
+
+      // Download all deferred cover thumbnails concurrently.
+      await this.enrichCoverArt(imageJobs, ctx);
     } catch (error: any) {
       this.logger.error(
         `Error syncing and connecting games with BoardGameGeek API: ${error.message}`,
