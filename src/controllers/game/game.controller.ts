@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   Delete,
+  HttpCode,
 } from '@nestjs/common';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -373,15 +374,14 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @HttpCode(202)
   @Put(':orgId/syncAndConnectGamesWithBGG')
   async syncAndConnectGamesWithBGG(
     @Param('orgId') orgId: number,
     @Body('dumpUrl') dumpUrl?: string,
   ) {
-    return this.gameService.syncAndConnectGamesWithBGG(
-      Number(orgId),
-      this.ctx,
-      dumpUrl,
-    );
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.gameService.startSyncAndConnect(Number(orgId), this.ctx, dumpUrl);
   }
 }

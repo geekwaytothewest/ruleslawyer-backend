@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { GameService } from './game.service';
@@ -470,6 +471,30 @@ describe('GameService', () => {
       await service.syncAndConnectGamesWithBGG(1, ctx);
 
       expect(mockCtx.prisma.game.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('startSyncAndConnect', () => {
+    it('launches the sync in the background and returns "started"', () => {
+      const spy = jest
+        .spyOn(service, 'syncAndConnectGamesWithBGG')
+        .mockResolvedValue(undefined);
+
+      const result = service.startSyncAndConnect(1, ctx, 'dump-url');
+
+      expect(result.status).toBe('started');
+      expect(spy).toHaveBeenCalledWith(1, ctx, 'dump-url');
+    });
+
+    it('rejects a second concurrent sync with 409', () => {
+      // First launch never settles, so the in-flight flag stays set.
+      jest
+        .spyOn(service, 'syncAndConnectGamesWithBGG')
+        .mockReturnValue(new Promise<undefined>(() => {}));
+
+      service.startSyncAndConnect(1, ctx);
+
+      expect(() => service.startSyncAndConnect(1, ctx)).toThrow(ConflictException);
     });
   });
 });

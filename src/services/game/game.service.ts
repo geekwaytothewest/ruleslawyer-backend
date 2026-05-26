@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Game, Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
@@ -14,6 +14,9 @@ export class GameService {
   ) {}
 
   sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+
+  // Guards against overlapping bulk syncs (one per process).
+  private syncInProgress = false;
 
   private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(
     GameService.name,
@@ -265,8 +268,11 @@ export class GameService {
     ctx: Context,
     dumpUrl: string,
   ): Promise<number> {
+    // Select only the columns this loop reads — avoids loading coverArt /
+    // coverArtOverride (Bytes) and longDescription for every game at once.
     const games = await ctx.prisma.game.findMany({
       where: { organizationId: orgId, bggId: null },
+      select: { id: true, name: true, yearPublished: true },
     });
 
     if (games.length === 0) {
@@ -322,6 +328,38 @@ export class GameService {
     return matched;
   }
 
+  /**
+   * Launches syncAndConnectGamesWithBGG in the background and returns at once,
+   * so a multi-minute run doesn't hold the HTTP request open (which trips client
+   * IPC / proxy idle timeouts). Progress is visible in the server logs. A second
+   * call while a sync is already running is rejected with 409.
+   */
+  startSyncAndConnect(orgId: number, ctx: Context, dumpUrl?: string) {
+    if (this.syncInProgress) {
+      throw new ConflictException(
+        'A BGG sync is already running; wait for it to finish (watch the server logs).',
+      );
+    }
+
+    this.syncInProgress = true;
+    this.logger.log('BGG sync started in the background.');
+
+    // Fire-and-forget: do NOT await. Errors are logged; the flag always clears.
+    void this.syncAndConnectGamesWithBGG(orgId, ctx, dumpUrl)
+      .catch((error: any) =>
+        this.logger.error(`Background BGG sync failed: ${error.message}`),
+      )
+      .finally(() => {
+        this.syncInProgress = false;
+        this.logger.log('BGG sync finished.');
+      });
+
+    return {
+      status: 'started',
+      message: 'BGG sync started; monitor the server logs for progress.',
+    };
+  }
+
   async syncAndConnectGamesWithBGG(
     orgId: number,
     ctx: Context,
@@ -346,8 +384,12 @@ export class GameService {
       // bounded-concurrency pass at the end, keeping them off the BGG API loop.
       const imageJobs: { id: number; thumbnail: string }[] = [];
 
+      // The batch loop only needs id (for bggUpdate) and bggId (for the request
+      // + match). Skip coverArt/coverArtOverride (Bytes) and longDescription,
+      // which would otherwise load every game's image blob into memory at once.
       const gamesWithBGGId = await ctx.prisma.game.findMany({
         where: { organizationId: orgId, NOT: { bggId: null } },
+        select: { id: true, bggId: true },
       });
 
       const batches = gamesWithBGGId.reduce((resultArray: any[], item, index) => {
