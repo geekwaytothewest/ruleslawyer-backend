@@ -469,6 +469,7 @@ describe('ConventionController', () => {
         organizationId: 1,
         public: false,
         allowWinning: true,
+        archived: false,
       });
 
       const result = (await controller.createCollection(1, {

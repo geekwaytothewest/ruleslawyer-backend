@@ -31,6 +31,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const collection = await service.collection(1, ctx);
@@ -47,6 +48,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
       mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 2500] as any);
 
@@ -75,6 +77,7 @@ describe('CollectionService', () => {
           organizationId: 1,
           public: false,
           allowWinning: false,
+          archived: false,
         },
       ]);
 
@@ -92,6 +95,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.copy.create.mockResolvedValueOnce({
@@ -136,6 +140,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.findUnique.mockResolvedValue({
@@ -144,6 +149,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const result = await service.importCollection(
@@ -170,6 +176,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.create.mockResolvedValueOnce({
@@ -178,6 +185,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.findUnique.mockResolvedValue({
@@ -186,6 +194,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const result = await service.importCollection(
@@ -218,6 +227,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.create.mockResolvedValueOnce({
@@ -226,6 +236,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.findUnique.mockResolvedValue({
@@ -234,6 +245,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const result = await service.importCollection(
@@ -358,6 +370,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.findUnique.mockResolvedValue({
@@ -366,6 +379,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       expect(
@@ -391,6 +405,7 @@ describe('CollectionService', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const findManyResolved = [
