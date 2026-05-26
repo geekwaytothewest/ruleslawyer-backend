@@ -62,6 +62,7 @@ describe('LegacyController', () => {
             },
           ],
           allowWinning: false,
+          archived: false,
         },
       ];
 
@@ -100,6 +101,7 @@ describe('LegacyController', () => {
             },
           ],
           allowWinning: false,
+          archived: false,
         },
       ];
 
@@ -118,6 +120,7 @@ describe('LegacyController', () => {
           organizationId: 1,
           public: false,
           allowWinning: false,
+          archived: false,
           copies: [
             {
               id: 1,
@@ -2237,6 +2240,7 @@ describe('LegacyController', () => {
         organizationId: 1,
         public: false,
         allowWinning: true,
+        archived: false,
       });
 
       const result = (await controller.addCollection(1, {
@@ -2256,6 +2260,7 @@ describe('LegacyController', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const result = (await controller.updateCollection(1, 1, {

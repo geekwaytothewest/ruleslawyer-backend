@@ -147,6 +147,7 @@ describe('OrganizationController', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       expect(await controller.deleteCollection(1, 1)).toBe('deleted');
@@ -314,6 +315,7 @@ describe('OrganizationController', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.findUnique.mockResolvedValue({
@@ -322,6 +324,7 @@ describe('OrganizationController', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       expect(controller.importCollection(req, 1)).rejects.toBe(
@@ -371,6 +374,7 @@ describe('OrganizationController', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       mockCtx.prisma.collection.findUnique.mockResolvedValue({
@@ -379,6 +383,7 @@ describe('OrganizationController', () => {
         organizationId: 1,
         public: false,
         allowWinning: false,
+        archived: false,
       });
 
       const importResult = (await controller.importCollection(req, 1)) as any;
@@ -551,6 +556,7 @@ describe('OrganizationController', () => {
         organizationId: 1,
         public: false,
         allowWinning: true,
+        archived: false,
       });
 
       const result = (await controller.createCollection(1, {

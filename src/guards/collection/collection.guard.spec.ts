@@ -88,6 +88,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const authed = await readGuard.canActivate(context);
@@ -112,6 +113,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const authed2 = await writeGuard.canActivate(context2);
@@ -138,6 +140,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org = {
@@ -176,6 +179,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org2 = {
@@ -216,6 +220,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org = {
@@ -254,6 +259,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org2 = {
@@ -294,6 +300,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org = {
@@ -332,6 +339,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org2 = {
@@ -373,6 +381,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org = {
@@ -412,6 +421,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org2 = {
@@ -453,6 +463,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org = {
@@ -491,6 +502,7 @@ describe('CollectionGuard', () => {
       name: 'Test Library',
       public: false,
       allowWinning: false,
+      archived: false,
     });
 
     const org2 = {
