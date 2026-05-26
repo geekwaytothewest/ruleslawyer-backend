@@ -2485,4 +2485,111 @@ describe('LegacyController', () => {
       expect(spy).toHaveBeenCalled();
     });
   });
+
+  describe('getAttendees permissions', () => {
+    it('should return no attendees for a user with only attendee permission', async () => {
+      mockCtx.prisma.attendee.findMany.mockResolvedValue([
+        {
+          id: 1,
+          badgeName: 'asdf',
+          badgeNumber: '1',
+          tteBadgeNumber: null,
+          tteBadgeId: 'xxx',
+          pronounsId: 1,
+        },
+      ] as any);
+
+      mockCtx.prisma.userConventionPermissions.findUnique.mockResolvedValue({
+        attendee: true,
+        geekGuide: false,
+        admin: false,
+      } as any);
+
+      const req = { user: { user: { id: 1 } } };
+
+      const response = await controller.getAttendees(1, '', req);
+
+      expect(response.Result.Attendees.length).toBe(0);
+    });
+  });
+
+  describe('checkoutCopy edge cases', () => {
+    it('should throw NotFoundException when the copy is not found', async () => {
+      mockCtx.prisma.attendee.findUnique.mockResolvedValue({
+        id: 1,
+        barcode: '*00001*',
+        badgeNumber: '1',
+        badgeName: 'Ada',
+        checkOuts: [],
+      } as any);
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
+
+      await expect(
+        controller.checkoutCopy(
+          { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
+          1,
+          1,
+          { id: 1 },
+        ),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('should throw when the attendee already has a game checked out', async () => {
+      mockCtx.prisma.attendee.findUnique.mockResolvedValue({
+        id: 1,
+        barcode: '*00001*',
+        badgeNumber: '1',
+        badgeName: 'Ada',
+        checkOuts: [{ id: 1, checkIn: null, copyId: 5 }],
+      } as any);
+      mockCtx.prisma.copy.findUnique.mockResolvedValue({
+        id: 5,
+        gameId: 9,
+        barcodeLabel: '5',
+      } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 9,
+        name: 'Catan',
+      } as any);
+
+      await expect(
+        controller.checkoutCopy(
+          { attendeeBadgeNumber: '1', libraryId: '1', overrideLimit: false },
+          1,
+          1,
+          { id: 1 },
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe('checkinCopy attendee found', () => {
+    it('should include the attendee details when one is found', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue({
+        id: 1,
+        collectionId: 1,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        winnable: true,
+        game: { id: 1, name: 'Catan' },
+        collection: { id: 1, name: 'Library' },
+        checkOuts: [{ id: 1, checkIn: null, checkOut: new Date() }],
+      } as any);
+      mockCtx.prisma.checkOut.update.mockResolvedValue({
+        id: 1,
+        attendeeId: 1,
+        checkIn: new Date(),
+        checkOut: new Date(),
+      } as any);
+      mockCtx.prisma.attendee.findUnique.mockResolvedValue({
+        id: 1,
+        badgeNumber: '1',
+        badgeName: 'Ada',
+      } as any);
+
+      const response = await controller.checkinCopy(1, 1, '1');
+
+      expect(response?.Result.Attendee.Name).toBe('Ada');
+    });
+  });
 });
