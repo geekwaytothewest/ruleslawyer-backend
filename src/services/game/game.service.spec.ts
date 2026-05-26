@@ -434,7 +434,7 @@ describe('GameService', () => {
         bggId: null,
       } as any);
 
-      const result = await service.syncBGGGame(1, 'Catan', ctx);
+      const result = await service.syncBGGGame(1, ctx);
 
       expect(result).toBeNull();
       expect(bgg.getBoardGameByBGGId).not.toHaveBeenCalled();
@@ -449,7 +449,7 @@ describe('GameService', () => {
       bgg.getImage.mockResolvedValue(null as any);
       mockCtx.prisma.game.update.mockResolvedValue({ id: 1 } as any);
 
-      await service.syncBGGGame(1, 'Catan', ctx);
+      await service.syncBGGGame(1, ctx);
 
       expect(bgg.getBoardGameByBGGId).toHaveBeenCalledWith(13);
       expect(mockCtx.prisma.game.update).toHaveBeenCalled();

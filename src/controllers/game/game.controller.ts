@@ -418,4 +418,37 @@ export class GameController {
     // client (and any proxy) isn't holding a request open for minutes.
     return this.gameService.startSyncAndConnect(Number(orgId), this.ctx, dumpUrl);
   }
+
+  @UseGuards(JwtAuthGuard, GameGuard)
+  @Put(':id/syncWithBGG')
+  async syncBGGGame(
+    @Param('id') id: number,
+    @User() user: any,
+  ) {
+    const game = await this.gameService.game(
+      {
+        id: Number(id),
+      },
+      this.ctx,
+      user,
+    );
+
+    if (!game) {
+      this.logger.warn(
+        `Game with id=${id} not found.`,
+      );
+
+      return null;
+    }
+
+    if (!game.bggId) {
+      this.logger.warn(
+        `Game with id=${id} does not have a bggId, cannot sync.`,
+      );
+
+      return null;
+    }
+
+    return this.gameService.syncBGGGame(id, this.ctx);
+  }
 }

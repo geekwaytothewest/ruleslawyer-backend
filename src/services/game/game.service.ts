@@ -255,10 +255,10 @@ export class GameService {
     }
   }
 
-  async syncBGGGame(id: number, name: string, ctx: Context) {
+  async syncBGGGame(id: number, ctx: Context) {
     try {
       this.logger.log(
-        `Syncing game with name=${name} from BoardGameGeek API...`,
+        `Syncing game with id=${id} from BoardGameGeek API...`,
       );
 
       const game = await ctx.prisma.game.findUnique({ where: { id: Number(id) } });
@@ -270,12 +270,16 @@ export class GameService {
         return null;
       }
 
+      this.logger.log(
+        `Syncing game with name=${game.name} from BoardGameGeek API...`,
+      );
+
       const gameData = await this.boardGameGeekService.getBoardGameByBGGId(game.bggId) as any;
 
       return this.bggUpdate(id, gameData, ctx);
     } catch (error: any) {
       this.logger.error(
-        `Error syncing game with name=${name} from BoardGameGeek API: ${error.message}`,
+        `Error syncing game with id=${id} from BoardGameGeek API: ${error.message}`,
       );
 
       return Promise.reject(error);
