@@ -142,12 +142,14 @@ export class GameService {
     ctx: Context,
   ) {
     const { where, data } = params;
+
     try {
       this.logger.log(
         `Updating game with where=${JSON.stringify(
           where,
         )}, data=${JSON.stringify(data)}`,
       );
+
       return ctx.prisma.game.update({ data, where });
     } catch (ex) {
       this.logger.error(
@@ -155,6 +157,7 @@ export class GameService {
           where,
         )}, data=${JSON.stringify(data)}, ex=${ex}`,
       );
+
       return Promise.reject(ex);
     }
   }
