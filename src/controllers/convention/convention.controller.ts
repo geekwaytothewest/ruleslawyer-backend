@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Put,
   Header,
+  HttpCode,
   Req,
   Delete,
 } from '@nestjs/common';
@@ -90,6 +91,7 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @HttpCode(202)
   @Post(':id/importAttendeesCSV')
   async importAttendeesCSV(
     @Req() request: fastify.FastifyRequest,
@@ -102,10 +104,13 @@ export class ConventionController {
       return Promise.reject('missing file');
     }
 
-    return this.conventionService.importAttendeesCSV(buffer, id, this.ctx);
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.conventionService.startImportAttendeesCSV(buffer, id, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @HttpCode(202)
   @Post(':id/importAttendees')
   async importAttendees(
     @Param('id') id: number,
@@ -116,7 +121,9 @@ export class ConventionController {
       apiKey: string;
     },
   ) {
-    return this.conventionService.importAttendees(userData, id, this.ctx);
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.conventionService.startImportAttendees(userData, id, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)

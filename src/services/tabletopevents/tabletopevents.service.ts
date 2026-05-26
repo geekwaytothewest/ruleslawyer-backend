@@ -73,30 +73,23 @@ export class TabletopeventsService {
     return new Promise(async (resolve, reject) => {
       const badges: any[] = [];
       try {
-        let badgePage = await this.httpService.get(
-          this.tteApiUrl +
-            `convention/${tteConventionId}/badges?session_id=${session}`,
-        );
-
-        badges.push(...badgePage.data.result.items);
-
-        await this.sleep(200);
-
-        for (let i = 2; i <= badgePage.data.result.paging.total_pages; i++) {
+        let totalPages = 1;
+        for (let i = 1; i <= totalPages; i++) {
           if (i % 10 === 0) {
             this.logger.log(
-              `Status Update: Getting badge list for tteConventionId=${tteConventionId}, page ${i} of ${badgePage.data.result.paging.total_pages}`,
+              `Status Update: Getting badge list for tteConventionId=${tteConventionId}, page ${i} of ${totalPages}`,
             );
           }
 
-          badgePage = await this.httpService.get(
+          const badgePage = await this.httpService.get(
             this.tteApiUrl +
-              `convention/${tteConventionId}/badges?session_id=${session}&_page_number=${i}`,
+              `convention/${tteConventionId}/badges?session_id=${session}&_page_number=${i}&_items_per_page=100`,
           );
 
           badges.push(...badgePage.data.result.items);
+          totalPages = badgePage.data.result.paging.total_pages;
 
-          await this.sleep(200);
+          if (i < totalPages) await this.sleep(1000);
         }
 
         return resolve(badges);
@@ -110,24 +103,17 @@ export class TabletopeventsService {
     return new Promise(async (resolve) => {
       const badgeTypes: any[] = [];
 
-      let badgeTypePage = await this.httpService.get(
-        this.tteApiUrl +
-          `convention/${tteConventionId}/badgetypes?session_id=${session}`,
-      );
-
-      badgeTypes.push(...badgeTypePage.data.result.items);
-
-      await this.sleep(1000);
-
-      for (let i = 2; i <= badgeTypePage.data.result.paging.total_pages; i++) {
-        badgeTypePage = await this.httpService.get(
+      let totalPages = 1;
+      for (let i = 1; i <= totalPages; i++) {
+        const badgeTypePage = await this.httpService.get(
           this.tteApiUrl +
-            `convention/${tteConventionId}/badgetypes?session_id=${session}&_page_number=${i}`,
+            `convention/${tteConventionId}/badgetypes?session_id=${session}&_page_number=${i}&_items_per_page=100`,
         );
 
         badgeTypes.push(...badgeTypePage.data.result.items);
+        totalPages = badgeTypePage.data.result.paging.total_pages;
 
-        await this.sleep(1000);
+        if (i < totalPages) await this.sleep(1000);
       }
 
       return resolve(badgeTypes);
@@ -138,28 +124,54 @@ export class TabletopeventsService {
     return new Promise(async (resolve, reject) => {
       const soldProducts: any[] = [];
       try {
-        let soldProductsPage = await this.httpService.get(
-          this.tteApiUrl +
-            `badge/${badgeId}/soldproducts?session_id=${session}&_include_related_objects=productvariant`,
-        );
-
-        soldProducts.push(...soldProductsPage.data.result.items);
-
-        await this.sleep(1000);
-
-        for (
-          let i = 2;
-          i <= soldProductsPage.data.result.paging.total_pages;
-          i++
-        ) {
-          soldProductsPage = await this.httpService.get(
+        let totalPages = 1;
+        for (let i = 1; i <= totalPages; i++) {
+          const soldProductsPage = await this.httpService.get(
             this.tteApiUrl +
               `badge/${badgeId}/soldproducts?session_id=${session}&_page_number=${i}&_include_related_objects=productvariant`,
           );
 
           soldProducts.push(...soldProductsPage.data.result.items);
+          totalPages = soldProductsPage.data.result.paging.total_pages;
 
-          await this.sleep(1000);
+          if (i < totalPages) await this.sleep(1000);
+        }
+
+        return resolve(soldProducts);
+      } catch (ex) {
+        return reject(ex);
+      }
+    });
+  }
+
+  // Fetches every sold product for a convention in one paginated sweep
+  // (100/page) instead of one request per badge. Each item carries a
+  // badge_id, so callers can group results by badge locally. This turns a
+  // ~3000-request import into ~30-90 requests under TTE's 1 req/sec limit.
+  async getConventionSoldProducts(
+    tteConventionId: string,
+    session: any,
+  ): Promise<any[]> {
+    return new Promise(async (resolve, reject) => {
+      const soldProducts: any[] = [];
+      try {
+        let totalPages = 1;
+        for (let i = 1; i <= totalPages; i++) {
+          if (i % 10 === 0) {
+            this.logger.log(
+              `Status Update: Getting sold products for tteConventionId=${tteConventionId}, page ${i} of ${totalPages}`,
+            );
+          }
+
+          const soldProductsPage = await this.httpService.get(
+            this.tteApiUrl +
+              `convention/${tteConventionId}/soldproducts?session_id=${session}&_page_number=${i}&_items_per_page=100&_include_related_objects=productvariant`,
+          );
+
+          soldProducts.push(...soldProductsPage.data.result.items);
+          totalPages = soldProductsPage.data.result.paging.total_pages;
+
+          if (i < totalPages) await this.sleep(1000);
         }
 
         return resolve(soldProducts);

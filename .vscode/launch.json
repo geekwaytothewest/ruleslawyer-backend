@@ -7,11 +7,21 @@
     {
       "type": "node",
       "request": "attach",
-      "name": "Attach NestJS WS",
+      "name": "Attach NestJS (local)",
       "port": 9229,
       "restart": true,
       "stopOnEntry": false,
-      "protocol": "inspector",
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach NestJS (Docker)",
+      "port": 9229,
+      "restart": true,
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "localRoot": "${workspaceFolder}",
       "remoteRoot": "/usr/src/app"
     },
     {

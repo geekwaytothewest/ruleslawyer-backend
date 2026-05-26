@@ -61,10 +61,15 @@ services:
     build:
       context: ../ruleslawyer-frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH}
     ports:
       - 8084:3000
     env_file:
       - ../ruleslawyer-frontend/.env.production
+    environment:
+      - API_URL=${API_URL}
 
   postgres:
     profiles: ['backend', 'db', 'ruleslawyer', 'all']

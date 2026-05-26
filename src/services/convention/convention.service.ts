@@ -1,4 +1,8 @@
-import { Injectable, StreamableFile } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { OrganizationService } from '../organization/organization.service';
 import { AttendeeService } from '../attendee/attendee.service';
@@ -15,6 +19,9 @@ export class ConventionService {
   private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(
     ConventionService.name,
   );
+  // Guards against overlapping attendee imports (TTE or CSV). Both write
+  // attendees to a convention, so only one may run at a time.
+  private importInProgress = false;
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly attendeeService: AttendeeService,
@@ -125,6 +132,73 @@ export class ConventionService {
     } catch (ex) {
       return Promise.reject(ex);
     }
+  }
+
+  /**
+   * Launches importAttendees in the background and returns at once, so a
+   * multi-minute run doesn't hold the HTTP request open (which trips client
+   * IPC / proxy idle timeouts). Progress is visible in the server logs. A
+   * second import while one is already running is rejected with 409.
+   */
+  startImportAttendees(userData, conventionId, ctx: Context) {
+    if (this.importInProgress) {
+      throw new ConflictException(
+        'An attendee import is already running; wait for it to finish (watch the server logs).',
+      );
+    }
+
+    this.importInProgress = true;
+    this.logger.log('Attendee import (TTE) started in the background.');
+
+    // Fire-and-forget: do NOT await. Errors are logged; the flag always clears.
+    void this.importAttendees(userData, conventionId, ctx)
+      .catch((error: any) =>
+        this.logger.error(
+          `Background attendee import (TTE) failed: ${error?.message ?? error}`,
+        ),
+      )
+      .finally(() => {
+        this.importInProgress = false;
+        this.logger.log('Attendee import (TTE) finished.');
+      });
+
+    return {
+      status: 'started',
+      message: 'Attendee import started; monitor the server logs for progress.',
+    };
+  }
+
+  /**
+   * Background launcher for importAttendeesCSV. The controller must read the
+   * uploaded file into a buffer before calling this (the request body can't be
+   * read after we return). Mirrors startImportAttendees otherwise.
+   */
+  startImportAttendeesCSV(buffer, conventionId, ctx: Context) {
+    if (this.importInProgress) {
+      throw new ConflictException(
+        'An attendee import is already running; wait for it to finish (watch the server logs).',
+      );
+    }
+
+    this.importInProgress = true;
+    this.logger.log('Attendee import (CSV) started in the background.');
+
+    // Fire-and-forget: do NOT await. Errors are logged; the flag always clears.
+    void this.importAttendeesCSV(buffer, conventionId, ctx)
+      .catch((error: any) =>
+        this.logger.error(
+          `Background attendee import (CSV) failed: ${error?.message ?? error}`,
+        ),
+      )
+      .finally(() => {
+        this.importInProgress = false;
+        this.logger.log('Attendee import (CSV) finished.');
+      });
+
+    return {
+      status: 'started',
+      message: 'Attendee import started; monitor the server logs for progress.',
+    };
   }
 
   async importAttendeesCSV(userData, conventionId, ctx) {
@@ -271,13 +345,36 @@ export class ConventionService {
           return reject('no badges found');
         }
 
+        // Fetch sold products up front and group them by badge. For a full
+        // import this is one convention-wide paginated sweep (~30-90 requests)
+        // instead of one request per badge (~3000). The single-badge path
+        // still fetches just that badge's products.
+        this.logger.log(
+          `Getting sold products for ${tteBadges.length} badges`,
+        );
+        const soldProductsByBadge = new Map<string, any[]>();
+        if (tteBadges.length === 1) {
+          soldProductsByBadge.set(
+            tteBadges[0].id,
+            await this.tteService.getSoldProducts(tteBadges[0].id, session),
+          );
+        } else {
+          const allSoldProducts =
+            await this.tteService.getConventionSoldProducts(
+              convention.tteConventionId,
+              session,
+            );
+          for (const sp of allSoldProducts) {
+            const list = soldProductsByBadge.get(sp.badge_id) ?? [];
+            list.push(sp);
+            soldProductsByBadge.set(sp.badge_id, list);
+          }
+        }
+
         this.logger.log(`Getting attendees for ${tteBadges.length} badges`);
         const attendees: Prisma.AttendeeCreateInput[] = [];
         let count = 0;
-        const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         for (const b of tteBadges) {
-          await sleep(200); // avoid hitting TTE rate limits
-
           count++;
 
           if (count % 100 === 0) {
@@ -293,18 +390,17 @@ export class ConventionService {
             (bt) => bt.id === b.badgetype_id,
           )[0].name;
 
-          const soldProducts = await this.tteService.getSoldProducts(
-            b.id,
-            session,
-          );
+          const soldProducts = soldProductsByBadge.get(b.id) ?? [];
+
+          const merchItems = soldProducts
+            .map((s) => s.productvariant?.name)
+            .filter(Boolean);
 
           if (badgeType.includes('Patron')) {
-            soldProducts.push('Patron');
+            merchItems.push('Patron');
           }
 
-          const merch = soldProducts
-            .map((s) => s.productvariant?.name)
-            .join(', ');
+          const merch = merchItems.join(', ');
 
           attendees.push(<Prisma.AttendeeCreateInput>{
             convention: {

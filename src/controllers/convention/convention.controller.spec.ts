@@ -5,7 +5,9 @@ import {
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
-import { BadGatewayException } from '@nestjs/common';
+import { BadGatewayException, ExecutionContext } from '@nestjs/common';
+import { createMock } from '@golevelup/ts-jest';
+import fastify = require('fastify');
 import { ConventionModule } from '../../modules/convention/convention.module';
 
 describe('ConventionController', () => {
@@ -240,17 +242,22 @@ describe('ConventionController', () => {
 
       mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(convention);
 
-      jest
-        .spyOn(controller['conventionService'], 'importAttendees')
-        .mockResolvedValueOnce(1);
+      const startSpy = jest
+        .spyOn(controller['conventionService'], 'startImportAttendees')
+        .mockReturnValue({ status: 'started', message: 'go' });
 
-      const attendeeCount = await controller.importAttendees(1, {
+      const userData = {
         apiKey: 'fake api key',
         userName: 'fake username',
         password: 'fake password',
-      });
+      };
 
-      expect(attendeeCount).toBe(1);
+      // Launches in the background and returns "started" immediately rather
+      // than holding the request open until the import finishes.
+      const result = await controller.importAttendees(1, userData);
+
+      expect(result.status).toBe('started');
+      expect(startSpy).toHaveBeenCalledWith(userData, 1, controller['ctx']);
     });
   });
 
@@ -390,6 +397,112 @@ describe('ConventionController', () => {
       ]);
 
       expect(controller.exportBadgeFile(1)).resolves.toBeTruthy();
+    });
+  });
+
+  describe('getConventions', () => {
+    it('should return the conventions visible to the user', async () => {
+      mockCtx.prisma.convention.findMany.mockResolvedValue([{ id: 1 }] as any);
+
+      const cons = await controller.getConventions({ id: 1 });
+
+      expect(cons.length).toBe(1);
+    });
+  });
+
+  describe('importAttendeesCSV', () => {
+    it('should reject when the file is missing', async () => {
+      const execCtx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => null,
+          }),
+        }),
+      });
+
+      const req = execCtx
+        .switchToHttp()
+        .getRequest() as fastify.FastifyRequest;
+
+      await expect(controller.importAttendeesCSV(req, 1)).rejects.toBe(
+        'missing file',
+      );
+    });
+
+    it('should import attendees from the uploaded csv', async () => {
+      const execCtx = createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({
+            file: () => ({
+              toBuffer: () => Buffer.from('Ada,Lovelace,101\n'),
+            }),
+          }),
+        }),
+      });
+
+      const req = execCtx
+        .switchToHttp()
+        .getRequest() as fastify.FastifyRequest;
+
+      const startSpy = jest
+        .spyOn(controller['conventionService'], 'startImportAttendeesCSV')
+        .mockReturnValue({ status: 'started', message: 'go' });
+
+      // The controller still reads the upload into a buffer synchronously,
+      // then hands it to the background launcher and returns "started".
+      const result = await controller.importAttendeesCSV(req, 1);
+
+      expect(result.status).toBe('started');
+      expect(startSpy).toHaveBeenCalledWith(
+        Buffer.from('Ada,Lovelace,101\n'),
+        1,
+        controller['ctx'],
+      );
+    });
+  });
+
+  describe('createCollection', () => {
+    it('should create a collection', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        name: 'New',
+        organizationId: 1,
+        public: false,
+        allowWinning: true,
+      });
+
+      const result = (await controller.createCollection(1, {
+        name: 'New',
+        allowWinning: true,
+      })) as any;
+
+      expect(result?.id).toBe(1);
+    });
+  });
+
+  describe('attachCollection', () => {
+    it('should attach a collection to the convention', async () => {
+      mockCtx.prisma.conventionCollections.create.mockResolvedValue({
+        conventionId: 1,
+        collectionId: 2,
+      } as any);
+
+      const result = await controller.attachCollection(1, 2);
+
+      expect(result.collectionId).toBe(2);
+    });
+  });
+
+  describe('detachCollection', () => {
+    it('should detach a collection from the convention', async () => {
+      mockCtx.prisma.conventionCollections.delete.mockResolvedValue({
+        conventionId: 1,
+        collectionId: 2,
+      } as any);
+
+      const result = await controller.detachCollection(1, 2);
+
+      expect(result.collectionId).toBe(2);
     });
   });
 });

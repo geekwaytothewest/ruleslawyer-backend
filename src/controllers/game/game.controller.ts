@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   Delete,
+  HttpCode,
 } from '@nestjs/common';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -19,6 +20,11 @@ import { CopyService } from '../../services/copy/copy.service';
 import { User } from '../../modules/authz/user.decorator';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { GameGuard } from '../../guards/game/game.guard';
+import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
+
+// Upper bound on rows returned by the withCopies endpoint, including when the
+// client asks for "All". Prevents oversized responses that fail to serialize.
+const MAX_GAMES_LIMIT = 1000;
 
 @Controller()
 export class GameController {
@@ -74,7 +80,10 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getGames(@User() user: any) {
+  async getGames(
+    @User() user: any,
+    @Query('orgId') orgId: string,
+  ) {
     return this.gameService.search(
       {
         include: {
@@ -90,24 +99,41 @@ export class GameController {
               OR: [
                 {
                   organization: {
-                    users: {
-                      some: {
-                        userId: user.id,
+                    OR: [
+                      {
+                        users: {
+                          some: {
+                            userId: user.id,
+                          },
+                        },
                       },
-                    },
+                      {
+                        ownerId: user.id,
+                      },
+                    ],
+                    AND: [
+                      orgId && !Number.isNaN(Number(orgId))
+                        ? { id: Number(orgId) }
+                        : { id: { in: [] } },
+                    ],
                   },
                 },
                 {
                   collection: {
                     conventions: {
                       some: {
-                        convention: {
-                          users: {
-                            some: {
-                              userId: user.id,
+                      convention: {
+                        AND: [
+                          {
+                            users: {
+                              some: { userId: user.id },
                             },
                           },
-                        },
+                          orgId && !Number.isNaN(Number(orgId))
+                            ? { organizationId: Number(orgId) }
+                            : { id: { in: [] } },
+                        ],
+                      },
                       },
                     },
                   },
@@ -120,11 +146,23 @@ export class GameController {
           OR: [
             {
               organization: {
-                users: {
-                  some: {
-                    userId: user.id,
+                OR: [
+                  {
+                    users: {
+                      some: {
+                        userId: user.id,
+                      },
+                    },
                   },
-                },
+                  {
+                    ownerId: user.id,
+                  },
+                ],
+                AND: [
+                  orgId && !Number.isNaN(Number(orgId))
+                  ? { id: Number(orgId) }
+                  : { id: { in: [] } },
+                ],
               },
             },
             {
@@ -162,6 +200,8 @@ export class GameController {
     @User() user: any,
     @Query('limit') limit: string,
     @Query('filter') filter: string,
+    @Query('orgId') orgId: string,
+    @Query('page') page: string,
   ) {
     const query: Prisma.GameFindManyArgs = {
       include: {
@@ -176,11 +216,23 @@ export class GameController {
         OR: [
           {
             organization: {
-              users: {
-                some: {
-                  userId: user.id,
+              OR: [
+                {
+                  users: {
+                    some: {
+                      userId: user.id,
+                    },
+                  },
                 },
-              },
+                {
+                  ownerId: user.id,
+                },
+              ],
+              AND: [
+                orgId && !Number.isNaN(Number(orgId))
+                  ? { id: Number(orgId) }
+                  : { id: { in: [] } },
+              ],
             },
           },
           {
@@ -190,11 +242,16 @@ export class GameController {
                   conventions: {
                     some: {
                       convention: {
-                        users: {
-                          some: {
-                            userId: user.id,
+                        AND: [
+                          {
+                            users: {
+                              some: { userId: user.id },
+                            },
                           },
-                        },
+                          orgId && !Number.isNaN(Number(orgId))
+                            ? { organizationId: Number(orgId) }
+                            : { id: { in: [] } },
+                        ],
                       },
                     },
                   },
@@ -209,9 +266,26 @@ export class GameController {
       },
     };
 
-    if (limit && !Number.isNaN(Number(limit))) {
-      query.take = Number(limit);
-    }
+    // Always bound the page size. Without a `take`, "All" (or any non-numeric
+    // value) makes Prisma fetch every game with its nested copies/checkOuts,
+    // producing a payload too large for JSON.stringify to serialize
+    // (RangeError: Invalid string length). A numeric limit is clamped to the
+    // cap; "All"/invalid falls back to the cap itself.
+    const requested = Number(limit);
+    const pageSize =
+      limit && !Number.isNaN(requested)
+        ? Math.min(requested, MAX_GAMES_LIMIT)
+        : MAX_GAMES_LIMIT;
+
+    // 1-based page number; anything missing/invalid/below 1 means the first page.
+    const requestedPage = Number(page);
+    const currentPage =
+      page && !Number.isNaN(requestedPage) && requestedPage >= 1
+        ? Math.floor(requestedPage)
+        : 1;
+
+    query.take = pageSize;
+    query.skip = (currentPage - 1) * pageSize;
 
     if (filter) {
       query.where = {
@@ -226,7 +300,19 @@ export class GameController {
       };
     }
 
-    return this.gameService.search(query, this.ctx);
+    const { data, total } = await this.gameService.searchWithCount(
+      query,
+      this.ctx,
+    );
+
+    return {
+      data,
+      total,
+      page: currentPage,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+      hasMore: currentPage * pageSize < total,
+    };
   }
 
   @UseGuards(JwtAuthGuard, GameGuard)
@@ -237,7 +323,11 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/copies')
-  async getCopies(@Param('id') id: number, @User() user: any) {
+  async getCopies(
+    @Param('id') id: number,
+    @Query('orgId') orgId: string,
+    @User() user: any
+  ) {
     return this.copyService.searchCopies(
       {
         AND: [
@@ -258,6 +348,11 @@ export class GameController {
                       ownerId: user.id,
                     },
                   ],
+                  AND: [
+                    ...(orgId && !Number.isNaN(Number(orgId))
+                      ? [{ id: Number(orgId) }]
+                      : []),
+                  ],
                 },
               },
               {
@@ -265,9 +360,16 @@ export class GameController {
                   conventions: {
                     some: {
                       convention: {
-                        users: {
-                          some: { userId: user.id },
-                        },
+                        AND: [
+                          {
+                            users: {
+                              some: { userId: user.id },
+                            },
+                          },
+                          orgId && !Number.isNaN(Number(orgId))
+                            ? { organizationId: Number(orgId) }
+                            : { id: { in: [] } },
+                        ],
                       },
                     },
                   },
@@ -279,5 +381,74 @@ export class GameController {
       },
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, GameGuard)
+  @Put(':id/connectBGGByName')
+  async connectBGGGameByName(
+    @Param('id') id: number,
+    @User() user: any,
+  ) {
+    const game = await this.gameService.game(
+      {
+        id: Number(id),
+      },
+      this.ctx,
+      user,
+    );
+
+    if (!game) {
+      this.logger.warn(
+        `Game with id=${id} not found.`,
+      );
+      return null;
+    }
+
+    return this.gameService.connectBGGGameByName(id, game.name, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @HttpCode(202)
+  @Put(':orgId/syncAndConnectGamesWithBGG')
+  async syncAndConnectGamesWithBGG(
+    @Param('orgId') orgId: number,
+    @Body('dumpUrl') dumpUrl?: string,
+  ) {
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.gameService.startSyncAndConnect(Number(orgId), this.ctx, dumpUrl);
+  }
+
+  @UseGuards(JwtAuthGuard, GameGuard)
+  @Put(':id/syncWithBGG')
+  async syncBGGGame(
+    @Param('id') id: number,
+    @User() user: any,
+  ) {
+    const game = await this.gameService.game(
+      {
+        id: Number(id),
+      },
+      this.ctx,
+      user,
+    );
+
+    if (!game) {
+      this.logger.warn(
+        `Game with id=${id} not found.`,
+      );
+
+      return null;
+    }
+
+    if (!game.bggId) {
+      this.logger.warn(
+        `Game with id=${id} does not have a bggId, cannot sync.`,
+      );
+
+      return null;
+    }
+
+    return this.gameService.syncBGGGame(id, this.ctx);
   }
 }

@@ -9,6 +9,7 @@ import { OrganizationService } from '../../services/organization/organization.se
 import { TabletopeventsService } from '../../services/tabletopevents/tabletopevents.service';
 import { HttpModule } from 'nestjs-http-promise';
 import { GameService } from '../../services/game/game.service';
+import { BoardGameGeekService } from '../../services/boardgamegeek/boardgamegeek.service';
 
 @Module({
   imports: [AttendeeModule, CopyModule, HttpModule],
@@ -20,6 +21,7 @@ import { GameService } from '../../services/game/game.service';
     ConventionService,
     OrganizationService,
     TabletopeventsService,
+    BoardGameGeekService,
     GameService,
   ],
   exports: [CheckOutService],

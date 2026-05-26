@@ -1,0 +1,44 @@
+meta {
+  name: Game -- Sync and Connect with BGG
+  type: http
+  seq: 40
+}
+
+put {
+  url: {{apiUrl}}/game/{{orgId}}/syncAndConnectGamesWithBGG
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dumpUrl": "PASTE_SIGNED_BG_RANKS_URL_HERE"
+  }
+}
+
+vars:pre-request {
+  orgId: 1
+}
+
+docs {
+  # Sync & Connect games with BoardGameGeek
+
+  `dumpUrl` is the BGG "bg_ranks" data dump, used to resolve game names to
+  bggIds locally (no per-game search calls).
+
+  ## Where to get the dumpUrl
+  1. Log into BoardGameGeek (the download is gated behind a login).
+  2. Go to https://boardgamegeek.com/data_dumps/bg_ranks
+  3. Click the download button and copy the **signed S3 URL** it points to.
+  4. Paste that URL into the `dumpUrl` body field below.
+
+  Note: the signed URL is time-limited and expires, so grab a fresh one each run.
+
+  ## Behavior
+  - With `dumpUrl`: matches names to bggIds from the dump, then enriches every
+    game that has a bggId from the BGG API.
+  - Without `dumpUrl`: only re-syncs games that already have a bggId. Games with
+    no bggId are NOT connected (this route does not fall back to per-game search).
+  - Games the dump can't match (unranked/obscure titles) are left unconnected
+    and logged; connect those individually via the single-game connect endpoint.
+}
