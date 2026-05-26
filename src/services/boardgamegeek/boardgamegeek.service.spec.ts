@@ -59,6 +59,14 @@ describe('BoardGameGeekService', () => {
       );
     });
 
+    it('throws without calling the API when the token is not set', async () => {
+      delete process.env.BOARDGAMEGEEK_API_TOKEN;
+      await expect(service.getBoardGameBatchByBGGIds([13])).rejects.toThrow(
+        /BOARDGAMEGEEK_API_TOKEN is not set/,
+      );
+      expect(http.get).not.toHaveBeenCalled();
+    });
+
     it('parses items from a single batched request', async () => {
       http.get.mockResolvedValue(
         ok(
