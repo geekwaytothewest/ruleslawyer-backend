@@ -195,6 +195,11 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
+  async getCopyCount() {
+    return this.gameService
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('/withCopies')
   async getGamesWithCopies(
     @User() user: any,
@@ -209,6 +214,11 @@ export class GameController {
           include: {
             game: true,
             checkOuts: true,
+          },
+          where: {
+            collection: {
+              archived: false,
+            }
           },
         },
       },
@@ -239,22 +249,29 @@ export class GameController {
             copies: {
               some: {
                 collection: {
-                  conventions: {
-                    some: {
-                      convention: {
-                        AND: [
-                          {
-                            users: {
-                              some: { userId: user.id },
-                            },
+                  AND: [
+                    {
+                      conventions: {
+                        some: {
+                          convention: {
+                            AND: [
+                              {
+                                users: {
+                                  some: { userId: user.id },
+                                },
+                              },
+                              orgId && !Number.isNaN(Number(orgId))
+                                ? { organizationId: Number(orgId) }
+                                : { id: { in: [] } },
+                            ],
                           },
-                          orgId && !Number.isNaN(Number(orgId))
-                            ? { organizationId: Number(orgId) }
-                            : { id: { in: [] } },
-                        ],
+                        },
                       },
                     },
-                  },
+                    {
+                      archived: false,
+                    }
+                  ]
                 },
               },
             },
