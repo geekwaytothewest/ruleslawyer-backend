@@ -56,14 +56,14 @@ describe('CollectionService', () => {
       const result = await service.collectionCopiesByGames(1, 5000, '', ctx, 2);
 
       const gameArgs = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
-      expect(gameArgs.take).toBe(1000);
-      expect(gameArgs.skip).toBe(1000);
+      expect(gameArgs.take).toBe(500);
+      expect(gameArgs.skip).toBe(500);
 
       expect(result.games).toEqual([{ id: 1 }]);
       expect(result.total).toBe(2500);
       expect(result.page).toBe(2);
-      expect(result.pageSize).toBe(1000);
-      expect(result.totalPages).toBe(3);
+      expect(result.pageSize).toBe(500);
+      expect(result.totalPages).toBe(5);
       expect(result.hasMore).toBe(true);
     });
   });
@@ -507,7 +507,7 @@ describe('CollectionService', () => {
       );
 
       const gameArgs = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
-      expect(gameArgs.take).toBe(1000);
+      expect(gameArgs.take).toBe(500);
       expect(gameArgs.skip).toBe(0);
       expect(result.page).toBe(1);
     });

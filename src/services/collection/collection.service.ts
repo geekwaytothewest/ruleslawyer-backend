@@ -9,12 +9,14 @@ import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 // when no/invalid limit is supplied. Without a bound, Prisma fetches every game
 // in the collection with its nested copies/checkOuts, producing a payload too
 // large for JSON.stringify to serialize (RangeError: Invalid string length).
-const MAX_COLLECTION_GAMES_LIMIT = 1000;
+const MAX_COLLECTION_GAMES_LIMIT = 500;
 
 @Injectable()
 export class CollectionService {
   constructor(private readonly copyService: CopyService) {}
+
   private readonly logger = new RuleslawyerLogger(CollectionService.name);
+
   async collection(id: number, ctx: Context): Promise<any> {
     const query: Prisma.CollectionFindUniqueArgs = {
       where: { id: Number(id) },
