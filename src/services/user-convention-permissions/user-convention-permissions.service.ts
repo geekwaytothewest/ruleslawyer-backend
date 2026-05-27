@@ -14,7 +14,7 @@ export class UserConventionPermissionsService {
     try {
       const userId = await this.userService.convertToUserId(id, ctx);
 
-      return ctx.prisma.userConventionPermissions.findMany({
+      return await ctx.prisma.userConventionPermissions.findMany({
         where: {
           userId: userId,
         },
@@ -47,7 +47,7 @@ export class UserConventionPermissionsService {
     ctx: Context,
   ): Promise<UserConventionPermissions> {
     try {
-      return ctx.prisma.userConventionPermissions.create({
+      return await ctx.prisma.userConventionPermissions.create({
         data,
       });
     } catch (ex) {
@@ -60,7 +60,7 @@ export class UserConventionPermissionsService {
     ctx: Context,
   ) {
     try {
-      return ctx.prisma.userConventionPermissions.findUnique({
+      return await ctx.prisma.userConventionPermissions.findUnique({
         where: where,
       });
     } catch (ex) {

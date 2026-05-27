@@ -22,7 +22,7 @@ export class CheckOutService {
       this.logger.log(
         `Getting longest checkouts for conventionId=${conventionId}`,
       );
-      return ctx.prisma.checkOut.findMany({
+      return await ctx.prisma.checkOut.findMany({
         where: {
           checkIn: null,
         },
@@ -53,7 +53,7 @@ export class CheckOutService {
       this.logger.log(
         `Getting recent checkouts for conventionId=${conventionId}`,
       );
-      return ctx.prisma.checkOut.findMany({
+      return await ctx.prisma.checkOut.findMany({
         where: {
           checkIn: null,
         },
@@ -79,10 +79,10 @@ export class CheckOutService {
     }
   }
 
-  getCheckOuts(conId: number, ctx: Context) {
+  async getCheckOuts(conId: number, ctx: Context) {
     this.logger.log(`Getting checkouts for conId=${conId}`);
     try {
-      return ctx.prisma.checkOut.findMany({
+      return await ctx.prisma.checkOut.findMany({
         include: {
           copy: {
             include: {
@@ -103,10 +103,10 @@ export class CheckOutService {
     }
   }
 
-  getCheckOutsByCollectionId(conId: number, collId: number, ctx: Context) {
+  async getCheckOutsByCollectionId(conId: number, collId: number, ctx: Context) {
     this.logger.log(`Getting checkouts for conId=${conId}`);
     try {
-      return ctx.prisma.checkOut.findMany({
+      return await ctx.prisma.checkOut.findMany({
         include: {
           copy: {
             include: {
@@ -392,7 +392,7 @@ export class CheckOutService {
       this.logger.log(
         `Getting attendee prize entries with attendeeBadgeNumber=${attendeeBadgeNumber}`,
       );
-      return ctx.prisma.checkOut.findMany({
+      return await ctx.prisma.checkOut.findMany({
         include: {
           attendee: true,
           copy: {

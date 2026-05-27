@@ -180,7 +180,7 @@ export class CollectionService {
       this.logger.log(
         `Creating collection with name=${name}, orgId=${orgId}, allowWinning=${allowWinning}`,
       );
-      return ctx.prisma.collection.create({
+      return await ctx.prisma.collection.create({
         data: {
           name: name,
           organizationId: Number(orgId),

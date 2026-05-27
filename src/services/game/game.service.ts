@@ -30,7 +30,7 @@ export class GameService {
       this.logger.log(
         `Getting game with where=${JSON.stringify(gameWhereUniqueInput)}`,
       );
-      return ctx.prisma.game.findUnique({
+      return await ctx.prisma.game.findUnique({
         where: gameWhereUniqueInput,
         include: {
           copies: {
@@ -90,7 +90,7 @@ export class GameService {
   async games(orgId: number, ctx: Context) {
     try {
       this.logger.log(`Getting games`);
-      return ctx.prisma.game.findMany({
+      return await ctx.prisma.game.findMany({
         where: { organizationId: Number(orgId) },
         orderBy: { name: 'asc' },
       });
@@ -103,7 +103,7 @@ export class GameService {
   async search(where: Prisma.GameFindManyArgs, ctx: Context) {
     try {
       this.logger.log(`Searching games`);
-      return ctx.prisma.game.findMany(where);
+      return await ctx.prisma.game.findMany(where);
     } catch (ex) {
       this.logger.error(`Failed to search games, ex=${ex}`);
       return Promise.reject(ex);
@@ -135,7 +135,7 @@ export class GameService {
     ctx: Context,
   ): Promise<Game | null> {
     try {
-      return ctx.prisma.game.create({ data });
+      return await ctx.prisma.game.create({ data });
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -157,7 +157,7 @@ export class GameService {
         )}, data=${JSON.stringify(data)}`,
       );
 
-      return ctx.prisma.game.update({ data, where });
+      return await ctx.prisma.game.update({ data, where });
     } catch (ex) {
       this.logger.error(
         `Failed to update game with where=${JSON.stringify(

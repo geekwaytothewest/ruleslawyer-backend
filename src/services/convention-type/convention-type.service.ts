@@ -16,7 +16,7 @@ export class ConventionTypeService {
     ctx: Context,
   ): Promise<ConventionType | null> {
     try {
-      return ctx.prisma.conventionType.findUnique({
+      return await ctx.prisma.conventionType.findUnique({
         where: conventionTypeWhereUniqueInput,
       });
     } catch (ex) {
@@ -29,7 +29,7 @@ export class ConventionTypeService {
     ctx: Context,
   ): Promise<ConventionType[]> {
     try {
-      return ctx.prisma.conventionType.findMany({
+      return await ctx.prisma.conventionType.findMany({
         where: {
           organizationId: organizationId,
         },
