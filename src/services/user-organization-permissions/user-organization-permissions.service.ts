@@ -24,6 +24,9 @@ export class UserOrganizationPermissionsService {
     try {
       return await ctx.prisma.userOrganizationPermissions.findMany({
         where: where,
+        include: {
+          user: true,
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
@@ -43,6 +46,7 @@ export class UserOrganizationPermissionsService {
         },
         include: {
           organization: true,
+          user: true,
         },
         orderBy: {
           organization: {
