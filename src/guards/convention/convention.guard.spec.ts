@@ -30,7 +30,12 @@ const baseCon = {
   tteConventionId: 'not real',
 } as any;
 
-describe('ConventionGuard', () => {
+const contextFor = (request: any) =>
+  createMock<ExecutionContext>({
+    getArgByIndex: () => request,
+  });
+
+describe('ConventionReadGuard', () => {
   let guard: ConventionReadGuard;
   let mockCtx: MockContext;
 
@@ -48,112 +53,160 @@ describe('ConventionGuard', () => {
     expect(guard).toBeDefined();
   });
 
-  it('should return false with no con id', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({}),
-    });
+  it('should return false with no user', async () => {
+    const context = contextFor({ params: { id: 1 } });
 
-    const authed = await guard.canActivate(context);
-
-    expect(authed).toBeFalsy();
+    expect(await guard.canActivate(context)).toBeFalsy();
   });
 
-  it('should return true with auth', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({
-        user: {
-          user: { id: 1, superAdmin: true },
-        },
-        params: {
-          id: 1,
-        },
-      }),
+  it('should return true for a superAdmin', async () => {
+    const context = contextFor({
+      user: { user: { id: 1, superAdmin: true } },
+      params: { id: 1 },
     });
 
-    const con = {
-      id: 1,
-      organizationId: 1,
-      name: 'Geekway to the Test',
-      theme: 'Jest....er. Get it?',
-      logo: Buffer.from(''),
-      logoSquare: Buffer.from(''),
-      icon: '',
-      startDate: new Date(),
-      endDate: new Date(),
-      registrationUrl: null,
-      typeId: 1,
-      annual: '1st Annual',
-      size: 1,
-      cancelled: false,
-      playAndWinAnnounced: false,
-      doorPrizesAnnounced: false,
-      doorPrizeCollectionId: null,
-      playAndWinCollectionId: null,
-      playAndWinWinnersAnnounced: false,
-      playAndWinWinnersSelected: false,
-      tteConventionId: 'not real',
-      users: [
-        {
-          id: 1,
-          userId: 1,
-          admin: true,
-        },
-      ],
-    };
-    mockCtx.prisma.convention.findUnique.mockResolvedValue(con);
-
-    const authed = await guard.canActivate(context);
-
-    expect(authed).toBeTruthy();
+    expect(await guard.canActivate(context)).toBeTruthy();
   });
 
-  it('should return false with bad auth', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({
-        user: {
-          user: { id: 2, superAdmin: false },
-        },
-        params: {
-          id: 1,
-        },
-      }),
+  it('should return false with no convention id', async () => {
+    const context = contextFor({
+      user: { user: { id: 1, superAdmin: false } },
+      params: {},
     });
 
-    const con = {
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should fall back to params.conId', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { conId: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, attendee: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for a convention attendee', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, attendee: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for a convention geekGuide', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, geekGuide: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for a convention admin', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, admin: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for the organization owner', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
       id: 1,
-      organizationId: 1,
-      name: 'Geekway to the Test',
-      theme: 'Jest....er. Get it?',
-      logo: Buffer.from(''),
-      logoSquare: Buffer.from(''),
-      icon: '',
-      startDate: new Date(),
-      endDate: new Date(),
-      registrationUrl: null,
-      typeId: 1,
-      annual: '1st Annual',
-      size: 1,
-      cancelled: false,
-      playAndWinAnnounced: false,
-      doorPrizesAnnounced: false,
-      doorPrizeCollectionId: null,
-      playAndWinCollectionId: null,
-      playAndWinWinnersAnnounced: false,
-      playAndWinWinnersSelected: false,
-      tteConventionId: 'not real',
-      users: [
-        {
-          id: 1,
-          userId: 1,
-          admin: true,
-        },
-      ],
-    };
-    mockCtx.prisma.convention.findUnique.mockResolvedValue(con);
+      ownerId: 2,
+      users: [],
+    } as any);
 
-    const authed = await guard.canActivate(context);
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
 
-    expect(authed).toBeFalsy();
+  it('should return true for an organization admin', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, admin: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for an organization geekGuide', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, geekGuide: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return false for an unrelated user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 99, admin: true }],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 99, admin: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
   });
 });
 
@@ -176,41 +229,33 @@ describe('ConventionWriteGuard', () => {
   });
 
   it('should return false with no user', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({ params: { id: 1 } }),
-    });
+    const context = contextFor({ params: { id: 1 } });
 
     expect(await guard.canActivate(context)).toBeFalsy();
   });
 
   it('should return true for a superAdmin', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({
-        user: { user: { id: 1, superAdmin: true } },
-        params: { id: 1 },
-      }),
+    const context = contextFor({
+      user: { user: { id: 1, superAdmin: true } },
+      params: { id: 1 },
     });
 
     expect(await guard.canActivate(context)).toBeTruthy();
   });
 
   it('should return false with no convention id', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({
-        user: { user: { id: 1, superAdmin: false } },
-        params: {},
-      }),
+    const context = contextFor({
+      user: { user: { id: 1, superAdmin: false } },
+      params: {},
     });
 
     expect(await guard.canActivate(context)).toBeFalsy();
   });
 
   it('should fall back to params.conId', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({
-        user: { user: { id: 2, superAdmin: false } },
-        params: { conId: 1 },
-      }),
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { conId: 1 },
     });
 
     mockCtx.prisma.convention.findUnique.mockResolvedValue({
@@ -222,11 +267,9 @@ describe('ConventionWriteGuard', () => {
   });
 
   it('should return true for a convention admin', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({
-        user: { user: { id: 2, superAdmin: false } },
-        params: { id: 1 },
-      }),
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
     });
 
     mockCtx.prisma.convention.findUnique.mockResolvedValue({
@@ -238,17 +281,115 @@ describe('ConventionWriteGuard', () => {
   });
 
   it('should return false for a non-admin convention user', async () => {
-    const context = createMock<ExecutionContext>({
-      getArgByIndex: () => ({
-        user: { user: { id: 2, superAdmin: false } },
-        params: { id: 1 },
-      }),
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
     });
 
     mockCtx.prisma.convention.findUnique.mockResolvedValue({
       ...baseCon,
       users: [{ id: 1, userId: 2, admin: false }],
     });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should return false for a convention attendee', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, attendee: true }],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should return true for the organization owner', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 2,
+      users: [],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for an organization admin', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, admin: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for an organization geekGuide', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, geekGuide: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return false for an unrelated user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 99, admin: true }],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 99, admin: true }],
+    } as any);
 
     expect(await guard.canActivate(context)).toBeFalsy();
   });

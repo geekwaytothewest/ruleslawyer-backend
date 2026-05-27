@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { ConventionService } from '../../services/convention/convention.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
+import { OrganizationService } from '../../services/organization/organization.service';
 
 @Injectable()
 export class ConventionWriteGuard implements CanActivate {
@@ -11,6 +12,7 @@ export class ConventionWriteGuard implements CanActivate {
 
   constructor(
     private readonly conventionService: ConventionService,
+    private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
   ) {
     this.ctx = {
@@ -52,6 +54,28 @@ export class ConventionWriteGuard implements CanActivate {
     );
 
     if (con?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+      return true;
+    }
+
+    const orgWithUsers = Prisma.validator<Prisma.OrganizationDefaultArgs>()({
+      include: { users: true },
+    });
+
+    type OrgWithUsers = Prisma.OrganizationGetPayload<typeof orgWithUsers>;
+
+    const org: OrgWithUsers =
+      await this.organizationService.organizationWithUsers(
+        {
+          id: Number(con?.organizationId),
+        },
+        this.ctx,
+      );
+
+    if (org?.ownerId == user.id) {
+      return true;
+    }
+
+    if (org?.users?.filter((u) => u.userId === user.id && (u.admin || u.geekGuide)).length > 0) {
       return true;
     }
 
