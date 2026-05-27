@@ -166,7 +166,11 @@ describe('GameController', () => {
       const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
       expect(args.take).toBe(25);
       expect(args.skip).toBe(0);
-      expect(args.where.OR).toBeDefined();
+      // The name filter is ANDed onto the permission/org scoping rather than
+      // replacing it, so both the scoping and the name OR are present.
+      expect(args.where.AND).toHaveLength(2);
+      expect(args.where.AND[0].OR).toBeDefined();
+      expect(args.where.AND[1].OR).toBeDefined();
     });
 
     it('should compute skip from the page number and report hasMore', async () => {
