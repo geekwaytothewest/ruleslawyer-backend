@@ -90,7 +90,7 @@ describe('UserConventionPermissionsService', () => {
         id: 1,
       } as any);
 
-      const result = await service.getPermission({ id: 1 }, ctx);
+      const result = await service.getPermissions({ id: 1 }, ctx);
 
       expect(result?.id).toBe(1);
     });

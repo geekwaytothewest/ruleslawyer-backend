@@ -255,11 +255,9 @@ export class LegacyController {
     } else {
       const user = request?.user?.user;
 
-      // TODO: This can be moved to the top; if the user doesn't have permissions, we can just exit out without hitting the db
-      // TODO: if the request doesn't have a logged in user, it seems like we should treat it like they don't have permission
       if (user) {
         const permissions =
-          await this.userConventionPermissionsService.getPermission(
+          await this.userConventionPermissionsService.getPermissionsBySearch(
             {
               userId_conventionId: {
                 userId: Number(user.id),
