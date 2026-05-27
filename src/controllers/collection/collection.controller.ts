@@ -126,4 +126,13 @@ export class CollectionController {
       this.ctx,
     );
   }
+
+  @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @Put(':colId/archive')
+  async archiveCollection(@Param('colId') colId: number) {
+    return await this.collectionService.archiveCollection(
+      Number(colId),
+      this.ctx,
+    );
+  }
 }
