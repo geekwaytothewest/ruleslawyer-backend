@@ -24,7 +24,7 @@ export class UserOrganizationPermissionsService {
     try {
       const userId = await this.userService.convertToUserId(id, ctx);
 
-      return ctx.prisma.userOrganizationPermissions.findMany({
+      return await ctx.prisma.userOrganizationPermissions.findMany({
         where: {
           userId: userId,
         },
@@ -46,7 +46,7 @@ export class UserOrganizationPermissionsService {
     ctx: Context,
   ): Promise<UserOrganizationPermissions> {
     try {
-      return ctx.prisma.userOrganizationPermissions.create({
+      return await ctx.prisma.userOrganizationPermissions.create({
         data,
       });
     } catch (ex) {

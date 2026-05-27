@@ -43,6 +43,11 @@ describe('BoardGameGeekService', () => {
     ])('normalizes %p -> %p', (input, expected) => {
       expect(normalizeBggName(input)).toBe(expected);
     });
+
+    it('treats null/undefined as an empty string', () => {
+      expect(normalizeBggName(undefined as any)).toBe('');
+      expect(normalizeBggName(null as any)).toBe('');
+    });
   });
 
   describe('getBoardGameBatchByBGGIds', () => {
@@ -145,6 +150,14 @@ describe('BoardGameGeekService', () => {
       http.get.mockRejectedValue(new Error('boom'));
       await expect(service.getBoardGameByBGGId(13)).rejects.toThrow('boom');
     });
+
+    it('rejects without calling the API when the token is not set', async () => {
+      delete process.env.BOARDGAMEGEEK_API_TOKEN;
+      await expect(service.getBoardGameByBGGId(13)).rejects.toThrow(
+        /BOARDGAMEGEEK_API_TOKEN is not set/,
+      );
+      expect(http.get).not.toHaveBeenCalled();
+    });
   });
 
   describe('getBoardGameIdByName', () => {
@@ -159,6 +172,60 @@ describe('BoardGameGeekService', () => {
     it('returns null when nothing matches', async () => {
       http.get.mockResolvedValue(ok('<items></items>'));
       await expect(service.getBoardGameIdByName('Nope')).resolves.toBeNull();
+    });
+
+    it('rejects when the request errors', async () => {
+      http.get.mockRejectedValue(new Error('boom'));
+      await expect(service.getBoardGameIdByName('Catan')).rejects.toThrow(
+        'boom',
+      );
+    });
+  });
+
+  describe('retryDelayMs', () => {
+    it('honors a numeric Retry-After header (seconds)', () => {
+      const delay = (service as any).retryDelayMs(
+        { response: { headers: { 'retry-after': '3' } } },
+        0,
+        1000,
+      );
+      expect(delay).toBe(3000);
+    });
+
+    it('honors an HTTP-date Retry-After header', () => {
+      const future = new Date(Date.now() + 5000).toUTCString();
+      const delay = (service as any).retryDelayMs(
+        { response: { headers: { 'retry-after': future } } },
+        0,
+        1000,
+      );
+      // ~5s out; allow slack for clock/rounding.
+      expect(delay).toBeGreaterThan(3000);
+      expect(delay).toBeLessThanOrEqual(5000);
+    });
+
+    it('falls back to exponential backoff without a Retry-After header', () => {
+      const delay = (service as any).retryDelayMs({}, 3, 1000);
+      expect(delay).toBe(8000);
+    });
+  });
+
+  describe('getImage', () => {
+    it('returns a buffer of the fetched image', async () => {
+      http.get.mockResolvedValue({ data: Buffer.from('imgbytes') });
+
+      const image = await service.getImage('https://img');
+
+      expect(image).toBeInstanceOf(Buffer);
+      expect(image?.toString()).toBe('imgbytes');
+    });
+
+    it('returns null when the fetch fails', async () => {
+      http.get.mockRejectedValue(new Error('boom'));
+
+      const image = await service.getImage('https://img');
+
+      expect(image).toBeNull();
     });
   });
 
@@ -221,6 +288,51 @@ describe('BoardGameGeekService', () => {
       expect(hive!.map((e) => e.id).sort((a, b) => a - b)).toEqual([999, 2655]);
       // rank "0" parses to null (unranked)
       expect(hive!.find((e) => e.id === 999)!.rank).toBeNull();
+    });
+
+    it('skips rows whose name normalizes to empty', async () => {
+      const csv =
+        'id,name,yearpublished,rank\n' +
+        '13,CATAN,1995,512\n' +
+        '77,   ,2000,100\n'; // whitespace-only name normalizes to empty -> skipped
+      http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
+
+      const index = await service.getRankDumpIndex('https://signed-url');
+
+      expect(index.get('catan')).toEqual([{ id: 13, year: 1995, rank: 512 }]);
+      // The whitespace-named row produced no key.
+      expect(index.size).toBe(1);
+    });
+
+    it('stores a null year when yearpublished is missing', async () => {
+      const csv = 'id,name,yearpublished,rank\n' + '55,Untimed Game,,300\n';
+      http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
+
+      const index = await service.getRankDumpIndex('https://signed-url');
+
+      expect(index.get('untimed game')).toEqual([
+        { id: 55, year: null, rank: 300 },
+      ]);
+    });
+
+    it('throws a clear error when the download fails without a status', async () => {
+      // A network error with no response object exercises the no-status branch.
+      http.get.mockRejectedValue(new Error('socket hang up'));
+
+      await expect(
+        service.getRankDumpIndex('https://signed-url'),
+      ).rejects.toThrow(/Failed to download the BGG rank dump:.*socket hang up/s);
+    });
+
+    it('throws a clear error when the buffer is a corrupt zip', async () => {
+      // Valid "PK" magic so it passes the zip-signature check, but not a real
+      // archive, so AdmZip fails to open it.
+      const corrupt = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x00, 0x01, 0x02]);
+      http.get.mockResolvedValue({ data: corrupt, status: 200, headers: {} });
+
+      await expect(
+        service.getRankDumpIndex('https://corrupt'),
+      ).rejects.toThrow(/zip/i);
     });
 
     it('throws when the zip contains no CSV', async () => {

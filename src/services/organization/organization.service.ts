@@ -12,7 +12,7 @@ export class OrganizationService {
     ctx: Context,
   ): Promise<Organization | null> {
     try {
-      return ctx.prisma.organization.findUnique({
+      return await ctx.prisma.organization.findUnique({
         where: organizationWhereUniqueInput,
       });
     } catch (ex) {
@@ -22,7 +22,7 @@ export class OrganizationService {
 
   async allOrganizations(ctx: Context): Promise<Organization[] | null> {
     try {
-      return ctx.prisma.organization.findMany();
+      return await ctx.prisma.organization.findMany();
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -33,7 +33,7 @@ export class OrganizationService {
     ctx: Context,
   ): Promise<any> {
     try {
-      return ctx.prisma.organization.findUnique({
+      return await ctx.prisma.organization.findUnique({
         where: organizationWhereUniqueInput,
         include: {
           users: true,
@@ -47,7 +47,7 @@ export class OrganizationService {
 
   async organizationByOwner(id: number, ctx: Context): Promise<any> {
     try {
-      return ctx.prisma.organization.findMany({
+      return await ctx.prisma.organization.findMany({
         where: {
           ownerId: id,
         },
@@ -62,7 +62,7 @@ export class OrganizationService {
     ctx: Context,
   ): Promise<any> {
     try {
-      return ctx.prisma.organization.findUnique({
+      return await ctx.prisma.organization.findUnique({
         where: organizationWhereUniqueInput,
         include: {
           collections: true,
@@ -79,7 +79,7 @@ export class OrganizationService {
     ctx: Context,
   ): Promise<Organization> {
     try {
-      return ctx.prisma.organization.create({
+      return await ctx.prisma.organization.create({
         data: {
           name: name,
           ownerId: ownerId,

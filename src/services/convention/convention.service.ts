@@ -77,7 +77,7 @@ export class ConventionService {
     ctx: Context,
   ): Promise<Convention | null> {
     try {
-      return ctx.prisma.convention.findUnique({
+      return await ctx.prisma.convention.findUnique({
         where: conventionWhereUniqueInput,
         include: {
           collections: {
@@ -106,7 +106,7 @@ export class ConventionService {
     ctx: Context,
   ): Promise<any> {
     try {
-      return ctx.prisma.convention.findUnique({
+      return await ctx.prisma.convention.findUnique({
         where: conventionWhereUniqueInput,
         include: {
           users: true,
@@ -123,7 +123,7 @@ export class ConventionService {
     ctx: Context,
   ): Promise<any> {
     try {
-      return ctx.prisma.convention.update({
+      return await ctx.prisma.convention.update({
         where: {
           id: id,
         },
@@ -510,7 +510,7 @@ export class ConventionService {
     user: any,
   ) {
     try {
-      return this.checkOutService.checkOut(
+      return await this.checkOutService.checkOut(
         collectionId,
         copyBarcode,
         id,
@@ -526,7 +526,7 @@ export class ConventionService {
 
   async conventionsByOrg(organizationId: number, ctx: Context) {
     try {
-      return ctx.prisma.convention.findMany({
+      return await ctx.prisma.convention.findMany({
         where: {
           organizationId: organizationId,
         },
@@ -541,7 +541,7 @@ export class ConventionService {
 
   async conventions(user: any, ctx: Context) {
     try {
-      return ctx.prisma.convention.findMany({
+      return await ctx.prisma.convention.findMany({
         where: {
           OR: [
             {
@@ -577,7 +577,7 @@ export class ConventionService {
     ctx: Context,
   ) {
     try {
-      return ctx.prisma.conventionCollections.create({
+      return await ctx.prisma.conventionCollections.create({
         data: {
           collectionId: Number(collectionId),
           conventionId: Number(conventionId),
@@ -594,7 +594,7 @@ export class ConventionService {
     ctx: Context,
   ) {
     try {
-      return ctx.prisma.conventionCollections.delete({
+      return await ctx.prisma.conventionCollections.delete({
         where: {
           conventionId_collectionId: {
             collectionId: Number(collectionId),

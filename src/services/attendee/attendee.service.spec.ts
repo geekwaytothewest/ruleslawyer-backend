@@ -375,4 +375,93 @@ describe('AttendeeService', () => {
       ).rejects.toThrow('Badge replacement can only be done to unassigned badges.');
     });
   });
+
+  // Each method wraps a synchronous prisma call in try/catch and rejects on
+  // failure. The catch is only reached by a synchronous throw, since the prisma
+  // call is returned without being awaited.
+  describe('error handling', () => {
+    const boom = () => {
+      throw new Error('db error');
+    };
+
+    it('createAttendee rejects when the create throws', async () => {
+      mockCtx.prisma.attendee.create.mockImplementation(boom as any);
+      await expect(
+        service.createAttendee(
+          { convention: { connect: { id: 1 } } } as any,
+          ctx,
+        ),
+      ).rejects.toThrow('db error');
+    });
+
+    it('syncAttendee rejects when the upsert throws', async () => {
+      mockCtx.prisma.attendee.upsert.mockImplementation(boom as any);
+      await expect(
+        service.syncAttendee(
+          { convention: { connect: { id: 1 } }, tteBadgeNumber: 1 } as any,
+          ctx,
+        ),
+      ).rejects.toThrow('db error');
+    });
+
+    it('attendee rejects when the query throws', async () => {
+      mockCtx.prisma.attendee.findUnique.mockImplementation(boom as any);
+      await expect(service.attendee({ id: 1 }, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('attendeeWithCheckouts rejects when the query throws', async () => {
+      mockCtx.prisma.attendee.findUnique.mockImplementation(boom as any);
+      await expect(
+        service.attendeeWithCheckouts({ id: 1 }, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('attendees rejects when the query throws', async () => {
+      mockCtx.prisma.attendee.findMany.mockImplementation(boom as any);
+      await expect(service.attendees(1, ctx)).rejects.toThrow('db error');
+    });
+
+    it('attendeesWithPronounsAndBadgeTypes rejects when the query throws', async () => {
+      mockCtx.prisma.attendee.findMany.mockImplementation(boom as any);
+      await expect(
+        service.attendeesWithPronounsAndBadgeTypes(1, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('updateAttendee rejects when the update throws', async () => {
+      mockCtx.prisma.attendee.update.mockImplementation(boom as any);
+      await expect(
+        service.updateAttendee({ where: { id: 1 }, data: {} }, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('badgeTransfer rejects when the update throws', async () => {
+      mockCtx.prisma.attendee.update.mockImplementation(boom as any);
+      await expect(
+        service.badgeTransfer(
+          1,
+          {
+            fromBadgeNumber: '1',
+            newBadgeFirstName: 'New',
+            newBadgeLastName: 'Owner',
+            newBadgePronouns: 'they/them',
+          },
+          ctx,
+        ),
+      ).rejects.toThrow('db error');
+    });
+
+    it('badgeReplacement rejects when the transaction throws', async () => {
+      mockCtx.prisma.$transaction.mockImplementation(boom as any);
+      await expect(
+        service.badgeReplacement(
+          1,
+          { fromBadgeNumber: '1', toBadgeNumber: '2' },
+          ctx,
+        ),
+      ).rejects.toThrow('db error');
+    });
+  });
 });

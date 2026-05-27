@@ -26,10 +26,6 @@ export class CopyGuard implements CanActivate {
       return false;
     }
 
-    if (user.superAdmin) {
-      return true;
-    }
-
     if (!copyId) {
       copyId = context.getArgByIndex(0).params?.copyId;
     }
@@ -70,6 +66,14 @@ export class CopyGuard implements CanActivate {
 
     if (!copy) {
       return false;
+    }
+
+    if (copy.collection?.archived) {
+      return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
     }
 
     const organization = await this.organizationService.organizationWithUsers(

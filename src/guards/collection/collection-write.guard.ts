@@ -28,16 +28,20 @@ export class CollectionWriteGuard implements CanActivate {
       return false;
     }
 
-    if (user.superAdmin) {
-      return true;
-    }
-
     if (!colId) {
       return false;
     }
 
     const collection = await this.collectionService.collection(colId, this.ctx);
     const orgId = collection?.organizationId;
+
+    if (collection.archived) {
+      return false;
+    }
+
+    if (user.superAdmin) {
+      return true;
+    }
 
     if (!orgId) {
       return false;

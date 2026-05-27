@@ -456,6 +456,25 @@ describe('GameService', () => {
     });
   });
 
+  describe('gameCopyCount', () => {
+    it('returns the copy count for the game', async () => {
+      mockCtx.prisma.copy.count.mockResolvedValue(5 as any);
+
+      const result = await service.gameCopyCount(ctx, 1);
+
+      expect(result).toBe(5);
+      expect(mockCtx.prisma.copy.count).toHaveBeenCalledWith({
+        where: { gameId: 1 },
+      });
+    });
+
+    it('rejects when the count query fails', async () => {
+      mockCtx.prisma.copy.count.mockRejectedValue(new Error('boom'));
+
+      await expect(service.gameCopyCount(ctx, 1)).rejects.toThrow('boom');
+    });
+  });
+
   describe('syncAndConnectGamesWithBGG', () => {
     it('syncs games that already have a bggId and enriches their cover art', async () => {
       mockCtx.prisma.game.findMany.mockResolvedValue([

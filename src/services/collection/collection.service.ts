@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Put, UseGuards } from '@nestjs/common';
 import { parse } from 'csv-parse';
 import { Context } from '../prisma/context';
 import { Collection, Copy, Prisma } from '@prisma/client';
@@ -180,7 +180,7 @@ export class CollectionService {
       this.logger.log(
         `Creating collection with name=${name}, orgId=${orgId}, allowWinning=${allowWinning}`,
       );
-      return ctx.prisma.collection.create({
+      return await ctx.prisma.collection.create({
         data: {
           name: name,
           organizationId: Number(orgId),
@@ -476,5 +476,23 @@ export class CollectionService {
     });
 
     return promise;
+  }
+
+  async archiveCollection(id: number, ctx: Context) {
+    try {
+      return await ctx.prisma.collection.update({
+        where: {
+          id: id,
+        },
+        data: {
+          archived: true,
+        },
+      });
+    } catch (ex) {
+      this.logger.error(
+        `Failed to archive collection with id=${id}, ex=${ex}`,
+      );
+      return Promise.reject(ex);
+    }
   }
 }

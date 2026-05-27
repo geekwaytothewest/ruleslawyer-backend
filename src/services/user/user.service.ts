@@ -11,7 +11,7 @@ export class UserService {
     ctx: Context,
   ): Promise<User | null> {
     try {
-      return ctx.prisma.user.findUnique({
+      return await ctx.prisma.user.findUnique({
         where: userWhereUniqueInput,
       });
     } catch (ex) {
@@ -35,7 +35,7 @@ export class UserService {
 
   async createUser(data: Prisma.UserCreateInput, ctx: Context): Promise<User> {
     try {
-      return ctx.prisma.user.create({
+      return await ctx.prisma.user.create({
         data,
       });
     } catch (ex) {
@@ -52,7 +52,7 @@ export class UserService {
   ): Promise<User> {
     const { where, data } = params;
     try {
-      return ctx.prisma.user.update({
+      return await ctx.prisma.user.update({
         data,
         where,
       });

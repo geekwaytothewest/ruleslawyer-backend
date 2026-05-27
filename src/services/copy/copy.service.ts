@@ -13,7 +13,7 @@ export class CopyService {
     ctx: Context,
   ): Promise<Copy | null> {
     try {
-      return ctx.prisma.copy.findUnique({
+      return await ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
         include: {
           collection: true,
@@ -30,7 +30,7 @@ export class CopyService {
     ctx: Context,
   ): Promise<any> {
     try {
-      return ctx.prisma.copy.findUnique({
+      return await ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
         include: {
           collection: true,
@@ -51,7 +51,7 @@ export class CopyService {
           copyWhereUniqueInput,
         )}`,
       );
-      return ctx.prisma.copy.findUnique({
+      return await ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
         include: {
           checkOuts: {
@@ -81,7 +81,7 @@ export class CopyService {
           copyWhereUniqueInput,
         )}`,
       );
-      return ctx.prisma.copy.findUnique({
+      return await ctx.prisma.copy.findUnique({
         where: copyWhereUniqueInput,
         include: {
           collection: true,
@@ -109,7 +109,7 @@ export class CopyService {
   ): Promise<Copy | null> {
     try {
       this.logger.log(`Creating copy with data=${JSON.stringify(data)}`);
-      return ctx.prisma.copy.upsert({
+      return await ctx.prisma.copy.upsert({
         where: {
           organizationId_barcodeLabel: {
             barcodeLabel: data.barcodeLabel,
@@ -142,7 +142,7 @@ export class CopyService {
           data,
         )}, where=${JSON.stringify(where)}`,
       );
-      return ctx.prisma.copy.update({
+      return await ctx.prisma.copy.update({
         data,
         where,
         include: { collection: true, game: true },
@@ -160,7 +160,7 @@ export class CopyService {
   async searchCopies(where: Prisma.CopyWhereInput, ctx: Context) {
     try {
       this.logger.log(`Searching copies with where=${JSON.stringify(where)}`);
-      return ctx.prisma.copy.findMany({
+      return await ctx.prisma.copy.findMany({
         where: where,
         include: {
           collection: {

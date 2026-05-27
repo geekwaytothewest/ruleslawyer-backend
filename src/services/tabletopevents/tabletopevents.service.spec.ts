@@ -48,6 +48,53 @@ describe('TabletopeventsService', () => {
     });
   });
 
+  describe('getBadge', () => {
+    it('returns the badge when number and convention match', async () => {
+      const response = createMock<AxiosResponse>({
+        data: {
+          result: {
+            badge_number: 5,
+            convention_id: 'conv1',
+            name: 'fake name',
+          },
+        },
+      });
+
+      jest.spyOn(service['httpService'], 'get').mockResolvedValueOnce(response);
+
+      const badge: any = await service.getBadge('conv1', 5, 'badge1', 'session');
+
+      expect(badge.name).toBe('fake name');
+    });
+
+    it('resolves null when the badge does not match', async () => {
+      const response = createMock<AxiosResponse>({
+        data: {
+          result: {
+            badge_number: 99,
+            convention_id: 'otherConv',
+          },
+        },
+      });
+
+      jest.spyOn(service['httpService'], 'get').mockResolvedValueOnce(response);
+
+      const badge = await service.getBadge('conv1', 5, 'badge1', 'session');
+
+      expect(badge).toBeNull();
+    });
+
+    it('rejects when the request fails', async () => {
+      jest
+        .spyOn(service['httpService'], 'get')
+        .mockRejectedValueOnce(new Error('network down'));
+
+      await expect(
+        service.getBadge('conv1', 5, 'badge1', 'session'),
+      ).rejects.toThrow('network down');
+    });
+  });
+
   describe('getBadges', () => {
     it('should get badges', async () => {
       const response = createMock<AxiosResponse>({
@@ -200,6 +247,99 @@ describe('TabletopeventsService', () => {
       const badgeTypes = await service.getSoldProducts('faketteid', 'fakeid');
 
       expect(badgeTypes.length).toBeGreaterThan(0);
+    });
+
+    it('rejects when the request fails', async () => {
+      jest
+        .spyOn(service['httpService'], 'get')
+        .mockRejectedValueOnce(new Error('boom'));
+
+      await expect(
+        service.getSoldProducts('faketteid', 'fakeid'),
+      ).rejects.toThrow('boom');
+    });
+  });
+
+  describe('getBadges error handling', () => {
+    it('rejects when the request fails', async () => {
+      jest
+        .spyOn(service['httpService'], 'get')
+        .mockRejectedValueOnce(new Error('boom'));
+
+      await expect(service.getBadges('faketteid', 'fakeid')).rejects.toThrow(
+        'boom',
+      );
+    });
+
+    it('logs a status update every tenth page', async () => {
+      // 10 pages so the i % 10 === 0 status-log branch is exercised. sleep is
+      // stubbed so the 9 inter-page waits don't run in real time.
+      jest.spyOn(service, 'sleep').mockResolvedValue(undefined);
+      const response = createMock<AxiosResponse>({
+        data: {
+          result: {
+            paging: { total_pages: 10 },
+            items: [{ badge_number: 1 }],
+          },
+        },
+      });
+      jest.spyOn(service['httpService'], 'get').mockResolvedValue(response);
+
+      const badges = await service.getBadges('faketteid', 'fakeid');
+
+      expect(badges).toHaveLength(10);
+    });
+  });
+
+  describe('getConventionSoldProducts', () => {
+    it('gets sold products for the convention', async () => {
+      const response = createMock<AxiosResponse>({
+        data: {
+          result: {
+            paging: { total_pages: 1 },
+            items: [{ badge_id: 'b1', productvariant: { name: 'fake' } }],
+          },
+        },
+      });
+
+      jest.spyOn(service['httpService'], 'get').mockResolvedValueOnce(response);
+
+      const products = await service.getConventionSoldProducts(
+        'faketteid',
+        'fakeid',
+      );
+
+      expect(products).toHaveLength(1);
+    });
+
+    it('pages through results and logs a status update every tenth page', async () => {
+      jest.spyOn(service, 'sleep').mockResolvedValue(undefined);
+      const response = createMock<AxiosResponse>({
+        data: {
+          result: {
+            paging: { total_pages: 10 },
+            items: [{ badge_id: 'b1' }],
+          },
+        },
+      });
+      jest.spyOn(service['httpService'], 'get').mockResolvedValue(response);
+
+      const products = await service.getConventionSoldProducts(
+        'faketteid',
+        'fakeid',
+      );
+
+      expect(products).toHaveLength(10);
+    });
+
+    it('rejects when the request fails', async () => {
+      jest
+        .spyOn(service['httpService'], 'get')
+        .mockRejectedValueOnce(new Error('boom'));
+
+      await expect(
+        service.getConventionSoldProducts('faketteid', 'fakeid'),
+      ).rejects.toThrow('boom');
     });
   });
 });
