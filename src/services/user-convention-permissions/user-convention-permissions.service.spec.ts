@@ -84,13 +84,13 @@ describe('UserConventionPermissionsService', () => {
     });
   });
 
-  describe('getPermission', () => {
+  describe('getPermissionsBySearch', () => {
     it('should return a permission by unique key', async () => {
       mockCtx.prisma.userConventionPermissions.findUnique.mockResolvedValue({
         id: 1,
       } as any);
 
-      const result = await service.getPermissions({ id: 1 }, ctx);
+      const result = await service.getPermissionsBySearch({ id: 1 }, ctx);
 
       expect(result?.id).toBe(1);
     });
