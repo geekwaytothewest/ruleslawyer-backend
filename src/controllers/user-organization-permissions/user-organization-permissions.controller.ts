@@ -10,6 +10,7 @@ import { OrganizationService } from '../../services/organization/organization.se
 import { User } from '../../modules/authz/user.decorator';
 import { OrganizationPermissionsSelfUpdateGuard } from '../../guards/permissions/organization-permissions-self-update.guard';
 import { OrganizationPermissionsGuard } from '../../guards/permissions/organization-permissions.guard';
+import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 
 @Controller()
 export class UserOrganizationPermissionsController {
@@ -34,7 +35,7 @@ export class UserOrganizationPermissionsController {
     let userOrgPermissions: any = [];
     let userOrgs: any = [];
 
-    if (user.superAdmin) {
+    if (user.superAdmin && user.id === Number(id)) {
       userOrgs = await this.organizationService.allOrganizations(this.ctx);
     } else {
       userOrgPermissions =
@@ -68,6 +69,26 @@ export class UserOrganizationPermissionsController {
     });
 
     return userOrgPermissions;
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get('organization/:id')
+  async getOrganizationUsers(@Param('id') id: string) {
+    const orgId = Number(id);
+
+    const permissions =
+      await this.userOrganizationPermissionsService.getPermissionsBySearch(
+        {
+          organizationId: orgId,
+        },
+        this.ctx,
+      );
+
+    if (!permissions) {
+      return [];
+    }
+
+    return permissions;
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)

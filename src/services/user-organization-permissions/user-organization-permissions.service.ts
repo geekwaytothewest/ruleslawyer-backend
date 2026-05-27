@@ -17,6 +17,19 @@ export class UserOrganizationPermissionsService {
     });
   }
 
+  async getPermissionsBySearch(
+    where: Prisma.UserOrganizationPermissionsWhereInput,
+    ctx: Context,
+  ): Promise<UserOrganizationPermissions[]> {
+    try {
+      return await ctx.prisma.userOrganizationPermissions.findMany({
+        where: where,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
   async userOrganizationPermissions(
     id: string,
     ctx: Context,
