@@ -306,15 +306,20 @@ export class GameController {
     query.skip = (currentPage - 1) * pageSize;
 
     if (filter) {
+      // AND the name filter onto the existing where so the permission/org
+      // scoping above is preserved. Merging into the top-level `OR` instead
+      // would overwrite that scoping and search every game globally.
       query.where = {
-        ...query.where,
-        ...{
-          OR: [
-            { name: { search: filter.split(' ').join(' <-> ') } },
-            { name: { contains: filter, mode: 'insensitive' } },
-            { name: { startsWith: filter, mode: 'insensitive' } },
-          ],
-        },
+        AND: [
+          query.where!,
+          {
+            OR: [
+              { name: { search: filter.split(' ').join(' <-> ') } },
+              { name: { contains: filter, mode: 'insensitive' } },
+              { name: { startsWith: filter, mode: 'insensitive' } },
+            ],
+          },
+        ],
       };
     }
 
