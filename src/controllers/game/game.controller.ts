@@ -195,8 +195,9 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
-  async getCopyCount() {
-    return this.gameService
+  @Get(':id/copyCount')
+  async getCopyCount(@Param('id') id: number) {
+    return this.gameService.gameCopyCount(this.ctx, id);
   }
 
   @UseGuards(JwtAuthGuard)

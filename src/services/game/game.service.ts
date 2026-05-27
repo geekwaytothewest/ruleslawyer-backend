@@ -485,4 +485,23 @@ export class GameService {
       return Promise.reject(error);
     }
   }
+
+  async gameCopyCount(ctx: Context, gameId: number): Promise<number> {
+    try {
+      this.logger.log(`Getting copy count for gameId=${gameId}...`);
+
+      const count = await ctx.prisma.copy.count({
+        where: { gameId: Number(gameId) },
+      });
+
+      this.logger.log(`Copy count for gameId=${gameId}: ${count}`);
+
+      return count;
+    } catch (error: any) {
+      this.logger.error(
+        `Error getting copy count for gameId=${gameId}: ${error.message}`,
+      );
+      return Promise.reject(error);
+    }
+  }
 }
