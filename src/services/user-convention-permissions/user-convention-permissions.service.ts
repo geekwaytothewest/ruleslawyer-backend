@@ -56,12 +56,46 @@ export class UserConventionPermissionsService {
   }
 
   async getPermission(
-    where: Prisma.UserConventionPermissionsWhereUniqueInput,
+    id: Number,
+    ctx: Context,
+  ): Promise<UserConventionPermissions | null> {
+    try {
+      return await ctx.prisma.userConventionPermissions.findUnique({
+        where: {
+          id: Number(id),
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async deletePermission(
+    id: Number,
+    ctx: Context,
+  ): Promise<UserConventionPermissions | null> {
+    try {
+      return await ctx.prisma.userConventionPermissions.delete({
+        where: {
+          id: Number(id),
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async updatePermission(
+    id: Number,
+    data: Prisma.UserConventionPermissionsUpdateInput,
     ctx: Context,
   ) {
     try {
-      return await ctx.prisma.userConventionPermissions.findUnique({
-        where: where,
+      return await ctx.prisma.userConventionPermissions.update({
+        where: {
+          id: Number(id),
+        },
+        data,
       });
     } catch (ex) {
       return Promise.reject(ex);

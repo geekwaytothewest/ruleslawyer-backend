@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards } from '@nestjs/common';
 import { UserOrganizationPermissions } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
@@ -8,6 +8,8 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserGuard } from '../../guards/user/user.guard';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { User } from '../../modules/authz/user.decorator';
+import { OrganizationPermissionsSelfUpdateGuard } from '../../guards/permissions/organization-permissions-self-update.guard';
+import { OrganizationPermissionsGuard } from '../../guards/permissions/organization-permissions.guard';
 
 @Controller()
 export class UserOrganizationPermissionsController {
@@ -105,6 +107,37 @@ export class UserOrganizationPermissionsController {
   async getUserConventionCount(@Param('id') id: string): Promise<number> {
     return await this.userOrganizationPermissionsService.userOrganizationCount(
       id,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @Delete(':id')
+  async deleteOrganizationPermission(@Param('id') id: string) {
+    return await this.userOrganizationPermissionsService.deletePermission(
+      Number(id),
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @Put(':id')
+  async updateOrganizationPermission(
+    @Param('id') id: string,
+    @Body()
+    permissionData: {
+      admin: boolean;
+      geekGuide: boolean;
+      readOnly: boolean;
+    },
+  ) {
+    return await this.userOrganizationPermissionsService.updatePermission(
+      Number(id),
+      {
+        admin: permissionData.admin,
+        geekGuide: permissionData.geekGuide,
+        readOnly: permissionData.readOnly,
+      },
       this.ctx,
     );
   }

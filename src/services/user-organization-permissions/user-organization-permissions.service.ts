@@ -41,12 +41,60 @@ export class UserOrganizationPermissionsService {
       return Promise.reject(ex);
     }
   }
+
   async createPermission(
     data: Prisma.UserOrganizationPermissionsCreateInput,
     ctx: Context,
   ): Promise<UserOrganizationPermissions> {
     try {
       return await ctx.prisma.userOrganizationPermissions.create({
+        data,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async getPermission(
+    id: Number,
+    ctx: Context,
+  ): Promise<UserOrganizationPermissions | null> {
+    try {
+      return await ctx.prisma.userOrganizationPermissions.findUnique({
+        where: {
+          id: Number(id),
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async deletePermission(
+    id: Number,
+    ctx: Context,
+  ): Promise<UserOrganizationPermissions | null> {
+    try {
+      return await ctx.prisma.userOrganizationPermissions.delete({
+        where: {
+          id: Number(id),
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
+  async updatePermission(
+    id: Number,
+    data: Prisma.UserOrganizationPermissionsUpdateInput,
+    ctx: Context,
+  ): Promise<UserOrganizationPermissions> {
+    try {
+      return await ctx.prisma.userOrganizationPermissions.update({
+        where: {
+          id: Number(id),
+        },
         data,
       });
     } catch (ex) {
