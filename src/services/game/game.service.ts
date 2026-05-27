@@ -54,15 +54,22 @@ export class GameService {
                 },
                 {
                   collection: {
-                    conventions: {
-                      some: {
-                        convention: {
-                          users: {
-                            some: { userId: user.id },
+                    AND: [
+                      {
+                        conventions: {
+                          some: {
+                            convention: {
+                              users: {
+                                some: { userId: user.id },
+                              },
+                            },
                           },
                         },
                       },
-                    },
+                      {
+                        archived: false,
+                      }
+                    ]
                   },
                 },
               ],
