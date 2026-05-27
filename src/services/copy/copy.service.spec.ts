@@ -268,4 +268,67 @@ describe('CopyService', () => {
       });
     });
   });
+
+  // Each query method wraps a synchronous prisma call in try/catch and rejects
+  // on failure. A synchronous throw (not a rejected promise) is what reaches the
+  // catch, since the prisma call is returned without being awaited.
+  describe('error handling', () => {
+    const boom = () => {
+      throw new Error('db error');
+    };
+
+    it('copy rejects when the query throws', async () => {
+      mockCtx.prisma.copy.findUnique.mockImplementation(boom as any);
+      await expect(service.copy({ id: 1 }, ctx)).rejects.toThrow('db error');
+    });
+
+    it('copyWithCollection rejects when the query throws', async () => {
+      mockCtx.prisma.copy.findUnique.mockImplementation(boom as any);
+      await expect(service.copyWithCollection({ id: 1 }, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('copyWithCheckouts rejects when the query throws', async () => {
+      mockCtx.prisma.copy.findUnique.mockImplementation(boom as any);
+      await expect(service.copyWithCheckouts({ id: 1 }, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('copyWithCheckOutsGameAndCollection rejects when the query throws', async () => {
+      mockCtx.prisma.copy.findUnique.mockImplementation(boom as any);
+      await expect(
+        service.copyWithCheckOutsGameAndCollection({ id: 1 }, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('createCopy rejects when the upsert throws', async () => {
+      mockCtx.prisma.copy.upsert.mockImplementation(boom as any);
+      await expect(
+        service.createCopy(
+          {
+            game: { connect: { id: 1 } },
+            barcodeLabel: '1',
+            organization: { connect: { id: 1 } },
+          } as any,
+          ctx,
+        ),
+      ).rejects.toThrow('db error');
+    });
+
+    it('updateCopy rejects when the update throws', async () => {
+      mockCtx.prisma.copy.update.mockImplementation(boom as any);
+      await expect(
+        service.updateCopy({ where: { id: 1 }, data: {} }, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('searchCopies rejects when the query throws', async () => {
+      mockCtx.prisma.copy.findMany.mockImplementation(boom as any);
+      await expect(
+        service.searchCopies({ winnable: false }, ctx),
+      ).rejects.toThrow('db error');
+    });
+  });
 });

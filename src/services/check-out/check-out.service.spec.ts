@@ -658,4 +658,72 @@ describe('CheckOutService', () => {
       ).resolves.toBeTruthy();
     });
   });
+
+  describe('error handling', () => {
+    // The findMany-based readers return the prisma call without awaiting it, so
+    // only a synchronous throw reaches their catch block.
+    const boom = () => {
+      throw new Error('db error');
+    };
+
+    it('getLongestCheckouts rejects when the query throws', async () => {
+      mockCtx.prisma.checkOut.findMany.mockImplementation(boom as any);
+      await expect(service.getLongestCheckouts(1, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('getRecentCheckouts rejects when the query throws', async () => {
+      mockCtx.prisma.checkOut.findMany.mockImplementation(boom as any);
+      await expect(service.getRecentCheckouts(1, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('getCheckOuts rejects when the query throws', async () => {
+      mockCtx.prisma.checkOut.findMany.mockImplementation(boom as any);
+      await expect(service.getCheckOuts(1, ctx)).rejects.toThrow('db error');
+    });
+
+    it('getCheckOutsByCollectionId rejects when the query throws', async () => {
+      mockCtx.prisma.checkOut.findMany.mockImplementation(boom as any);
+      await expect(
+        service.getCheckOutsByCollectionId(1, 2, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('getAttendeePrizeEntries rejects when the query throws', async () => {
+      mockCtx.prisma.checkOut.findMany.mockImplementation(boom as any);
+      await expect(
+        service.getAttendeePrizeEntries('2410001', ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    // These methods await their dependencies, so a rejected dependency lands in
+    // the outer catch.
+    it('checkOut rejects when the copy lookup fails', async () => {
+      mockCtx.prisma.copy.findUnique.mockRejectedValue(new Error('db error'));
+      await expect(
+        service.checkOut(1, '*00001*', 1, '*000001*', false, ctx, {
+          userId: 1,
+        }),
+      ).rejects.toThrow('db error');
+    });
+
+    it('checkIn rejects when the copy lookup fails', async () => {
+      mockCtx.prisma.copy.findUnique.mockRejectedValue(new Error('db error'));
+      await expect(service.checkIn(1, '*000001*', ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('submitPrizeEntry rejects when the checkout lookup fails', async () => {
+      mockCtx.prisma.checkOut.findUnique.mockRejectedValue(
+        new Error('db error'),
+      );
+      await expect(service.submitPrizeEntry(1, [], ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+  });
 });

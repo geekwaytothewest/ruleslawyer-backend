@@ -205,6 +205,19 @@ describe('GameController', () => {
     });
   });
 
+  describe('getCopyCount', () => {
+    it('should return the copy count for the game', async () => {
+      const spy = jest
+        .spyOn(gameService, 'gameCopyCount')
+        .mockResolvedValue(7);
+
+      const result = await controller.getCopyCount(1);
+
+      expect(result).toBe(7);
+      expect(spy).toHaveBeenCalledWith(ctx, 1);
+    });
+  });
+
   describe('deleteGame', () => {
     it('should delete a game', async () => {
       mockCtx.prisma.game.delete.mockResolvedValue({ id: 1 } as any);
@@ -260,6 +273,47 @@ describe('GameController', () => {
       await controller.syncAndConnectGamesWithBGG(1, 'http://dump');
 
       expect(spy).toHaveBeenCalledWith(1, ctx, 'http://dump');
+    });
+  });
+
+  describe('syncBGGGame', () => {
+    it('should return null when the game is not found', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue(null);
+      const spy = jest.spyOn(gameService, 'syncBGGGame');
+
+      const result = await controller.syncBGGGame(1, { id: 1 });
+
+      expect(result).toBeNull();
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('should return null when the game has no bggId', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Catan',
+        bggId: null,
+      } as any);
+      const spy = jest.spyOn(gameService, 'syncBGGGame');
+
+      const result = await controller.syncBGGGame(1, { id: 1 });
+
+      expect(result).toBeNull();
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('should sync the game when found with a bggId', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        name: 'Catan',
+        bggId: 13,
+      } as any);
+      const spy = jest
+        .spyOn(gameService, 'syncBGGGame')
+        .mockResolvedValue({ id: 1 } as any);
+
+      await controller.syncBGGGame(1, { id: 1 });
+
+      expect(spy).toHaveBeenCalledWith(1, ctx);
     });
   });
 });

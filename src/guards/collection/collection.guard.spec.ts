@@ -443,6 +443,154 @@ describe('CollectionGuard', () => {
     expect(authed2).toBeTruthy();
   });
 
+  it('write guard returns false when the collection is archived', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: true } },
+        params: { colId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      archived: true,
+    } as any);
+
+    const authed = await writeGuard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('write guard returns false when the collection has no organizationId', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: false } },
+        params: { colId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: null,
+      archived: false,
+    } as any);
+
+    const authed = await writeGuard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('write guard returns true when the user owns the organization', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: false } },
+        params: { colId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      archived: false,
+    } as any);
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 2,
+      users: [],
+    } as any);
+
+    const authed = await writeGuard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+  });
+
+  it('read guard returns false when the collection has no organizationId', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: false } },
+        params: { colId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: null,
+      public: false,
+    } as any);
+
+    const authed = await readGuard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('read guard returns true for a public collection', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: false } },
+        params: { colId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      public: true,
+    } as any);
+
+    const authed = await readGuard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+  });
+
+  it('read guard returns true when a collection convention matches the user', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: false } },
+        params: { colId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      public: false,
+      conventions: [{ conventionId: 10 }],
+    } as any);
+    // The user has access to convention 10, which the collection is part of.
+    mockCtx.prisma.convention.findMany.mockResolvedValue([{ id: 10 }] as any);
+
+    const authed = await readGuard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+  });
+
+  it('read guard returns true when the user owns the organization', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: false } },
+        params: { colId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      public: false,
+      conventions: [],
+    } as any);
+    mockCtx.prisma.convention.findMany.mockResolvedValue([] as any);
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 2,
+      users: [],
+    } as any);
+
+    const authed = await readGuard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+  });
+
   it('should return false after everything else', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({

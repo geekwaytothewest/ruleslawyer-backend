@@ -158,7 +158,7 @@ describe('ConventionService', () => {
 
       mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(query);
 
-      const convention = await service.convention(
+      const convention = await service.conventionWithUsers(
         {
           id: 1,
         },
@@ -166,6 +166,7 @@ describe('ConventionService', () => {
       );
 
       expect(convention?.id).toBe(1);
+      expect(convention.users.length).toBe(1);
     });
   });
 
@@ -610,6 +611,114 @@ describe('ConventionService', () => {
       // ...and with no products, no leading/trailing separator.
       expect(attendeeB.merch).toBe('Patron');
     });
+
+    it('fetches a single badge when a tteBadgeId is supplied', async () => {
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce({
+        id: 1,
+        typeId: 1,
+        startDate: new Date('2026-05-01'),
+        tteConventionId: 'fakeid',
+      } as any);
+
+      jest
+        .spyOn(service['tteService'], 'getSession')
+        .mockResolvedValueOnce({ session_id: 'valid' });
+      jest
+        .spyOn(service['tteService'], 'getBadgeTypes')
+        .mockResolvedValueOnce([{ id: 1, name: 'Standard' }]);
+      const getBadgeSpy = jest
+        .spyOn(service['tteService'], 'getBadge')
+        .mockResolvedValue({
+          id: 'badge-a',
+          name: 'Solo Attendee',
+          firstname: 'Solo',
+          lastname: 'Attendee',
+          badgetype_id: 1,
+          email: 'solo@geekway.com',
+          badge_number: 1,
+          custom_fields: { PreferredPronouns: 'she/her' },
+        });
+      const getBadgesSpy = jest.spyOn(service['tteService'], 'getBadges');
+      jest
+        .spyOn(service['tteService'], 'getSoldProducts')
+        .mockResolvedValue([]);
+      jest
+        .spyOn(service['attendeeService'], 'syncAttendee')
+        .mockResolvedValue(undefined as any);
+
+      await expect(
+        service.importAttendees(
+          {
+            userName: '',
+            password: '',
+            apiKey: '',
+            tteBadgeId: 'badge-a',
+            tteBadgeNumber: 1,
+          },
+          1,
+          ctx,
+        ),
+      ).resolves.toBe(1);
+
+      // The single-badge path uses getBadge, not the full badge list.
+      expect(getBadgeSpy).toHaveBeenCalled();
+      expect(getBadgesSpy).not.toHaveBeenCalled();
+    });
+
+    it('logs a status update every hundredth badge', async () => {
+      mockCtx.prisma.convention.findUnique.mockResolvedValueOnce({
+        id: 1,
+        typeId: 1,
+        startDate: new Date('2026-05-01'),
+        tteConventionId: 'fakeid',
+      } as any);
+
+      jest
+        .spyOn(service['tteService'], 'getSession')
+        .mockResolvedValueOnce({ session_id: 'valid' });
+      jest
+        .spyOn(service['tteService'], 'getBadgeTypes')
+        .mockResolvedValueOnce([{ id: 1, name: 'Standard' }]);
+      jest
+        .spyOn(service['tteService'], 'getConventionSoldProducts')
+        .mockResolvedValue([]);
+
+      // 100 badges so the count % 100 === 0 status-log branch is hit.
+      const badges = Array.from({ length: 100 }, (_, i) => ({
+        id: `badge-${i}`,
+        name: `Attendee ${i}`,
+        badgetype_id: 1,
+        email: `a${i}@geekway.com`,
+        badge_number: i + 1,
+        custom_fields: {},
+      }));
+      jest.spyOn(service['tteService'], 'getBadges').mockResolvedValue(badges);
+      jest
+        .spyOn(service['attendeeService'], 'syncAttendee')
+        .mockResolvedValue(undefined as any);
+
+      await expect(
+        service.importAttendees(
+          { userName: '', password: '', apiKey: '' },
+          1,
+          ctx,
+        ),
+      ).resolves.toBe(100);
+    });
+
+    it('rejects when the convention lookup fails', async () => {
+      mockCtx.prisma.convention.findUnique.mockRejectedValueOnce(
+        new Error('db error'),
+      );
+
+      await expect(
+        service.importAttendees(
+          { userName: '', password: '', apiKey: '' },
+          1,
+          ctx,
+        ),
+      ).rejects.toThrow('db error');
+    });
   });
 
   describe('startImportAttendees', () => {
@@ -902,6 +1011,136 @@ describe('ConventionService', () => {
       await expect(
         service.importAttendeesCSV('"unterminated', 1, ctx),
       ).rejects.toBe('invalid csv file');
+    });
+  });
+
+  describe('error handling', () => {
+    // Methods that return the prisma call without awaiting it only reach their
+    // catch on a synchronous throw.
+    const boom = () => {
+      throw new Error('db error');
+    };
+
+    it('createConvention rejects when the org lookup fails', async () => {
+      mockCtx.prisma.organization.findUnique.mockRejectedValue(
+        new Error('db error'),
+      );
+      await expect(
+        service.createConvention(
+          { organization: { connect: { id: 1 } } } as any,
+          ctx,
+        ),
+      ).rejects.toThrow('db error');
+    });
+
+    it('convention rejects when the query throws', async () => {
+      mockCtx.prisma.convention.findUnique.mockImplementation(boom as any);
+      await expect(service.convention({ id: 1 }, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('conventionWithUsers rejects when the query throws', async () => {
+      mockCtx.prisma.convention.findUnique.mockImplementation(boom as any);
+      await expect(
+        service.conventionWithUsers({ id: 1 }, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('updateConvention rejects when the update throws', async () => {
+      mockCtx.prisma.convention.update.mockImplementation(boom as any);
+      await expect(
+        service.updateConvention(1, {}, ctx),
+      ).rejects.toThrow('db error');
+    });
+
+    it('conventionsByOrg rejects when the query throws', async () => {
+      mockCtx.prisma.convention.findMany.mockImplementation(boom as any);
+      await expect(service.conventionsByOrg(1, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('conventions rejects when the query throws', async () => {
+      mockCtx.prisma.convention.findMany.mockImplementation(boom as any);
+      await expect(service.conventions({ id: 1 }, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('attachCollection rejects when the create throws', async () => {
+      mockCtx.prisma.conventionCollections.create.mockImplementation(
+        boom as any,
+      );
+      await expect(service.attachCollection(1, 2, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('detachCollection rejects when the delete throws', async () => {
+      mockCtx.prisma.conventionCollections.delete.mockImplementation(
+        boom as any,
+      );
+      await expect(service.detachCollection(1, 2, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+
+    it('exportBadgeFile rejects when the attendee lookup fails', async () => {
+      mockCtx.prisma.attendee.findMany.mockRejectedValue(new Error('db error'));
+      await expect(service.exportBadgeFile(1, ctx)).rejects.toThrow('db error');
+    });
+
+    it('checkOutGame rejects when the checkout throws synchronously', async () => {
+      jest
+        .spyOn(service['checkOutService'], 'checkOut')
+        .mockImplementation(boom as any);
+      await expect(
+        service.checkOutGame(1, 'bc', 'abc', 1, ctx, { id: 1 }),
+      ).rejects.toThrow('db error');
+    });
+
+    it('importAttendeesCSV rejects when parsing throws synchronously', async () => {
+      // A non-string/buffer input makes the csv parser throw synchronously,
+      // reaching the executor's outer catch.
+      await expect(
+        service.importAttendeesCSV({} as any, 1, ctx),
+      ).rejects.toBeDefined();
+    });
+
+    it('startImportAttendees logs and clears the flag when the background import fails', async () => {
+      // Reject with a non-Error so the `error?.message ?? error` fallback runs.
+      jest
+        .spyOn(service, 'importAttendees')
+        .mockRejectedValue('background boom');
+      const errorSpy = jest.spyOn(service['logger'], 'error');
+
+      service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+
+      // Let the fire-and-forget promise settle.
+      await new Promise((r) => setImmediate(r));
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Background attendee import (TTE) failed'),
+      );
+      // The in-progress flag clears, so a new import can start.
+      expect(service['importInProgress']).toBe(false);
+    });
+
+    it('startImportAttendeesCSV logs and clears the flag when the background import fails', async () => {
+      jest
+        .spyOn(service, 'importAttendeesCSV')
+        .mockRejectedValue('background boom');
+      const errorSpy = jest.spyOn(service['logger'], 'error');
+
+      service.startImportAttendeesCSV(Buffer.from(''), 1, ctx);
+
+      await new Promise((r) => setImmediate(r));
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Background attendee import (CSV) failed'),
+      );
+      expect(service['importInProgress']).toBe(false);
     });
   });
 });

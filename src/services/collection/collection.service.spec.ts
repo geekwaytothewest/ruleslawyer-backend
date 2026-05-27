@@ -68,6 +68,21 @@ describe('CollectionService', () => {
     });
   });
 
+  describe('collectionsByOrgWithCopies', () => {
+    it('should return an org collections including their copies', async () => {
+      mockCtx.prisma.collection.findMany.mockResolvedValue([
+        { id: 1, name: 'Test Collection', copies: [] },
+      ] as any);
+
+      const collections = await service.collectionsByOrgWithCopies(1, ctx);
+
+      expect(collections.length).toBe(1);
+      expect(mockCtx.prisma.collection.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { organizationId: 1 } }),
+      );
+    });
+  });
+
   describe('collectionsByOrg', () => {
     it('should return all an org collections', async () => {
       mockCtx.prisma.collection.findMany.mockResolvedValue([
@@ -448,6 +463,222 @@ describe('CollectionService', () => {
       });
 
       expect(await service.deleteCollection(1, ctx)).toBe('deleted');
+    });
+
+    it('refuses to delete a collection tied to a convention', async () => {
+      mockCtx.prisma.convention.count.mockResolvedValue(1 as any);
+
+      const result = await service.deleteCollection(1, ctx);
+
+      expect(result).toBe('cannot delete a collection tied to a convention');
+      expect(mockCtx.prisma.collection.delete).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the lookup fails', async () => {
+      mockCtx.prisma.convention.count.mockRejectedValue(new Error('db error'));
+
+      await expect(service.deleteCollection(1, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+  });
+
+  describe('collectionCopiesByGames with a filter', () => {
+    it('builds a name-search where clause when a filter is supplied', async () => {
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({ id: 1 } as any);
+      mockCtx.prisma.$transaction.mockResolvedValue([[], 0] as any);
+
+      await service.collectionCopiesByGames(1, 10, 'catan', ctx, 1);
+
+      const gameArgs = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(gameArgs.where.AND).toBeDefined();
+      expect(gameArgs.where.AND[0].OR).toBeDefined();
+    });
+
+    it('falls back to the cap and first page when limit and page are missing', async () => {
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({ id: 1 } as any);
+      mockCtx.prisma.$transaction.mockResolvedValue([[], 0] as any);
+
+      const result = await service.collectionCopiesByGames(
+        1,
+        undefined as any,
+        '',
+        ctx,
+      );
+
+      const gameArgs = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(gameArgs.take).toBe(1000);
+      expect(gameArgs.skip).toBe(0);
+      expect(result.page).toBe(1);
+    });
+  });
+
+  describe('createCollection', () => {
+    it('creates a collection', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({ id: 1 } as any);
+
+      const result = await service.createCollection(1, 'New', false, ctx);
+
+      expect(result.id).toBe(1);
+    });
+
+    it('rejects when the create throws', async () => {
+      mockCtx.prisma.collection.create.mockImplementation(() => {
+        throw new Error('db error');
+      });
+
+      await expect(
+        service.createCollection(1, 'New', false, ctx),
+      ).rejects.toThrow('db error');
+    });
+  });
+
+  describe('updateCollection', () => {
+    it('updates a collection', async () => {
+      mockCtx.prisma.collection.update.mockResolvedValue({
+        id: 1,
+        name: 'Updated',
+      } as any);
+
+      const result = await service.updateCollection(1, 'Updated', true, ctx);
+
+      expect(result.name).toBe('Updated');
+    });
+
+    it('rejects when the update fails', async () => {
+      mockCtx.prisma.collection.update.mockRejectedValue(new Error('db error'));
+
+      await expect(
+        service.updateCollection(1, 'Updated', true, ctx),
+      ).rejects.toThrow('db error');
+    });
+  });
+
+  describe('archiveCollection', () => {
+    it('archives a collection', async () => {
+      mockCtx.prisma.collection.update.mockResolvedValue({
+        id: 1,
+        archived: true,
+      } as any);
+
+      const result = await service.archiveCollection(1, ctx);
+
+      expect(result.archived).toBe(true);
+      expect(mockCtx.prisma.collection.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { archived: true },
+      });
+    });
+
+    it('rejects when the update fails', async () => {
+      mockCtx.prisma.collection.update.mockRejectedValue(new Error('db error'));
+
+      await expect(service.archiveCollection(1, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+  });
+
+  describe('importCollection edge cases', () => {
+    it('creates a winnable collection when allowWinning is "true"', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue({
+        id: 1,
+        allowWinning: true,
+      } as any);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        allowWinning: true,
+      } as any);
+      mockCtx.prisma.copy.create.mockResolvedValue({ id: 1, gameId: 1 } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        maxPlayers: 4,
+      } as any);
+
+      await service.importCollection(
+        1,
+        {
+          name: { value: 'Winnable' },
+          allowWinning: { value: 'true' },
+        },
+        Buffer.from('test title,1,4'),
+        ctx,
+      );
+
+      const createArgs = mockCtx.prisma.collection.create.mock
+        .calls[0][0] as any;
+      expect(createArgs.data.allowWinning).toBe(true);
+    });
+
+    it('rejects when the created collection is null', async () => {
+      mockCtx.prisma.collection.create.mockResolvedValue(null as any);
+
+      await expect(
+        service.importCollection(
+          1,
+          { name: { value: 'Test Collection' } },
+          Buffer.from('test title,1'),
+          ctx,
+        ),
+      ).rejects.toBe('could not create collection');
+    });
+  });
+
+  describe('uploadCopies', () => {
+    it('keeps importing when a single copy fails to create', async () => {
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        allowWinning: false,
+      } as any);
+      jest
+        .spyOn(service['copyService'], 'createCopy')
+        .mockRejectedValue(new Error('dup barcode'));
+      mockCtx.prisma.game.findUnique.mockResolvedValue(null);
+
+      const result: any = await service.uploadCopies(
+        1,
+        1,
+        Buffer.from('test title,1,4'),
+        ctx,
+      );
+
+      // The row failed, so nothing was imported, but the run still resolves.
+      expect(result.importCount).toBe(0);
+    });
+
+    it('continues when updating the game maxPlayers fails', async () => {
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        allowWinning: false,
+      } as any);
+      jest
+        .spyOn(service['copyService'], 'createCopy')
+        .mockResolvedValue({ id: 1, gameId: 1 } as any);
+      // Existing maxPlayers differs from the CSV value, so an update is attempted.
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        maxPlayers: 2,
+      } as any);
+      mockCtx.prisma.game.update.mockRejectedValue(new Error('update failed'));
+
+      const result: any = await service.uploadCopies(
+        1,
+        1,
+        Buffer.from('test title,1,4'),
+        ctx,
+      );
+
+      expect(result.importCount).toBe(1);
+    });
+
+    it('rejects when the collection lookup fails', async () => {
+      mockCtx.prisma.collection.findUnique.mockRejectedValue(
+        new Error('db error'),
+      );
+
+      await expect(
+        service.uploadCopies(1, 1, Buffer.from('test title,1,4'), ctx),
+      ).rejects.toThrow('db error');
     });
   });
 });

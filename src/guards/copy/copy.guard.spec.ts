@@ -176,6 +176,136 @@ describe('CopyGuard', () => {
     expect(authed).toBeFalsy();
   });
 
+  it('should return true for a super admin', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { id: 1 },
+      }),
+    });
+
+    mockCtx.prisma.copy.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      collection: { id: 1, archived: false },
+    } as any);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+  });
+
+  it('should return false when the copy collection is archived', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { id: 1 },
+      }),
+    });
+
+    mockCtx.prisma.copy.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      collection: { id: 1, archived: true },
+    } as any);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('should return false when the copy is not found', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { id: 1 },
+      }),
+    });
+
+    mockCtx.prisma.copy.findUnique.mockResolvedValue(null);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('should fall back to the copyId param when id is absent', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { copyId: 5 },
+      }),
+    });
+
+    mockCtx.prisma.copy.findUnique.mockResolvedValue({
+      id: 5,
+      organizationId: 1,
+      collection: { id: 1, archived: false },
+    } as any);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+    expect(mockCtx.prisma.copy.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 5 } }),
+    );
+  });
+
+  it('should return false when no copyId and no barcodeLabel are provided', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { orgId: 1 },
+      }),
+    });
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('should return false when a barcodeLabel is given without an orgId', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { oldBarcodeLabel: 'ABC' },
+      }),
+    });
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeFalsy();
+  });
+
+  it('should resolve the copy by barcodeLabel and orgId', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { oldBarcodeLabel: 'ABC', orgId: 1 },
+      }),
+    });
+
+    mockCtx.prisma.copy.findUnique.mockResolvedValue({
+      id: 7,
+      organizationId: 1,
+      collection: { id: 1, archived: false },
+    } as any);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+    expect(mockCtx.prisma.copy.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          organizationId_barcodeLabel: {
+            barcodeLabel: 'ABC',
+            organizationId: 1,
+          },
+        },
+      }),
+    );
+  });
+
   it('should return false after everything', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
