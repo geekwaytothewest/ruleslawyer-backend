@@ -36,7 +36,7 @@ geekway/
 
 Create an `.env` file from the `.env.template` in each project (backend, plus each frontend). Note: `ruleslawyer-frontend` uses `.env.docker`.
 
-If you haven't already, add yourself to [`prisma/seed.ts`](prisma/seed.ts) so you have an account after seeding.
+There is a database seed file for initial deployments available at [`prisma/seed.ts`](prisma/seed.ts).
 
 ## Running the app
 
