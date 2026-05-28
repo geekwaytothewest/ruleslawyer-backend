@@ -1,61 +1,109 @@
 ## Description
 
-Geekawy to the West Rules Lawyer is the premier play and win convention backend.
+Geekway to the West Rules Lawyer is the premier play and win convention backend.
 
-Requirements:
+Built with [NestJS](https://nestjs.com/) (Fastify) + [Prisma](https://www.prisma.io/) on PostgreSQL, with Auth0 for authentication.
 
-- Docker/Docker Compose
-- Auth0
+## Requirements
+
+- Docker / Docker Compose
+- Auth0 tenant (for auth)
+- Node.js 20+ (only needed to run tests and tooling locally; the app itself runs in Docker)
 
 ## Installation
 
-Git clone/pull this repository as well as the frontends repository into the same directory
+Clone the backend and both frontend repositories into the same parent directory. The `pnw-picker` (Play & Win prize-picker tool) is a standalone utility, not part of the Docker stack, but lives alongside the others:
 
-Ex: ./git/geekway/ruleslawyer-backend
-./git/geekway/frontends
+```bash
+git clone https://github.com/geekwaytothewest/ruleslawyer-backend.git
+git clone https://github.com/geekwaytothewest/frontends.git
+git clone https://github.com/geekwaytothewest/ruleslawyer-frontend.git
+git clone https://github.com/geekwaytothewest/pnw-picker.git
+```
 
-Create .env file based on .env.template in each project (backend + frontend x 3)
+Resulting layout:
 
-If you haven't already, add yourself to prisma/seed.ts
+```
+geekway/
+├── ruleslawyer-backend/
+├── ruleslawyer-frontend/
+├── pnw-picker/
+└── frontends/
+    ├── board-game-admin/
+    ├── librarian/
+    └── play-prize-entry/
+```
+
+Create an `.env` file from the `.env.template` in each project (backend, plus each frontend). Note: `ruleslawyer-frontend` uses `.env.docker`.
+
+If you haven't already, add yourself to [`prisma/seed.ts`](prisma/seed.ts) so you have an account after seeding.
 
 ## Running the app
 
 ```bash
-$ docker compose --profile all up
+docker compose --profile all up
 ```
 
-The backend will be listening on: localhost:8080
+On startup the backend container automatically runs Prisma migrations and seeds the database, so no manual migration step is required.
 
-The frontends will be listening on:
-
-- admin: http://localhost:8081/admin
-- librarian: http://localhost:8082/librarian
-- play and win: http://localhost:8083/playandwin
-
-The database will be listening on: localhost:5432
+| Service             | URL                                |
+| ------------------- | ---------------------------------- |
+| Backend             | http://localhost:8080              |
+| Backend debugger    | localhost:9229                     |
+| Admin               | http://localhost:8081/admin        |
+| Librarian           | http://localhost:8082/librarian    |
+| Play and Win        | http://localhost:8083/playandwin   |
+| Ruleslawyer dashboard | http://localhost:8084/ruleslawyer |
+| Database (Postgres) | localhost:5432                     |
 
 ## Using compose profiles
 
-Profiles available: all, backend, ruleslawyer, db, frontends, admin, librarian, playandwin
+Boot only the services you need with one or more profiles.
 
-Ex: only boot the requirements for the backend and admin
+| Profile      | Services started                          |
+| ------------ | ----------------------------------------- |
+| `all`        | Everything                                |
+| `backend`    | Backend + Postgres                        |
+| `db`         | Postgres                                  |
+| `ruleslawyer`| Backend + Postgres + Ruleslawyer dashboard |
+| `frontends`  | Admin + Librarian + Play and Win          |
+| `frontend`   | Ruleslawyer dashboard                     |
+| `admin`      | Admin                                     |
+| `librarian`  | Librarian                                 |
+| `playandwin` | Play and Win                              |
+
+Example — boot just the backend (with its database) and the admin frontend:
 
 ```bash
-$ docker compose --profile backend --profile admin up
+docker compose --profile backend --profile admin up
 ```
+
+## API requests
+
+A [Bruno](https://www.usebruno.com/) collection for hitting the API lives in [`bruno/Backend`](bruno/Backend).
 
 ## Test
 
 ```bash
 # unit tests
-$ npm run test
+npm run test
 
 # e2e tests
-$ npm run test:e2e
+npm run test:e2e
 
 # test coverage
-$ npm run test:cov
+npm run test:cov
 ```
+
+## Deployment
+
+Deployed to AWS ECS via the **Build and Deploy** GitHub Action (manual `workflow_dispatch`; choose `nonprod` or `prod`). It builds the Docker image, pushes it to the `ruleslawyer-backend` ECR repo, and updates the `ruleslawyer-backend` ECS service on the `geekway-{env}` cluster using `.aws/taskdefinition-{env}.json`.
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full process, prerequisites, and the per-service reference for all repos.
+
+## Documentation
+
+Architecture references live in [`Documentation/`](Documentation): an entity-relationship diagram (ERD) and the system diagram (`System Diagram.drawio.png`). It is reasonably up to date.
 
 ## Stay in touch
 
@@ -66,4 +114,4 @@ $ npm run test:cov
 
 ## License
 
-TBD?
+Licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](LICENSE).
