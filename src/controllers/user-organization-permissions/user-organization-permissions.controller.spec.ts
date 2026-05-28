@@ -37,6 +37,7 @@ describe('UserOrganizationPermissionsController', () => {
       ] as any);
 
       const result = await controller.getUserOrganizationPermissions('5', {
+        id: 5,
         superAdmin: true,
       });
 

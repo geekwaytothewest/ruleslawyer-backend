@@ -19,6 +19,7 @@ import { LegacyModule } from './modules/legacy/legacy.module';
 import { ClsModule } from 'nestjs-cls';
 import { FastifyRequest } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
+import { PermissionsModule } from './modules/permissions/permissions.module';
 
 const routes = [
   {
@@ -57,6 +58,10 @@ const routes = [
     path: 'api/collection',
     module: CollectionModule,
   },
+  {
+    path: '/api/permissions',
+    module: PermissionsModule,
+  },
 ];
 
 @Module({
@@ -74,6 +79,7 @@ const routes = [
     CollectionModule,
     AttendeeModule,
     LegacyModule,
+    PermissionsModule,
     ClsModule.forRoot({
       global: true,
       middleware: {

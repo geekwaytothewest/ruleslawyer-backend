@@ -6,7 +6,6 @@ import { UserOrganizationPermissionsService } from '../../services/user-organiza
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserGuard } from '../../guards/user/user.guard';
-import { OrganizationService } from '../../services/organization/organization.service';
 import { User } from '../../modules/authz/user.decorator';
 import { OrganizationPermissionsSelfUpdateGuard } from '../../guards/permissions/organization-permissions-self-update.guard';
 import { OrganizationPermissionsGuard } from '../../guards/permissions/organization-permissions.guard';
@@ -18,7 +17,6 @@ export class UserOrganizationPermissionsController {
 
   constructor(
     private readonly userOrganizationPermissionsService: UserOrganizationPermissionsService,
-    private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
   ) {
     this.ctx = {
@@ -32,43 +30,11 @@ export class UserOrganizationPermissionsController {
     @Param('id') id: string,
     @User() user: any,
   ): Promise<UserOrganizationPermissions[]> {
-    let userOrgPermissions: any = [];
-    let userOrgs: any = [];
-
-    if (user.superAdmin && user.id === Number(id)) {
-      userOrgs = await this.organizationService.allOrganizations(this.ctx);
-    } else {
-      userOrgPermissions =
-        await this.userOrganizationPermissionsService.userOrganizationPermissions(
-          id,
-          this.ctx,
-        );
-
-      userOrgs = await this.organizationService.organizationByOwner(
-        Number(id),
-        this.ctx,
-      );
-    }
-
-    userOrgs.forEach((uo) => {
-      const uop = userOrgPermissions.find(
-        (uop) => uop.organizationId === uo.id,
-      );
-
-      if (uop) {
-        uop.admin = true;
-      } else {
-        userOrgPermissions.push({
-          id: -1,
-          userId: id,
-          organizationId: uo.id,
-          admin: true,
-          organization: uo,
-        });
-      }
-    });
-
-    return userOrgPermissions;
+    return this.userOrganizationPermissionsService.userOrganizationPermissionsWithOwned(
+      id,
+      user,
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)

@@ -59,7 +59,7 @@ describe('UserOrganizationPermissionsService', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { userId: 1 },
-          include: { organization: true },
+          include: { organization: true, user: true },
         }),
       );
     });
