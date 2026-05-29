@@ -101,7 +101,24 @@ Deployed to AWS ECS via the **Build and Deploy** GitHub Action (manual `workflow
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the full process, prerequisites, and the per-service reference for all repos.
 
+## Post Deployment Setup
+
+Post-deployment setup can be accomplished either through Bruno or the Prisma seed file.
+
+**Using Bruno:**
+
+1. Authenticate with Auth0.
+2. Run the **Get Status** route. The system will detect the first user login and assign them Super Admin permissions.
+3. Run the **Create Organization** route.
+4. Run the **Create Convention Type** route for at least one convention type.
+
+**Using the Prisma seed:**
+
+Refer to [`prisma/example-seed.ts`](prisma/example-seed.ts).
+
 ## Documentation
+
+[AUTHORIZATION.md](AUTHORIZATION.md) covers the authentication flow (Auth0 + JWT) and the permission model (super admin, organization roles, convention roles) enforced by the route guards.
 
 Architecture references live in [`Documentation/`](Documentation): an entity-relationship diagram (ERD) and the system diagram (`System Diagram.drawio.png`). It is reasonably up to date.
 
