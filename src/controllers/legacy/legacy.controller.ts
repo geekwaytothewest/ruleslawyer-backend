@@ -1657,6 +1657,9 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @HttpCode(202)
+  @ApiAcceptedResponse({
+    description: 'Sync started in the background; progress is in the server logs.',
+  })
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
   async syncTabletopEvents(
@@ -1676,6 +1679,16 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @ApiOkResponse({
+    description: 'CSV text of plays plus the collection name.',
+    schema: {
+      type: 'object',
+      properties: {
+        csvText: { type: 'string', example: 'Wingspan,A123,Jane Doe,...' },
+        collectionName: { type: 'string', example: 'Main Library' },
+      },
+    },
+  })
   @Get('org/:orgId/con/:conId/coll/:collId/exportPlays')
   async exportPlaysByCollectionId(
     @Param('conId') conId: number,
@@ -1708,6 +1721,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @ApiOkResponse({ type: AttendeeEntity })
   @Get('org/:orgId/con/:conId/attendees/badgeNumber/:badgeNumber')
   async getAttendeeByBadgeNumber(
     @Param('conId') conId: number,
@@ -1726,6 +1740,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: AttendeeEntity })
   @Put('org/:orgId/con/:conId/attendees/badgeTransfer')
   async badgeTransfer(
     @Param('conId') conId: number,
@@ -1741,6 +1756,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: AttendeeEntity })
   @Put('org/:orgId/con/:conId/attendees/badgeReplacement')
   async badgeReplacement(
     @Param('conId') conId: number,
