@@ -6,12 +6,7 @@ import {
   MockContext,
   createMockContext,
 } from '../../services/prisma/context';
-import {
-  BadRequestException,
-  ExecutionContext,
-  NotFoundException,
-} from '@nestjs/common';
-import { createMock } from '@golevelup/ts-jest';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('LegacyController', () => {
   let controller: LegacyController;
@@ -219,8 +214,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -302,8 +297,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -374,8 +369,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -446,8 +441,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -529,8 +524,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -577,8 +572,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -662,8 +657,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -747,8 +742,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -853,6 +848,9 @@ describe('LegacyController', () => {
       ];
 
       mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
+      mockCtx.prisma.userConventionPermissions.findMany.mockResolvedValue([
+        { attendee: true, geekGuide: true, admin: false },
+      ] as any);
 
       const req = {
         user: {
@@ -1080,8 +1078,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1209,8 +1207,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1341,8 +1339,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1434,8 +1432,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1529,8 +1527,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1621,8 +1619,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1713,8 +1711,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1805,8 +1803,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -1897,8 +1895,8 @@ describe('LegacyController', () => {
         organizationId: 1,
         name: 'Geekway to the Testing',
         theme: 'Theme to the Testing',
-        logo: <Buffer>{},
-        logoSquare: <Buffer>{},
+        logo: Buffer.alloc(0),
+        logoSquare: Buffer.alloc(0),
         icon: '',
         startDate: new Date(),
         endDate: new Date(),
@@ -2512,11 +2510,13 @@ describe('LegacyController', () => {
         },
       ] as any);
 
-      mockCtx.prisma.userConventionPermissions.findUnique.mockResolvedValue({
-        attendee: true,
-        geekGuide: false,
-        admin: false,
-      } as any);
+      mockCtx.prisma.userConventionPermissions.findMany.mockResolvedValue([
+        {
+          attendee: true,
+          geekGuide: false,
+          admin: false,
+        },
+      ] as any);
 
       const req = { user: { user: { id: 1 } } };
 
