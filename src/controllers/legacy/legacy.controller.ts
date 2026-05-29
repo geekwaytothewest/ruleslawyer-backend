@@ -12,6 +12,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -38,6 +39,8 @@ import { User } from '../../modules/authz/user.decorator';
 import { stringify } from 'csv-stringify/sync';
 import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
 
+@ApiTags('legacy')
+@ApiBearerAuth('jwt')
 @Controller()
 export class LegacyController {
   ctx: Context;

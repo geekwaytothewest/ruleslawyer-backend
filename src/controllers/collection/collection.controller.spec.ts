@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { CollectionController } from './collection.controller';
+import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { CollectionService } from '../../services/collection/collection.service';
 import {
   Context,
@@ -78,19 +81,38 @@ describe('CollectionController', () => {
     });
   });
 
+  describe('UpdateCollectionDto validation', () => {
+    it('fails validation when name is not set', async () => {
+      const dto = plainToInstance(UpdateCollectionDto, { allowWinning: true });
+
+      const errors = await validate(dto);
+
+      expect(errors.map((e) => e.property)).toContain('name');
+    });
+
+    it('fails validation when allowWinning is not a boolean', async () => {
+      const dto = plainToInstance(UpdateCollectionDto, {
+        name: 'My Collection',
+      });
+
+      const errors = await validate(dto);
+
+      expect(errors.map((e) => e.property)).toContain('allowWinning');
+    });
+
+    it('passes validation when both fields are present and well-typed', async () => {
+      const dto = plainToInstance(UpdateCollectionDto, {
+        name: 'My Collection',
+        allowWinning: true,
+      });
+
+      const errors = await validate(dto);
+
+      expect(errors).toHaveLength(0);
+    });
+  });
+
   describe('updateCollection', () => {
-    it('rejects when name is not set', async () => {
-      await expect(
-        controller.updateCollection(1, { allowWinning: true } as any),
-      ).rejects.toBe('name not set');
-    });
-
-    it('rejects when allowWinning is not a boolean', async () => {
-      await expect(
-        controller.updateCollection(1, { name: 'My Collection' } as any),
-      ).rejects.toBe('allowWinning not set');
-    });
-
     it('updates the collection when the body is valid', async () => {
       const spy = jest
         .spyOn(collectionService, 'updateCollection')

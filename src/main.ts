@@ -7,6 +7,7 @@ import {
 import multipart from '@fastify/multipart';
 import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 import * as fastify from 'fastify';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 
 async function bootstrap() {
@@ -40,7 +41,28 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('RulesLawyer API')
+    .setDescription('Board game library and convention management API')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'jwt',
+    )
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
   await app.listen(`${process.env.FASTIFY_PORT}`, '0.0.0.0');
   logger.log(`listening on: ${process.env.FASTIFY_PORT}`);
+  logger.log(`swagger docs: /api/docs`);
 }
 bootstrap();

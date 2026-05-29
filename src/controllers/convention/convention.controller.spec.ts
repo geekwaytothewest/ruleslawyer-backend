@@ -60,8 +60,8 @@ describe('ConventionController', () => {
 
       const createConvention = await controller.createConvention({
         name: 'Geekway to the Testing',
-        startDate: new Date(),
-        endDate: new Date(),
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
         type: {
           connect: {
             id: 1,
@@ -85,8 +85,8 @@ describe('ConventionController', () => {
       expect(
         controller.createConvention({
           name: 'Geekway to the Testing',
-          startDate: new Date(),
-          endDate: new Date(),
+          startDate: new Date().toISOString(),
+          endDate: new Date().toISOString(),
           type: {
             connect: {
               id: 1,
