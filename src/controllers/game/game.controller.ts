@@ -12,7 +12,16 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiAcceptedResponse,
+} from '@nestjs/swagger';
+import { GameEntity } from '../../common/entities/game.entity';
+import { GameWithCopiesEntity } from '../../common/entities/game-with-copies.entity';
+import { CopyWithRelationsEntity } from '../../common/entities/copy-with-relations.entity';
+import { PaginatedGamesDto } from './dto/paginated-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { Context } from '../../services/prisma/context';
@@ -52,6 +61,7 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: GameEntity })
   @Post()
   async createGame(@Body() game: CreateGameDto): Promise<Game | null> {
     return this.gameService.createGame(game, this.ctx);
@@ -59,6 +69,7 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard, GameGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: GameEntity })
   @Put(':id')
   async updateGame(
     @Body() data: UpdateGameDto,
@@ -76,6 +87,7 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: GameWithCopiesEntity })
   @Get(':id')
   async getGame(@Param('id') id: number, @User() user: any) {
     return this.gameService.game(
@@ -88,6 +100,7 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: GameWithCopiesEntity, isArray: true })
   @Get()
   async getGames(
     @User() user: any,
@@ -204,12 +217,14 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: Number, description: 'Number of copies of the game.' })
   @Get(':id/copyCount')
   async getCopyCount(@Param('id') id: number) {
     return this.gameService.gameCopyCount(this.ctx, id);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: PaginatedGamesDto })
   @Get('/withCopies')
   async getGamesWithCopies(
     @User() user: any,
@@ -348,12 +363,14 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, GameGuard)
+  @ApiOkResponse({ type: GameEntity })
   @Delete(':id')
   async deleteGame(@Param('id') id: number) {
     return this.gameService.deleteGame(id, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: CopyWithRelationsEntity, isArray: true })
   @Get(':id/copies')
   async getCopies(
     @Param('id') id: number,
@@ -416,6 +433,7 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, GameGuard)
+  @ApiOkResponse({ type: GameEntity })
   @Put(':id/connectBGGByName')
   async connectBGGGameByName(
     @Param('id') id: number,
@@ -441,6 +459,9 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @HttpCode(202)
+  @ApiAcceptedResponse({
+    description: 'Sync started in the background; progress is in the server logs.',
+  })
   @Put(':orgId/syncAndConnectGamesWithBGG')
   async syncAndConnectGamesWithBGG(
     @Param('orgId') orgId: number,
@@ -452,6 +473,7 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, GameGuard)
+  @ApiOkResponse({ type: GameEntity })
   @Put(':id/syncWithBGG')
   async syncBGGGame(
     @Param('id') id: number,
