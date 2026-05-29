@@ -11,46 +11,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// An application account. Users log in to manage organizations and conventions;
+/// their access is scoped through the per-organization and per-convention
+/// permission join tables rather than a single global role (except superAdmin).
 model User {
   id                          Int                           @id @default(autoincrement())
   email                       String                        @unique
   name                        String?
   username                    String?                       @unique
+  /// Platform-wide administrator, bypassing scoped permission checks.
   superAdmin                  Boolean                       @default(false)
   pronouns                    Pronouns?                     @relation(fields: pronounsId, references: [id])
   pronounsId                  Int?
+  /// Organizations this user owns (see Organization.owner).
   organizations               Organization[]
   UserOrganizationPermissions UserOrganizationPermissions[]
   UserConventionPermissions   UserConventionPermissions[]
   Attendee                    Attendee[]
 }
 
+/// A person registered for a specific convention. Each row is convention-scoped:
+/// the same real person attending two conventions has two Attendee rows. May be
+/// linked to a User account but does not require one. Badge identity is sourced
+/// from / synced with Tabletop.Events (the tte* fields).
 model Attendee {
   id                  Int        @id @default(autoincrement())
   convention          Convention @relation(fields: conventionId, references: [id])
   conventionId        Int
+  /// Display name printed on the badge.
   badgeName           String
   badgeFirstName      String
   badgeLastName       String
   legalName           String
+  /// Optional link to an app account; attendees can exist without one.
   user                User?      @relation(fields: userId, references: [id])
   userId              Int?
+  /// Convention-local badge number (unique within the convention).
   badgeNumber         String
+  /// Scannable barcode encoded on the badge (unique within the convention).
   barcode             String
   badgeType           BadgeType? @relation(fields: badgeTypeId, references: [id])
   badgeTypeId         Int?
+  /// Badge number/id from the external Tabletop.Events system.
   tteBadgeNumber      Int?
   tteBadgeId          String?
   email               String?
   pronouns            Pronouns?  @relation(fields: pronounsId, references: [id])
   pronounsId          Int?
+  /// Whether the attendee has checked in / arrived at the convention.
   checkedIn           Boolean    @default(false)
+  /// Whether the physical badge has been printed.
   printed             Boolean    @default(false)
   registrationCode    String?
+  /// Game copies this attendee has won.
   copies              Copy[]
+  /// Library checkout records made by this attendee.
   checkOuts           CheckOut[]
+  /// Game sessions this attendee participated in (across any checkout).
   players             Player[]
   merch               String?
+  /// Whether the attendee is eligible to win game-copy prize drawings.
   eligibleForPrizes   Boolean     @default(true)
   lostBadge           Boolean     @default(false)
 
@@ -59,12 +79,14 @@ model Attendee {
   @@unique([conventionId, tteBadgeNumber])
 }
 
+/// A category of badge (e.g. attendee, exhibitor, staff) assignable to attendees.
 model BadgeType {
   id       Int        @id @default(autoincrement())
   name     String     @unique
   Attendee Attendee[]
 }
 
+/// A reusable set of pronouns selectable by users and attendees.
 model Pronouns {
   id       Int        @id @default(autoincrement())
   pronouns String     @unique
@@ -72,35 +94,49 @@ model Pronouns {
   User     User[]
 }
 
+/// Role flags granting a User access within an Organization. One row per
+/// (user, organization) pair.
 model UserOrganizationPermissions {
   id             Int          @id @default(autoincrement())
   user           User         @relation(fields: userId, references: [id])
   userId         Int
   organization   Organization @relation(fields: organizationId, references: [id])
   organizationId Int
+  /// Full administrative control of the organization.
   admin          Boolean
+  /// "Geek Guide" role — staff/volunteer helping run library operations.
   geekGuide      Boolean
+  /// View-only access.
   readOnly       Boolean
 
   @@unique([userId, organizationId])
 }
 
+/// Role flags granting a User access within a single Convention. One row per
+/// (user, convention) pair.
 model UserConventionPermissions {
   id           Int        @id @default(autoincrement())
   user         User       @relation(fields: userId, references: [id])
   userId       Int
   convention   Convention @relation(fields: conventionId, references: [id])
   conventionId Int
+  /// Full administrative control of the convention.
   admin        Boolean
+  /// "Geek Guide" role — staff/volunteer for this convention.
   geekGuide    Boolean
+  /// Standard attendee-level access.
   attendee     Boolean
 
   @@unique([userId, conventionId])
 }
 
+/// The top-level tenant that owns everything: conventions, game library
+/// collections, physical copies, and convention templates. All scoped data
+/// hangs off an Organization.
 model Organization {
   id             Int                           @id @default(autoincrement())
   name           String                        @unique
+  /// The User who owns this organization.
   owner          User                          @relation(fields: ownerId, references: [id])
   ownerId        Int
   users          UserOrganizationPermissions[]
@@ -108,14 +144,19 @@ model Organization {
   conventions    Convention[]
   copies         Copy[]
   conventionType ConventionType[]
-  cames          Game[]
+  /// Game catalog owned by the organization.
+  games          Game[]
 }
 
+/// A template/branding profile for conventions (name, logos, descriptive
+/// content). Conventions reference a ConventionType for their type and look.
 model ConventionType {
   id             Int          @id @default(autoincrement())
   name           String
   description    String?
+  /// Logo image bytes stored directly in the database.
   logo           Bytes?
+  /// Square variant of the logo.
   logoSquare     Bytes?
   icon           String?
   content        String?
@@ -126,6 +167,8 @@ model ConventionType {
   @@unique([name, organizationId])
 }
 
+/// A named registration window for a convention (e.g. "Early Bird"), bounded by
+/// a start and end date.
 model RegistrationDate {
   id           Int        @id @default(autoincrement())
   convention   Convention @relation(fields: conventionId, references: [id])
@@ -135,13 +178,17 @@ model RegistrationDate {
   endDate      DateTime
 }
 
+/// A named grouping of game copies within an organization (e.g. "Main Library",
+/// "Prize Pool"). Collections are linked to conventions via ConventionCollections.
 model Collection {
   id             Int                     @id @default(autoincrement())
   name           String
   organization   Organization            @relation(fields: organizationId, references: [id])
   organizationId Int
   copies         Copy[]
+  /// Whether the collection is visible publicly.
   public         Boolean                 @default(false)
+  /// Whether copies in this collection may be won as prizes.
   allowWinning   Boolean                 @default(false)
   archived       Boolean                 @default(false)
   conventions    ConventionCollections[]
@@ -149,11 +196,15 @@ model Collection {
   @@unique([organizationId, name])
 }
 
+/// A board game title (catalog metadata), distinct from a physical Copy.
+/// Metadata can be synced from BoardGameGeek via bggId.
 model Game {
   id               Int          @id @default(autoincrement())
   organization     Organization @relation(fields: organizationId, references: [id])
   organizationId   Int
+  /// BoardGameGeek game id used for metadata sync.
   bggId            Int?
+  /// Timestamp of the last successful BoardGameGeek sync.
   lastBGGSync      DateTime?
   name             String       @unique
   shortDescription String?
@@ -163,27 +214,40 @@ model Game {
   longDescription  String?
   minPlayers       Int?
   maxPlayers       Int?
+  /// Minimum expected play time in minutes.
   minTime          Int?
+  /// Maximum expected play time in minutes.
   maxTime          Int?
   minAge           Int?
+  /// BGG complexity/weight rating.
   weight           Decimal?
+  /// Cover art image bytes stored in the database.
   coverArt         Bytes?
   yearPublished    Int?
   copies           Copy[]
 }
 
+/// A physical, lendable instance of a Game in the library. Barcodes are unique
+/// within both the owning collection and organization.
 model Copy {
   id               Int          @id @default(autoincrement())
   game             Game         @relation(fields: gameId, references: [id])
   gameId           Int
   dateAdded        DateTime
+  /// Human-readable label printed on the copy's barcode sticker.
   barcodeLabel     String
+  /// Scannable barcode value.
   barcode          String
+  /// When set, the copy has been removed from circulation.
   dateRetired      DateTime?
   comments         String?
+  /// Whether this copy is available to be won as a prize.
   winnable         Boolean      @default(true)
+  /// The attendee who won this copy, if any. Restrict prevents deleting a
+  /// winning attendee while the win record stands.
   winner           Attendee?    @relation(fields: winnerId, references: [id], onDelete: Restrict)
   winnerId         Int?
+  /// Per-copy cover art overriding the game's default art.
   coverArtOverride Bytes?
   collection       Collection   @relation(fields: collectionId, references: [id])
   collectionId     Int
@@ -197,34 +261,47 @@ model Copy {
   @@unique([organizationId, barcodeLabel])
 }
 
+/// A library lending event: an attendee borrows a copy. An open checkout has a
+/// null checkIn; the copy is returned when checkIn is set.
 model CheckOut {
   id         Int       @id @default(autoincrement())
+  /// The attendee who checked the copy out.
   attendee   Attendee  @relation(fields: attendeeId, references: [id])
   attendeeId Int
   checkOut   DateTime
+  /// Return timestamp; null while the copy is still out.
   checkIn    DateTime?
+  /// The borrowed copy. Restrict prevents deleting a copy with checkout history.
   copy       Copy?     @relation(fields: copyId, references: [id], onDelete: Restrict)
   copyId     Int?
   players    Player[]
+  /// Whether the post-play ratings for this checkout have been submitted.
   submitted  Boolean   @default(false)
 }
 
+/// One attendee's participation in a CheckOut (a game session), capturing their
+/// rating and whether they want to win that copy.
 model Player {
   id         Int      @id @default(autoincrement())
   checkOut   CheckOut @relation(fields: checkOutId, references: [id])
   checkOutId Int
   attendee   Attendee @relation(fields: attendeeId, references: [id])
   attendeeId Int
+  /// This player's rating of the game from the session.
   rating     Int?
+  /// Whether the player wants to be entered to win this copy.
   wantToWin  Boolean
 }
 
+/// A specific convention event run by an organization, with dates, branding,
+/// registration windows, and the game collections available at it.
 model Convention {
   id                Int                         @id @default(autoincrement())
   organization      Organization                @relation(fields: organizationId, references: [id])
   organizationId    Int
   name              String
   theme             String                      @default("")
+  /// Logo image bytes stored in the database.
   logo              Bytes                       @default("")
   logoSquare        Bytes                       @default("")
   icon              String                      @default("")
@@ -233,18 +310,23 @@ model Convention {
   registrationUrl   String?                     @default("")
   type              ConventionType              @relation(fields: typeId, references: [id])
   typeId            Int
+  /// Free-form annual identifier (e.g. the year or edition label).
   annual            String                      @default("")
+  /// Expected/actual attendance count.
   size              Int?
   registrationDates RegistrationDate[]
   cancelled         Boolean                     @default(false)
   users             UserConventionPermissions[]
   attendees         Attendee[]
+  /// Convention id in the external Tabletop.Events system.
   tteConventionId   String?
   collections       ConventionCollections[]
 
   @@unique([name, organizationId])
 }
 
+/// Join table linking a Convention to the Collections of game copies available
+/// at it (many-to-many).
 model ConventionCollections {
   id           Int        @id @default(autoincrement())
   conventionId Int

@@ -120,6 +120,8 @@ Refer to [`prisma/example-seed.ts`](prisma/example-seed.ts).
 
 [AUTHORIZATION.md](AUTHORIZATION.md) covers the authentication flow (Auth0 + JWT) and the permission model (super admin, organization roles, convention roles) enforced by the route guards.
 
+[Documentation/database.md](Documentation/database.md) documents the database structure: a domain overview, an ER diagram, and per-model field/relationship tables. The schema of record is [`prisma/schema.prisma`](prisma/schema.prisma).
+
 Architecture references live in [`Documentation/`](Documentation): an entity-relationship diagram (ERD) and the system diagram (`System Diagram.drawio.png`). It is reasonably up to date.
 
 ## Stay in touch
