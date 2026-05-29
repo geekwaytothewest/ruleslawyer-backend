@@ -75,4 +75,40 @@ describe('ConventionTypeService', () => {
       expect(conventionType.id).toBe(1);
     });
   });
+
+  describe('conventionTypes', () => {
+    it('returns the convention types for an organization', async () => {
+      mockCtx.prisma.conventionType.findMany.mockResolvedValue([
+        { id: 1 },
+        { id: 2 },
+      ] as any);
+
+      const result = await service.conventionTypes(1, ctx);
+
+      expect(result).toHaveLength(2);
+      expect(mockCtx.prisma.conventionType.findMany).toHaveBeenCalledWith({
+        where: { organizationId: 1 },
+      });
+    });
+
+    it('rejects when the lookup fails', async () => {
+      mockCtx.prisma.conventionType.findMany.mockRejectedValue(
+        new Error('boom'),
+      );
+
+      await expect(service.conventionTypes(1, ctx)).rejects.toThrow('boom');
+    });
+  });
+
+  describe('conventionType error handling', () => {
+    it('rejects when the lookup fails', async () => {
+      mockCtx.prisma.conventionType.findUnique.mockRejectedValue(
+        new Error('boom'),
+      );
+
+      await expect(service.conventionType({ id: 1 }, ctx)).rejects.toThrow(
+        'boom',
+      );
+    });
+  });
 });
