@@ -6,14 +6,19 @@ import {
   Param,
   Put,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { UpdateCopyDto } from './dto/update-copy.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CopyGuard } from '../../guards/copy/copy.guard';
 import { CopyService } from '../../services/copy/copy.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 
+@ApiTags('copies')
+@ApiBearerAuth('jwt')
 @Controller()
 export class CopyController {
   ctx: Context;
@@ -43,10 +48,11 @@ export class CopyController {
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put(':id')
   async updateCopy(
     @Param('id') id: number,
-    @Body() copy: Prisma.CopyUpdateInput,
+    @Body() copy: UpdateCopyDto,
   ) {
     return await this.copyService.updateCopy(
       {

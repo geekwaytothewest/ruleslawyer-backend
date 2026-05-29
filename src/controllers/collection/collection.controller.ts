@@ -8,7 +8,11 @@ import {
   Put,
   Delete,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { CollectionService } from '../../services/collection/collection.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
@@ -16,8 +20,9 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { Context } from '../../services/prisma/context';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
-import { Prisma } from '@prisma/client';
 
+@ApiTags('collections')
+@ApiBearerAuth('jwt')
 @Controller()
 export class CollectionController {
   ctx: Context;
@@ -72,23 +77,12 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put(':colId')
   async updateCollection(
     @Param('colId') colId: number,
-    @Body()
-    collectionData: Prisma.CollectionUpdateInput,
+    @Body() collectionData: UpdateCollectionDto,
   ) {
-    if (!collectionData.name || typeof collectionData.name !== 'string') {
-      return Promise.reject('name not set');
-    }
-
-    if (
-      collectionData.allowWinning === undefined ||
-      typeof collectionData.allowWinning !== 'boolean'
-    ) {
-      return Promise.reject('allowWinning not set');
-    }
-
     return await this.collectionService.updateCollection(
       Number(colId),
       collectionData.name,

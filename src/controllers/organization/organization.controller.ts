@@ -4,10 +4,14 @@ import {
   Delete,
   Get,
   Param,
+  ParseArrayPipe,
   Post,
   Req,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import {
   Collection,
   Convention,
@@ -15,6 +19,12 @@ import {
   Organization,
   Prisma,
 } from '@prisma/client';
+import { CreateOrganizationDto } from './dto/create-organization.dto';
+import { CreateConventionForOrgDto } from './dto/create-convention-for-org.dto';
+import { CreateConventionTypeDto } from './dto/create-convention-type.dto';
+import { SubmitPrizeEntryPlayerDto } from './dto/submit-prize-entry-player.dto';
+import { CreateCopyDto } from '../copy/dto/create-copy.dto';
+import { CreateCollectionDto } from '../collection/dto/create-collection.dto';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -35,6 +45,8 @@ import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
 import { OrganizationAdminGuard } from '../../guards/organization/organization-admin.guard';
 
+@ApiTags('organizations')
+@ApiBearerAuth('jwt')
 @Controller()
 export class OrganizationController {
   ctx: Context;
@@ -55,9 +67,10 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post()
   async createOrganization(
-    @Body() organizationData: { name: string },
+    @Body() organizationData: CreateOrganizationDto,
     @Req() request: Request,
   ): Promise<Organization> {
     const ownerId = request['user'].user.id;
@@ -75,18 +88,22 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post(':id/con')
   async createConvention(
-    @Body() conventionData: Prisma.ConventionCreateInput,
+    @Body() conventionData: CreateConventionForOrgDto,
     @Param('id') id: number,
   ): Promise<Convention> {
-    conventionData.organization = {
-      connect: {
-        id: Number(id),
+    const data: Prisma.ConventionCreateInput = {
+      ...conventionData,
+      organization: {
+        connect: {
+          id: Number(id),
+        },
       },
     };
 
-    return this.conventionService.createConvention(conventionData, this.ctx);
+    return this.conventionService.createConvention(data, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard, UploadGuard)
@@ -122,25 +139,27 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard, CollectionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post(':id/col/:colId/copy')
   async createCopy(
     @Param('id') id: number,
     @Param('colId') colId: number,
-    @Body() data: Prisma.CopyCreateInput,
+    @Body() copyData: CreateCopyDto,
   ) {
-    data.collection = {
-      connect: {
-        id: Number(colId),
+    const data: Prisma.CopyCreateInput = {
+      ...copyData,
+      collection: {
+        connect: {
+          id: Number(colId),
+        },
       },
-    };
-
-    data.organization = {
-      connect: {
-        id: Number(id),
+      organization: {
+        connect: {
+          id: Number(id),
+        },
       },
+      dateAdded: new Date(),
     };
-
-    data.dateAdded = new Date();
 
     return await this.copyService.createCopy(data, this.ctx);
   }
@@ -184,32 +203,39 @@ export class OrganizationController {
     @Param('conId') conId: number,
     @Param('colId') colId: number,
     @Param('checkOutId') checkOutId: number,
-    @Body() players: Prisma.PlayerCreateManyInput[],
+    @Body(
+      new ParseArrayPipe({
+        items: SubmitPrizeEntryPlayerDto,
+        whitelist: true,
+      }),
+    )
+    players: SubmitPrizeEntryPlayerDto[],
   ) {
     return await this.checkOutService.submitPrizeEntry(
       checkOutId,
-      players,
+      // checkOutId is filled in by the service from the route param.
+      players as Prisma.PlayerCreateManyInput[],
       this.ctx,
     );
   }
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post(':id/conventionType')
   async createConventionType(
     @Param('id') id: number,
-    @Body()
-    conventionTypeData: Prisma.ConventionTypeCreateInput,
+    @Body() conventionTypeData: CreateConventionTypeDto,
   ): Promise<ConventionType | void> {
-    conventionTypeData.organization = {
-      connect: {
-        id: Number(id),
+    const data: Prisma.ConventionTypeCreateInput = {
+      ...conventionTypeData,
+      organization: {
+        connect: {
+          id: Number(id),
+        },
       },
     };
 
-    return this.conventionTypeService.createConventionType(
-      conventionTypeData,
-      this.ctx,
-    );
+    return this.conventionTypeService.createConventionType(data, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
@@ -324,22 +350,12 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post(':id/collections')
   async createCollection(
     @Param('id') id: number,
-    @Body() collectionData: Prisma.CollectionCreateInput,
+    @Body() collectionData: CreateCollectionDto,
   ) {
-    if (!collectionData.name || typeof collectionData.name !== 'string') {
-      return Promise.reject('name not set');
-    }
-
-    if (
-      collectionData.allowWinning === undefined ||
-      typeof collectionData.allowWinning !== 'boolean'
-    ) {
-      return Promise.reject('allowWinning not set');
-    }
-
     return this.collectionService.createCollection(
       id,
       collectionData.name,

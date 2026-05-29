@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { OrganizationController } from './organization.controller';
+import { CreateCollectionDto } from '../collection/dto/create-collection.dto';
 import {
   Context,
   MockContext,
@@ -121,14 +124,13 @@ describe('OrganizationController', () => {
       const con = await controller.createConvention(
         {
           name: 'Geekway to the Testing',
-          organization: {},
           type: {
             connect: {
               id: 1,
             },
           },
-          startDate: new Date(),
-          endDate: new Date(),
+          startDate: new Date().toISOString(),
+          endDate: new Date().toISOString(),
         },
         1,
       );
@@ -186,22 +188,8 @@ describe('OrganizationController', () => {
           },
         },
         winnable: false,
-        winner: undefined,
-        coverArtOverride: null,
-        dateAdded: new Date(),
-        dateRetired: null,
         barcode: '*00001*',
         barcodeLabel: '1',
-        organization: {
-          connect: {
-            id: 1,
-          },
-        },
-        collection: {
-          connect: {
-            id: 1,
-          },
-        },
       });
 
       expect(copy?.id).toBe(1);
@@ -428,11 +416,6 @@ describe('OrganizationController', () => {
       expect(
         controller.createConventionType(1, {
           name: 'Geekway to the West',
-          organization: {
-            connect: {
-              id: 1,
-            },
-          },
         }),
       ).resolves.toBeTruthy();
     });
@@ -536,19 +519,25 @@ describe('OrganizationController', () => {
     });
   });
 
+  describe('CreateCollectionDto validation', () => {
+    it('fails validation when name is not set', async () => {
+      const dto = plainToInstance(CreateCollectionDto, { allowWinning: true });
+
+      const errors = await validate(dto);
+
+      expect(errors.map((e) => e.property)).toContain('name');
+    });
+
+    it('fails validation when allowWinning is not a boolean', async () => {
+      const dto = plainToInstance(CreateCollectionDto, { name: 'New' });
+
+      const errors = await validate(dto);
+
+      expect(errors.map((e) => e.property)).toContain('allowWinning');
+    });
+  });
+
   describe('createCollection', () => {
-    it('should reject when name is not set', async () => {
-      await expect(
-        controller.createCollection(1, { allowWinning: true } as any),
-      ).rejects.toBe('name not set');
-    });
-
-    it('should reject when allowWinning is not a boolean', async () => {
-      await expect(
-        controller.createCollection(1, { name: 'New' } as any),
-      ).rejects.toBe('allowWinning not set');
-    });
-
     it('should create a collection when the body is valid', async () => {
       mockCtx.prisma.collection.create.mockResolvedValue({
         id: 1,
