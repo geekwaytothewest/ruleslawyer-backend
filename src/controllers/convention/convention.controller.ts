@@ -24,6 +24,7 @@ import fastify = require('fastify');
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { CollectionService } from '../../services/collection/collection.service';
 import { User } from '../../modules/authz/user.decorator';
+import { ConventionAdminGuard } from 'src/guards/convention/convention-admin.guard';
 
 @Controller()
 export class ConventionController {
@@ -76,7 +77,7 @@ export class ConventionController {
     return con;
   }
 
-  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @Put(':id')
   async updateConvention(
     @Param('id') id: number,
@@ -90,7 +91,7 @@ export class ConventionController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @HttpCode(202)
   @Post(':id/importAttendeesCSV')
   async importAttendeesCSV(
@@ -109,7 +110,7 @@ export class ConventionController {
     return this.conventionService.startImportAttendeesCSV(buffer, id, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @HttpCode(202)
   @Post(':id/importAttendees')
   async importAttendees(
@@ -126,7 +127,7 @@ export class ConventionController {
     return this.conventionService.startImportAttendees(userData, id, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @Post(':id/attendee')
   async createAttendee(
     @Param('id') id: number,
@@ -139,7 +140,7 @@ export class ConventionController {
     return this.attendeeService.createAttendee(attendee, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @Get(':id/exportBadgeFile')
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="badgeFile.csv"')
