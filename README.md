@@ -132,11 +132,25 @@ Refer to [`prisma/example-seed.ts`](prisma/example-seed.ts).
 
 ## Documentation
 
-[AUTHORIZATION.md](AUTHORIZATION.md) covers the authentication flow (Auth0 + JWT) and the permission model (super admin, organization roles, convention roles) enforced by the route guards.
+Two top-level docs live at the repo root:
 
-[Documentation/database.md](Documentation/database.md) documents the database structure: a domain overview, an ER diagram, and per-model field/relationship tables. The schema of record is [`prisma/schema.prisma`](prisma/schema.prisma).
+- [AUTHORIZATION.md](AUTHORIZATION.md) — the authentication flow (Auth0 + JWT) and the permission model (super admin, organization roles, convention roles) enforced by the route guards.
+- [DEPLOYMENT.md](DEPLOYMENT.md) — the full deployment process, prerequisites, and per-service reference for all repos.
 
-Architecture references live in [`Documentation/`](Documentation): an entity-relationship diagram (ERD) and the system diagram (`System Diagram.drawio.png`). It is reasonably up to date.
+The rest of the documentation lives in [`Documentation/`](Documentation):
+
+| Document | Covers |
+| -------- | ------ |
+| [DATABASE.md](Documentation/DATABASE.md) | Database structure — domain overview, ER diagram, and per-model field/relationship tables. The schema of record is [`prisma/schema.prisma`](prisma/schema.prisma). |
+| [AUTH0_TENANT_SETUP.md](Documentation/AUTH0_TENANT_SETUP.md) | How to configure the Auth0 tenant (API/resource server, custom-claims Action, application clients) the apps authenticate against. |
+| [BOARDGAMEGEEK.md](Documentation/BOARDGAMEGEEK.md) | The read-only BoardGameGeek (BGG) integration that pulls game metadata and cover art into local `Game` rows. |
+| [TABLETOPEVENTS.md](Documentation/TABLETOPEVENTS.md) | The read-only Tabletop.Events (TTE) integration that pulls attendee/badge data for badge-barcode lookups. |
+| [ATTENDEE_BADGE_SETUP.md](Documentation/ATTENDEE_BADGE_SETUP.md) | How attendee badge barcodes tie attendees to checkouts, prize entries, and game sessions. |
+| [PHYSICAL_LIBRARY_SETUP.md](Documentation/PHYSICAL_LIBRARY_SETUP.md) | The barcode-based physical library model — Games (titles) vs. Copies (physical items). |
+| [ON_SITE_SETUP.md](Documentation/ON_SITE_SETUP.md) | Operational runbook for standing up the system at a convention: stations, pre-doors prep, and the Play & Win drawing. |
+| [LEGACY_CONTROLLER.md](Documentation/LEGACY_CONTROLLER.md) | The legacy admin/library controller — its root-mounted routes and older response envelope. |
+
+Architecture references also live in [`Documentation/`](Documentation): the entity-relationship diagram in [`Documentation/ERD/`](Documentation/ERD) and the system diagram ([`System Diagram.drawio.png`](Documentation/System%20Diagram.drawio.png)).
 
 ## Stay in touch
 
