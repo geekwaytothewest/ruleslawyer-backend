@@ -92,6 +92,72 @@ describe('UserOrganizationPermissionsController', () => {
     });
   });
 
+  describe('getOrganizationUsers', () => {
+    it('returns the permissions for an organization', async () => {
+      mockCtx.prisma.userOrganizationPermissions.findMany.mockResolvedValue([
+        { id: 1, organizationId: 10 },
+        { id: 2, organizationId: 10 },
+      ] as any);
+
+      const result = await controller.getOrganizationUsers('10');
+
+      expect(result).toHaveLength(2);
+      expect(
+        mockCtx.prisma.userOrganizationPermissions.findMany,
+      ).toHaveBeenCalledWith({
+        where: { organizationId: 10 },
+        include: { user: true },
+      });
+    });
+
+    it('returns an empty array when no permissions exist', async () => {
+      mockCtx.prisma.userOrganizationPermissions.findMany.mockResolvedValue(
+        null as any,
+      );
+
+      const result = await controller.getOrganizationUsers('10');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('deleteOrganizationPermission', () => {
+    it('deletes the permission by id', async () => {
+      mockCtx.prisma.userOrganizationPermissions.delete.mockResolvedValue({
+        id: 3,
+      } as any);
+
+      const result = await controller.deleteOrganizationPermission('3');
+
+      expect(result?.id).toBe(3);
+      expect(
+        mockCtx.prisma.userOrganizationPermissions.delete,
+      ).toHaveBeenCalledWith({ where: { id: 3 } });
+    });
+  });
+
+  describe('updateOrganizationPermission', () => {
+    it('updates the permission flags by id', async () => {
+      mockCtx.prisma.userOrganizationPermissions.update.mockResolvedValue({
+        id: 4,
+      } as any);
+
+      const result = await controller.updateOrganizationPermission('4', {
+        admin: true,
+        geekGuide: false,
+        readOnly: true,
+      });
+
+      expect(result.id).toBe(4);
+      expect(
+        mockCtx.prisma.userOrganizationPermissions.update,
+      ).toHaveBeenCalledWith({
+        where: { id: 4 },
+        data: { admin: true, geekGuide: false, readOnly: true },
+      });
+    });
+  });
+
   describe('createPermission', () => {
     it('should create a permission', async () => {
       const permission = {

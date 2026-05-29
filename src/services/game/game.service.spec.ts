@@ -530,5 +530,101 @@ describe('GameService', () => {
 
       expect(() => service.startSyncAndConnect(1, ctx)).toThrow(ConflictException);
     });
+
+    it('logs and clears the in-flight flag when the background sync fails', async () => {
+      jest
+        .spyOn(service, 'syncAndConnectGamesWithBGG')
+        .mockRejectedValue(new Error('bg boom'));
+
+      const result = service.startSyncAndConnect(1, ctx);
+      expect(result.status).toBe('started');
+
+      // Let the rejected fire-and-forget promise settle (catch + finally run).
+      await new Promise((r) => setImmediate(r));
+
+      // The flag is cleared, so a subsequent launch is allowed again.
+      jest
+        .spyOn(service, 'syncAndConnectGamesWithBGG')
+        .mockResolvedValue(undefined);
+      expect(() => service.startSyncAndConnect(1, ctx)).not.toThrow();
+    });
+  });
+
+  describe('syncAndConnectGamesWithBGG dump backfill', () => {
+    it('backfills from the rank dump first when a dumpUrl is supplied', async () => {
+      const backfill = jest
+        .spyOn(service, 'backfillBggIdsFromRankDump')
+        .mockResolvedValue(0);
+      mockCtx.prisma.game.findMany.mockResolvedValue([] as any);
+      mockCtx.prisma.game.count.mockResolvedValue(0);
+
+      await service.syncAndConnectGamesWithBGG(1, ctx, 'dump-url');
+
+      expect(backfill).toHaveBeenCalledWith(1, ctx, 'dump-url');
+    });
+  });
+
+  describe('error handling', () => {
+    it('game rejects when the lookup fails', async () => {
+      mockCtx.prisma.game.findUnique.mockRejectedValue(new Error('boom'));
+
+      await expect(service.game({ id: 1 }, ctx, { id: 1 })).rejects.toThrow(
+        'boom',
+      );
+    });
+
+    it('games rejects when findMany fails', async () => {
+      mockCtx.prisma.game.findMany.mockRejectedValue(new Error('boom'));
+
+      await expect(service.games(1, ctx)).rejects.toThrow('boom');
+    });
+
+    it('search rejects when findMany fails', async () => {
+      mockCtx.prisma.game.findMany.mockRejectedValue(new Error('boom'));
+
+      await expect(service.search({}, ctx)).rejects.toThrow('boom');
+    });
+
+    it('searchWithCount rejects when the transaction fails', async () => {
+      mockCtx.prisma.$transaction.mockRejectedValue(new Error('boom'));
+
+      await expect(service.searchWithCount({}, ctx)).rejects.toThrow('boom');
+    });
+
+    it('createGame rejects when create fails', async () => {
+      mockCtx.prisma.game.create.mockRejectedValue(new Error('boom'));
+
+      await expect(service.createGame({} as any, ctx)).rejects.toThrow('boom');
+    });
+
+    it('updateGame rejects when update fails', async () => {
+      mockCtx.prisma.game.update.mockRejectedValue(new Error('boom'));
+
+      await expect(
+        service.updateGame({ where: { id: 1 }, data: {} }, ctx),
+      ).rejects.toThrow('boom');
+    });
+
+    it('connectBGGGameByName rejects when the BGG lookup throws', async () => {
+      bgg.getBoardGameIdByName.mockRejectedValue(new Error('bgg down'));
+
+      await expect(
+        service.connectBGGGameByName(1, 'Catan', ctx),
+      ).rejects.toThrow('bgg down');
+    });
+
+    it('syncBGGGame rejects when the lookup throws', async () => {
+      mockCtx.prisma.game.findUnique.mockRejectedValue(new Error('db down'));
+
+      await expect(service.syncBGGGame(1, ctx)).rejects.toThrow('db down');
+    });
+
+    it('syncAndConnectGamesWithBGG rejects when a query fails', async () => {
+      mockCtx.prisma.game.findMany.mockRejectedValue(new Error('boom'));
+
+      await expect(service.syncAndConnectGamesWithBGG(1, ctx)).rejects.toThrow(
+        'boom',
+      );
+    });
   });
 });
