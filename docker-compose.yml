@@ -26,7 +26,7 @@ services:
     working_dir: /usr/src/app
     # Build once up front so dist/prisma/seed.js exists in the (initially empty)
     # dist volume before `prisma db seed` runs; the watch step recompiles after.
-    command: sh -c "npm run build && npm run start:migrate:seed:debug"
+    command: sh -c "rm -rf dist/* && npm run build && npm run start:migrate:seed:debug"
     stdin_open: true
     tty: true
 
