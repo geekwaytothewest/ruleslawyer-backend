@@ -252,11 +252,42 @@ export class LegacyController {
     );
 
     if (search) {
-      attendees = attendees.filter(
-        (a) =>
-          a.badgeName.toLowerCase().includes(search.toLowerCase()) ||
-          a.badgeNumber === search,
-      );
+      const MIN_SEARCH_LENGTH = 3;
+      const MAX_RESULTS = 25;
+      const query = search.trim().toLowerCase();
+
+      // Exact badge-number lookup is always allowed and precise.
+      const byBadgeNumber = attendees.filter((a) => a.badgeNumber === search);
+
+      let matches = byBadgeNumber;
+      if (!byBadgeNumber.length && query.length >= MIN_SEARCH_LENGTH) {
+        // Token-prefix match: a name word must START with the query, rather
+        // than the query appearing anywhere. Keeps "I know their name"
+        // working while a single broad term no longer matches everyone.
+        matches = attendees.filter((a) =>
+          a.badgeName
+            .toLowerCase()
+            .split(/\s+/)
+            .some((word) => word.startsWith(query)),
+        );
+      }
+
+      // Anti-enumeration: refuse to return overly broad result sets so no
+      // single query can pull a large slice of the attendee list.
+      if (matches.length > MAX_RESULTS) {
+        this.logger.warn(
+          `Attendee search for conId=${conId} matched ${matches.length} (> ${MAX_RESULTS}); refusing as too broad`,
+        );
+        return {
+          Errors: [],
+          Result: {
+            Attendees: [],
+            TooBroad: true,
+          },
+        };
+      }
+
+      attendees = matches;
     } else {
       const user = request?.user?.user;
 
