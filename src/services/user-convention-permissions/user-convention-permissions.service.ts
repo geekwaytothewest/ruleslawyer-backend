@@ -56,12 +56,15 @@ export class UserConventionPermissionsService {
   }
 
   async getPermissionsBySearch(
-    where: Prisma.UserConventionPermissionsWhereUniqueInput,
+    where: Prisma.UserConventionPermissionsWhereInput,
     ctx: Context,
-  ): Promise<UserConventionPermissions | null> {
+  ): Promise<UserConventionPermissions[]> {
     try {
-      return await ctx.prisma.userConventionPermissions.findUnique({
+      return await ctx.prisma.userConventionPermissions.findMany({
         where: where,
+        include: {
+          user: true,
+        }
       });
     } catch (ex) {
       return Promise.reject(ex);

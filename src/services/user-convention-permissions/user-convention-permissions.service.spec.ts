@@ -85,14 +85,31 @@ describe('UserConventionPermissionsService', () => {
   });
 
   describe('getPermissionsBySearch', () => {
-    it('should return a permission by unique key', async () => {
-      mockCtx.prisma.userConventionPermissions.findUnique.mockResolvedValue({
-        id: 1,
-      } as any);
+    it('should return matching permissions for the search criteria', async () => {
+      mockCtx.prisma.userConventionPermissions.findMany.mockResolvedValue([
+        { id: 1 },
+      ] as any);
 
       const result = await service.getPermissionsBySearch({ id: 1 }, ctx);
 
-      expect(result?.id).toBe(1);
+      expect(result.length).toBe(1);
+      expect(result[0].id).toBe(1);
+      expect(
+        mockCtx.prisma.userConventionPermissions.findMany,
+      ).toHaveBeenCalledWith({
+        where: { id: 1 },
+        include: { user: true },
+      });
+    });
+
+    it('should reject when findMany fails', async () => {
+      mockCtx.prisma.userConventionPermissions.findMany.mockRejectedValue(
+        new Error('search failed'),
+      );
+
+      await expect(
+        service.getPermissionsBySearch({ id: 1 }, ctx),
+      ).rejects.toThrow('search failed');
     });
   });
 
