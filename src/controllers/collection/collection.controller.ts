@@ -14,7 +14,7 @@ import {
 import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { CollectionEntity } from '../../common/entities/collection.entity';
-import { CollectionWithCountEntity } from '../../common/entities/collection-with-count.entity';
+import { CollectionWithRelationsEntity } from '../../common/entities/collection-with-relations.entity';
 import { CollectionService } from '../../services/collection/collection.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
@@ -40,7 +40,7 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionReadGuard)
-  @ApiOkResponse({ type: CollectionWithCountEntity })
+  @ApiOkResponse({ type: CollectionWithRelationsEntity })
   @Get(':colId')
   async collection(@Param('colId') colId: number) {
     const col = await this.collectionService

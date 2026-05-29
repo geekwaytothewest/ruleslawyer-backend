@@ -1,21 +1,21 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CopyEntity } from './copy.entity';
-import { CheckOutEntity } from './check-out.entity';
+import { CheckOutWithAttendeeEntity } from './check-out-with-attendee.entity';
 import { GameEntity } from './game.entity';
-import { CollectionEntity } from './collection.entity';
+import { CollectionWithRelationsEntity } from './collection-with-relations.entity';
 
 // A Copy with its commonly-included relations. Different routes populate
 // different subsets (copy() includes game+collection; copyWithCheckouts()
-// includes checkOuts; searchCopies() includes all three), so the relations are
-// optional. Deeper nesting (checkOut.attendee, collection.organization) is not
-// modelled — one level of relations is enough for an example.
+// includes checkOuts; searchCopies() includes all three, two levels deep:
+// checkOuts->attendee and collection->organization/conventions), so the
+// relations are optional and use the deepest variant available.
 export class CopyWithRelationsEntity extends CopyEntity {
-  @ApiPropertyOptional({ type: () => CheckOutEntity, isArray: true })
-  checkOuts?: CheckOutEntity[];
+  @ApiPropertyOptional({ type: () => CheckOutWithAttendeeEntity, isArray: true })
+  checkOuts?: CheckOutWithAttendeeEntity[];
 
   @ApiPropertyOptional({ type: () => GameEntity })
   game?: GameEntity;
 
-  @ApiPropertyOptional({ type: () => CollectionEntity })
-  collection?: CollectionEntity;
+  @ApiPropertyOptional({ type: () => CollectionWithRelationsEntity })
+  collection?: CollectionWithRelationsEntity;
 }

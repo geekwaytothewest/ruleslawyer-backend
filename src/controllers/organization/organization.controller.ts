@@ -27,7 +27,7 @@ import { CopyEntity } from '../../common/entities/copy.entity';
 import { CheckOutEntity } from '../../common/entities/check-out.entity';
 import { GameEntity } from '../../common/entities/game.entity';
 import { GameWithCopiesEntity } from '../../common/entities/game-with-copies.entity';
-import { CollectionWithCountEntity } from '../../common/entities/collection-with-count.entity';
+import { CollectionWithRelationsEntity } from '../../common/entities/collection-with-relations.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateConventionForOrgDto } from './dto/create-convention-for-org.dto';
 import { CreateConventionTypeDto } from './dto/create-convention-type.dto';
@@ -281,7 +281,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
-  @ApiOkResponse({ type: CollectionWithCountEntity, isArray: true })
+  @ApiOkResponse({ type: CollectionWithRelationsEntity, isArray: true })
   @Get(':id/collections')
   async getCollections(@Param('id') id: number): Promise<Collection[] | void> {
     return this.collectionService.collectionsByOrg(Number(id), this.ctx);
