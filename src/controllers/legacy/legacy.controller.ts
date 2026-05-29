@@ -11,8 +11,20 @@ import {
   Query,
   Req,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { LegacyUpdateCopyDto } from './dto/update-copy.dto';
+import { LegacyAddCopyDto } from './dto/add-copy.dto';
+import { LegacyAttendeeDto } from './dto/attendee.dto';
+import { LegacyCheckoutCopyDto } from './dto/checkout-copy.dto';
+import { LegacySubmitPrizeEntryDto } from './dto/submit-prize-entry.dto';
+import { LegacyGameDto } from './dto/game.dto';
+import { LegacySyncTabletopEventsDto } from './dto/sync-tabletop-events.dto';
+import { LegacyBadgeTransferDto } from './dto/badge-transfer.dto';
+import { LegacyBadgeReplacementDto } from './dto/badge-replacement.dto';
+import { CreateCollectionDto } from '../collection/dto/create-collection.dto';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -146,17 +158,12 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/copies/:oldBarcodeLabel')
   async updateCopy(
     @Param('oldBarcodeLabel') oldBarcodeLabel: string,
     @Param('orgId') orgId: number,
-    @Body()
-    copy: {
-      libraryId: string;
-      collectionId: number;
-      winnable: boolean;
-      comments: string;
-    },
+    @Body() copy: LegacyUpdateCopyDto,
   ) {
     this.logger.log(`Updating copy with libraryId=${copy.libraryId}`);
     return this.copyService.updateCopy(
@@ -184,17 +191,12 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post('org/:orgId/con/:conId/copycollections/:colId/copies')
   async addCopy(
     @Param('orgId') orgId: number,
     @Param('colId') colId: number,
-    @Body()
-    copy: {
-      libraryId: number;
-      title: string;
-      winnable: boolean;
-      comments: string;
-    },
+    @Body() copy: LegacyAddCopyDto,
   ) {
     this.logger.log(
       `Creating copy with libraryId=${copy.libraryId}, title=${copy.title}`,
@@ -299,10 +301,11 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post('org/:orgId/con/:conId/attendees')
   async addAttendee(
     @Param('conId') conId: number,
-    @Body() attendee: { badgeNumber: string; name: string; pronouns: string },
+    @Body() attendee: LegacyAttendeeDto,
   ) {
     this.logger.log(
       `Creating attendee for conId=${conId}, badgeNumber=${attendee.badgeNumber}`,
@@ -343,11 +346,12 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/attendees/:badgeNumber')
   async updateAttendee(
     @Param('badgeNumber') badgeNumber: string,
     @Param('conId') conId: number,
-    @Body() attendee: { badgeNumber: string; name: string; pronouns: string },
+    @Body() attendee: LegacyAttendeeDto,
   ) {
     this.logger.log(
       `Updating attendee with badgeNumber=${attendee.badgeNumber}`,
@@ -817,14 +821,10 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post('org/:orgId/con/:conId/checkouts')
   async checkoutCopy(
-    @Body()
-    body: {
-      attendeeBadgeNumber: string;
-      libraryId: string;
-      overrideLimit: boolean;
-    },
+    @Body() body: LegacyCheckoutCopyDto,
     @Param('orgId') orgId: number,
     @Param('conId') conId: number,
     @User() user: any,
@@ -1280,19 +1280,9 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post('org/:orgId/con/:conId/plays')
-  async submitPrizeEntry(
-    @Body()
-    entry: {
-      checkoutId: number;
-      players: {
-        id: number;
-        name: string;
-        rating: number | null;
-        wantsToWin: boolean;
-      }[];
-    },
-  ) {
+  async submitPrizeEntry(@Body() entry: LegacySubmitPrizeEntryDto) {
     this.logger.log(
       `Submitting prize entry for checkoutId=${entry.checkoutId}`,
     );
@@ -1340,14 +1330,11 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post('org/:orgId/con/:conId/addCollection')
   async addCollection(
     @Param('orgId') orgId: number,
-    @Body()
-    collection: {
-      name: string;
-      allowWinning: boolean;
-    },
+    @Body() collection: CreateCollectionDto,
   ) {
     this.logger.log(
       `Creating collection with name=${collection.name}, allowWinning=${collection.allowWinning}`,
@@ -1361,15 +1348,12 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post('org/:orgId/con/:conId/collection/:colId')
   async updateCollection(
     @Param('orgId') orgId: number,
     @Param('colId') colId: number,
-    @Body()
-    collection: {
-      name: string;
-      allowWinning: boolean;
-    },
+    @Body() collection: CreateCollectionDto,
   ) {
     this.logger.log(`Updating collection with orgId=${orgId}, colId=${colId}`);
     return this.collectionService.updateCollection(
@@ -1500,12 +1484,11 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post('org/:orgId/con/:conId/gameList')
   async addGame(
     @Param('orgId') orgId: number,
-    @Body() game: {
-      title: string;
-    }
+    @Body() game: LegacyGameDto,
   ) {
     this.logger.log(`Adding game with title ${game.title}`);
 
@@ -1520,14 +1503,12 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/gameList/:gameId')
   async updateGame(
     @Param('orgId') orgId: number,
     @Param('gameId') gameId: number,
-    @Body()
-    game: {
-      title: string;
-    },
+    @Body() game: LegacyGameDto,
   ) {
     this.logger.log(`Updating game with gameId=${gameId}, title=${game.title}`);
     return this.gameService.updateGame(
@@ -1602,17 +1583,11 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @HttpCode(202)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
   async syncTabletopEvents(
     @Param('conId') conId: number,
-    @Body()
-    userData: {
-      userName: string;
-      password: string;
-      apiKey: string;
-      tteBadgeNumber: number;
-      tteBadgeId: string;
-    },
+    @Body() userData: LegacySyncTabletopEventsDto,
   ) {
     this.logger.log(
       `Syncing attendees with Tabletop Events for conId=${conId}, username=${userData.userName}`,
@@ -1676,16 +1651,11 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/attendees/badgeTransfer')
   async badgeTransfer(
     @Param('conId') conId: number,
-    @Body()
-    body: {
-      fromBadgeNumber: string;
-      newBadgeFirstName: string;
-      newBadgeLastName: string;
-      newBadgePronouns: string;
-    },
+    @Body() body: LegacyBadgeTransferDto,
   ) {
     this.logger.log(`Transferring badge ${body.fromBadgeNumber} to ${body.newBadgeFirstName} ${body.newBadgeLastName} for conId=${conId}`);
     return this.attendeeService.badgeTransfer(
@@ -1696,14 +1666,11 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/attendees/badgeReplacement')
   async badgeReplacement(
     @Param('conId') conId: number,
-    @Body()
-    body: {
-      fromBadgeNumber: string;
-      toBadgeNumber: string;
-    },
+    @Body() body: LegacyBadgeReplacementDto,
   ) {
     this.logger.log(`Replacing badge from ${body.fromBadgeNumber} to ${body.toBadgeNumber} for conId=${conId}`);
     return this.attendeeService.badgeReplacement(
