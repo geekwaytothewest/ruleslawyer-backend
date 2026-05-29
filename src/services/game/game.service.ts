@@ -202,35 +202,31 @@ export class GameService {
   }
 
   /**
-   * Downloads cover thumbnails in bounded-concurrency batches against the image
-   * CDN and writes them to coverArt, off the critical path of the BGG API loop.
+   * Worker that drains the shared cover-art queue until the producer (the batch
+   * loop) signals completion and the queue is empty. Several of these run
+   * concurrently for bounded parallelism. Thumbnails come from the image CDN,
+   * not the rate-limited xmlapi2, so these run alongside the BGG API loop.
    */
-  private async enrichCoverArt(
-    jobs: { id: number; thumbnail: string }[],
+  private async drainCoverArtQueue(
+    queue: { id: number; thumbnail: string }[],
+    isProducerDone: () => boolean,
     ctx: Context,
-    concurrency = 5,
   ) {
-    if (jobs.length === 0) {
-      return;
-    }
+    while (!isProducerDone() || queue.length > 0) {
+      const job = queue.shift();
+      if (!job) {
+        // Producer hasn't queued anything yet; wait briefly and re-check.
+        await this.sleep(100);
+        continue;
+      }
 
-    this.logger.log(
-      `Downloading ${jobs.length} cover image(s) with concurrency=${concurrency}...`,
-    );
-
-    for (let i = 0; i < jobs.length; i += concurrency) {
-      const chunk = jobs.slice(i, i + concurrency);
-      await Promise.all(
-        chunk.map(async (job) => {
-          const image = await this.boardGameGeekService.getImage(job.thumbnail);
-          if (image) {
-            await ctx.prisma.game.update({
-              where: { id: job.id },
-              data: { coverArt: image as Prisma.Bytes },
-            });
-          }
-        }),
-      );
+      const image = await this.boardGameGeekService.getImage(job.thumbnail);
+      if (image) {
+        await ctx.prisma.game.update({
+          where: { id: job.id },
+          data: { coverArt: image as Prisma.Bytes },
+        });
+      }
     }
   }
 
@@ -401,6 +397,16 @@ export class GameService {
     ctx: Context,
     dumpUrl?: string,
   ) {
+    // Cover thumbnails are deferred during the batch loop and downloaded by a
+    // pool of workers running concurrently with it. Thumbnails come from the
+    // image CDN, not the rate-limited xmlapi2, so this overlaps cleanly and
+    // hides the image phase behind the throttled API loop. These are hoisted
+    // above the try so the finally can always signal completion and await the
+    // workers — otherwise an error mid-run would leave them polling forever.
+    const imageQueue: { id: number; thumbnail: string }[] = [];
+    let producerDone = false;
+    let coverArtWorkers: Promise<void>[] = [];
+
     try {
       this.logger.log(
         `Syncing and connecting games with BoardGameGeek API...`,
@@ -416,9 +422,10 @@ export class GameService {
         await this.backfillBggIdsFromRankDump(orgId, ctx, dumpUrl);
       }
 
-      // Cover thumbnails are deferred during enrichment and downloaded in a
-      // bounded-concurrency pass at the end, keeping them off the BGG API loop.
-      const imageJobs: { id: number; thumbnail: string }[] = [];
+      const COVER_ART_CONCURRENCY = 15;
+      coverArtWorkers = Array.from({ length: COVER_ART_CONCURRENCY }, () =>
+        this.drainCoverArtQueue(imageQueue, () => producerDone, ctx),
+      );
 
       // The batch loop only needs id (for bggUpdate) and bggId (for the request
       // + match). Skip coverArt/coverArtOverride (Bytes) and longDescription,
@@ -440,26 +447,29 @@ export class GameService {
       }, []);
 
       for (const batch of batches) {
-        // Adaptive pace: baseline 1s, raised automatically if BGG 429s mid-run.
+        // Adaptive pace: baseline 2s, raised automatically if BGG 429s mid-run.
         await this.sleep(this.boardGameGeekService.throttleDelayMs);
 
         const gameDataBatch = await this.boardGameGeekService.getBoardGameBatchByBGGIds(batch.map((game) => game.bggId)) as any[];
 
-        for (const game of batch) {
-          const gameData = gameDataBatch.find((data) => parseInt(data?.['@_id']) === game.bggId);
+        // Persist the batch's games in parallel; each is an independent DB write.
+        await Promise.all(
+          batch.map(async (game: { id: number; bggId: number }) => {
+            const gameData = gameDataBatch.find((data) => parseInt(data?.['@_id']) === game.bggId);
 
-          if (gameData) {
-            await this.bggUpdate(game.id, gameData, ctx, true);
+            if (gameData) {
+              await this.bggUpdate(game.id, gameData, ctx, true);
 
-            if (gameData?.thumbnail) {
-              imageJobs.push({ id: game.id, thumbnail: gameData.thumbnail });
+              if (gameData?.thumbnail) {
+                imageQueue.push({ id: game.id, thumbnail: gameData.thumbnail });
+              }
+            } else {
+              this.logger.warn(
+                `No boardgame found with bggId=${game.bggId} from BoardGameGeek API for game with id=${game.id}. Skipping sync.`,
+              );
             }
-          } else {
-            this.logger.warn(
-              `No boardgame found with bggId=${game.bggId} from BoardGameGeek API for game with id=${game.id}. Skipping sync.`,
-            );
-          }
-        }
+          }),
+        );
       }
 
       // Games still without a bggId could not be matched by the rank dump
@@ -475,14 +485,16 @@ export class GameService {
           `${unresolved} game(s) have no bggId after the rank dump${dumpUrl ? '' : ' (no dumpUrl was supplied)'} and were left unconnected; use the single-game connect endpoint for those.`,
         );
       }
-
-      // Download all deferred cover thumbnails concurrently.
-      await this.enrichCoverArt(imageJobs, ctx);
     } catch (error: any) {
       this.logger.error(
         `Error syncing and connecting games with BoardGameGeek API: ${error.message}`,
       );
       return Promise.reject(error);
+    } finally {
+      // Signal the workers no more jobs are coming and wait for the queue to
+      // drain. Runs on both success and error so the workers always terminate.
+      producerDone = true;
+      await Promise.all(coverArtWorkers);
     }
   }
 

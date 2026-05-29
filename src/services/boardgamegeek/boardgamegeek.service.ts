@@ -380,15 +380,43 @@ export class BoardGameGeekService {
     return index;
   }
 
-  async getImage(url: string): Promise<Buffer | null> {
-    try {
-      const response = await this.httpService.get(url, { responseType: 'arraybuffer' });
+  async getImage(
+    url: string,
+    maxRetries = 2,
+    timeoutMs = 10000,
+  ): Promise<Buffer | null> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const response = await this.httpService.get(url, {
+          responseType: 'arraybuffer',
+          // Bound each attempt so a hung connection can't pin a caller (e.g. a
+          // cover-art worker slot) indefinitely.
+          timeout: timeoutMs,
+        });
 
-      return Buffer.from(response.data);
-    } catch (error: any) {
-      this.logger.error(`Error fetching image from ${url}: ${error.message}`);
+        return Buffer.from(response.data);
+      } catch (error: any) {
+        // Retry transient failures: 429, 5xx, and network/timeout errors (which
+        // arrive with no response). Other 4xx (e.g. 404) won't recover, so bail.
+        // The image CDN is a different host from the xmlapi2, so a 429 here does
+        // NOT bump the API loop's adaptive throttle.
+        const status = error?.response?.status;
+        const retryable =
+          status === undefined || status === 429 || status >= 500;
 
-      return null;
+        if (retryable && attempt < maxRetries) {
+          const delay = this.retryDelayMs(error, attempt, 500);
+          this.logger.warn(
+            `Image fetch from ${url} failed (${error.message}); retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries}).`,
+          );
+          await this.sleep(delay);
+          continue;
+        }
+
+        this.logger.error(`Error fetching image from ${url}: ${error.message}`);
+
+        return null;
+      }
     }
   }
 }
