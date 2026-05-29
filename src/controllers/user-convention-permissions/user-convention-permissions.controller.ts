@@ -8,6 +8,7 @@ import { UserGuard } from '../../guards/user/user.guard';
 import { ConventionPermissionsSelfUpdateGuard } from '../../guards/permissions/convention-permissions-self-update.guard';
 import { ConventionPermissionsGuard } from '../../guards/permissions/convention-permissions.guard';
 import { ConventionCreatePermissionsGuard } from '../../guards/permissions/convention-create-permissions.guard';
+import { ConventionReadGuard } from '../../guards/convention/convention-read.guard';
 
 @Controller()
 export class UserConventionPermissionsController {
@@ -31,6 +32,24 @@ export class UserConventionPermissionsController {
       id,
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @Get('convention/:id')
+  async getConventionUsers(@Param('id') id: string) {
+    const permissions =
+      await this.userConventionPermissionsService.getPermissionsBySearch(
+        {
+          conventionId: Number(id),
+        },
+        this.ctx,
+      );
+
+    if (!permissions) {
+      return [];
+    }
+
+    return permissions;
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
