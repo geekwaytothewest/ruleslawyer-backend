@@ -9,7 +9,12 @@ import {
   Query,
   Delete,
   HttpCode,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { CreateGameDto } from './dto/create-game.dto';
+import { UpdateGameDto } from './dto/update-game.dto';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -26,6 +31,8 @@ import { OrganizationWriteGuard } from '../../guards/organization/organization-w
 // client asks for "All". Prevents oversized responses that fail to serialize.
 const MAX_GAMES_LIMIT = 1000;
 
+@ApiTags('games')
+@ApiBearerAuth('jwt')
 @Controller()
 export class GameController {
   ctx: Context;
@@ -44,15 +51,17 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post()
-  async createGame(@Body() game: Prisma.GameCreateInput): Promise<Game | null> {
+  async createGame(@Body() game: CreateGameDto): Promise<Game | null> {
     return this.gameService.createGame(game, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, GameGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put(':id')
   async updateGame(
-    @Body() data: Prisma.GameUpdateInput,
+    @Body() data: UpdateGameDto,
     @Param('id') id: number,
   ): Promise<Game | null> {
     return this.gameService.updateGame(

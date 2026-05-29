@@ -5,6 +5,7 @@ import {
   UseGuards,
   NotFoundException,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { UserSelfGuard } from '../../guards/user/user-self.guard';
 import { User } from '../../modules/authz/user.decorator';
@@ -14,6 +15,8 @@ import { UserConventionPermissionsService } from '../../services/user-convention
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 
+@ApiTags('permissions')
+@ApiBearerAuth('jwt')
 @Controller()
 export class PermissionsController {
   ctx: Context;

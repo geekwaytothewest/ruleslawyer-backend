@@ -1,5 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserConventionPermissions } from '@prisma/client';
+import { CreateConventionPermissionDto } from './dto/create-convention-permission.dto';
+import { UpdateConventionPermissionDto } from './dto/update-convention-permission.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { Context } from '../../services/prisma/context';
@@ -10,6 +13,8 @@ import { ConventionPermissionsGuard } from '../../guards/permissions/convention-
 import { ConventionCreatePermissionsGuard } from '../../guards/permissions/convention-create-permissions.guard';
 import { ConventionReadGuard } from '../../guards/convention/convention-read.guard';
 
+@ApiTags('user-convention-permissions')
+@ApiBearerAuth('jwt')
 @Controller()
 export class UserConventionPermissionsController {
   ctx: Context;
@@ -62,16 +67,10 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionCreatePermissionsGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post()
   async createConventionPermission(
-    @Body()
-    permissionData: {
-      userId: number;
-      conventionId: number;
-      admin: boolean;
-      geekGuide: boolean;
-      attendee: boolean;
-    },
+    @Body() permissionData: CreateConventionPermissionDto,
   ): Promise<UserConventionPermissions> {
     return this.userConventionPermissionsService.createPermission(
       {
@@ -103,14 +102,11 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionPermissionsGuard, ConventionPermissionsSelfUpdateGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put(':id')
   async updateConventionPermission(
     @Param('id') id: string,
-    @Body() permissionData: {
-      admin: boolean;
-      geekGuide: boolean;
-      attendee: boolean;
-    },
+    @Body() permissionData: UpdateConventionPermissionDto,
   ) {
     return await this.userConventionPermissionsService.updatePermission(
       Number(id),

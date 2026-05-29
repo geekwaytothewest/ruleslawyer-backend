@@ -80,7 +80,21 @@ docker compose --profile backend --profile admin up
 
 ## API requests
 
-A [Bruno](https://www.usebruno.com/) collection for hitting the API lives in [`bruno/Backend`](bruno/Backend).
+There are two ways to explore and exercise the API:
+
+- **Bruno** — a [Bruno](https://www.usebruno.com/) collection for hitting the API lives in [`bruno/Backend`](bruno/Backend).
+- **Swagger UI** — interactive API docs are served at [`/api/docs`](http://localhost:8080/api/docs) (e.g. http://localhost:8080/api/docs when running locally). It is generated from the controllers, so every route, parameter, and request DTO is documented and can be tried out in the browser.
+
+### Authenticating Swagger with Auth0
+
+Swagger logs in through Auth0 directly (OAuth2 Authorization Code + PKCE) — click **Authorize**, sign in, and Swagger uses the returned token automatically. This requires:
+
+- `SWAGGER_AUTH0_CLIENT_ID` set in `.env` to an Auth0 **Single Page Application** client id.
+- That Auth0 application must list the Swagger redirect as an **Allowed Callback URL** and **Allowed Web Origin**, for each origin you use:
+  - `http://localhost:8080/api/docs/oauth2-redirect.html` (local)
+  - `https://<your-api-domain>/api/docs/oauth2-redirect.html` (deployed)
+
+The authorize/token endpoints and audience are derived from the existing `AUTH0_ISSUER_URL` and `AUTH0_AUDIENCE` settings.
 
 ## Test
 
@@ -103,9 +117,9 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for the full process, prerequisites, and the 
 
 ## Post Deployment Setup
 
-Post-deployment setup can be accomplished either through Bruno or the Prisma seed file.
+Post-deployment setup can be accomplished either through Bruno/Swagger or the Prisma seed file.
 
-**Using Bruno:**
+**Using Bruno or Swagger:**
 
 1. Authenticate with Auth0.
 2. Run the **Get Status** route. The system will detect the first user login and assign them Super Admin permissions.

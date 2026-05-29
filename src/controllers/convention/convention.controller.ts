@@ -11,8 +11,16 @@ import {
   HttpCode,
   Req,
   Delete,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import { Convention, Prisma } from '@prisma/client';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Convention } from '@prisma/client';
+import { CreateConventionDto } from './dto/create-convention.dto';
+import { UpdateConventionDto } from './dto/update-convention.dto';
+import { ImportAttendeesDto } from './dto/import-attendees.dto';
+import { CreateAttendeeDto } from './dto/create-attendee.dto';
+import { CreateCollectionDto } from '../collection/dto/create-collection.dto';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
@@ -26,6 +34,8 @@ import { CollectionService } from '../../services/collection/collection.service'
 import { User } from '../../modules/authz/user.decorator';
 import { ConventionAdminGuard } from '../../guards/convention/convention-admin.guard';
 
+@ApiTags('conventions')
+@ApiBearerAuth('jwt')
 @Controller()
 export class ConventionController {
   ctx: Context;
@@ -42,10 +52,10 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post()
   async createConvention(
-    @Body()
-    conventionData: Prisma.ConventionCreateInput,
+    @Body() conventionData: CreateConventionDto,
   ): Promise<Convention | void> {
     return this.conventionService.createConvention(conventionData, this.ctx);
   }
@@ -78,11 +88,11 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put(':id')
   async updateConvention(
     @Param('id') id: number,
-    @Body()
-    conventionData: Prisma.ConventionUpdateInput,
+    @Body() conventionData: UpdateConventionDto,
   ) {
     return this.conventionService.updateConvention(
       Number(id),
@@ -113,14 +123,10 @@ export class ConventionController {
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @HttpCode(202)
   @Post(':id/importAttendees')
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async importAttendees(
     @Param('id') id: number,
-    @Body()
-    userData: {
-      userName: string;
-      password: string;
-      apiKey: string;
-    },
+    @Body() userData: ImportAttendeesDto,
   ) {
     // Long-running: launch in the background and return 202 immediately so the
     // client (and any proxy) isn't holding a request open for minutes.
@@ -128,12 +134,13 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post(':id/attendee')
   async createAttendee(
     @Param('id') id: number,
-    @Body() attendee: Prisma.AttendeeCreateInput,
+    @Body() attendee: CreateAttendeeDto,
   ) {
-    if (attendee.convention.connect?.id !== id) {
+    if (attendee.convention.connect.id !== Number(id)) {
       return Promise.reject('convention id mismatch');
     }
 
@@ -149,8 +156,12 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post(':id/collection')
-  async createCollection(@Param('id') id: number, @Body() collection: any) {
+  async createCollection(
+    @Param('id') id: number,
+    @Body() collection: CreateCollectionDto,
+  ) {
     return await this.collectionService.createCollection(
       id,
       collection.name,

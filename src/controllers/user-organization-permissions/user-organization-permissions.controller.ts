@@ -1,5 +1,8 @@
-import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserOrganizationPermissions } from '@prisma/client';
+import { CreateOrganizationPermissionDto } from './dto/create-organization-permission.dto';
+import { UpdateOrganizationPermissionDto } from './dto/update-organization-permission.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
 import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
@@ -11,6 +14,8 @@ import { OrganizationPermissionsSelfUpdateGuard } from '../../guards/permissions
 import { OrganizationPermissionsGuard } from '../../guards/permissions/organization-permissions.guard';
 import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 
+@ApiTags('user-organization-permissions')
+@ApiBearerAuth('jwt')
 @Controller()
 export class UserOrganizationPermissionsController {
   ctx: Context;
@@ -58,16 +63,10 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Post()
   async createPermission(
-    @Body()
-    permissionData: {
-      userId: number;
-      organizationId: number;
-      admin: boolean;
-      geekGuide: boolean;
-      readOnly: boolean;
-    },
+    @Body() permissionData: CreateOrganizationPermissionDto,
   ): Promise<UserOrganizationPermissions> {
     return this.userOrganizationPermissionsService.createPermission(
       {
@@ -108,15 +107,11 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put(':id')
   async updateOrganizationPermission(
     @Param('id') id: string,
-    @Body()
-    permissionData: {
-      admin: boolean;
-      geekGuide: boolean;
-      readOnly: boolean;
-    },
+    @Body() permissionData: UpdateOrganizationPermissionDto,
   ) {
     return await this.userOrganizationPermissionsService.updatePermission(
       Number(id),
