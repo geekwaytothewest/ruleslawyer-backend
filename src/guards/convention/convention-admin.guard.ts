@@ -1,15 +1,17 @@
 //jwt-auth.guard.ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { OrganizationService } from '../../services/organization/organization.service';
+import { ConventionService } from '../../services/convention/convention.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
+import { OrganizationService } from '../../services/organization/organization.service';
 
 @Injectable()
-export class OrganizationReadGuard implements CanActivate {
+export class ConventionAdminGuard implements CanActivate {
   ctx: Context;
 
   constructor(
+    private readonly conventionService: ConventionService,
     private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
   ) {
@@ -20,7 +22,7 @@ export class OrganizationReadGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let orgId = context.getArgByIndex(0).params?.id;
+    let conId = context.getArgByIndex(0).params?.id;
 
     if (!user) {
       return false;
@@ -30,16 +32,29 @@ export class OrganizationReadGuard implements CanActivate {
       return true;
     }
 
-    if (!orgId) {
-      orgId = context.getArgByIndex(0).params?.orgId;
+    if (!conId) {
+      conId = context.getArgByIndex(0).params?.conId;
+
+      if (!conId) {
+        return false;
+      }
     }
 
-    if (!orgId) {
-      orgId = context.getArgByIndex(0).body?.organizationId;
-    }
+    const conWithUsers = Prisma.validator<Prisma.ConventionDefaultArgs>()({
+      include: { users: true },
+    });
 
-    if (!orgId) {
-      return false;
+    type ConWithUsers = Prisma.ConventionGetPayload<typeof conWithUsers>;
+
+    const con: ConWithUsers = await this.conventionService.conventionWithUsers(
+      {
+        id: Number(conId),
+      },
+      this.ctx,
+    );
+
+    if (con?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+      return true;
     }
 
     const orgWithUsers = Prisma.validator<Prisma.OrganizationDefaultArgs>()({
@@ -51,7 +66,7 @@ export class OrganizationReadGuard implements CanActivate {
     const org: OrgWithUsers =
       await this.organizationService.organizationWithUsers(
         {
-          id: Number(orgId),
+          id: Number(con?.organizationId),
         },
         this.ctx,
       );
@@ -60,11 +75,7 @@ export class OrganizationReadGuard implements CanActivate {
       return true;
     }
 
-    if (
-      org?.users?.filter(
-        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.readOnly),
-      ).length > 0
-    ) {
+    if (org?.users?.filter((u) => u.userId === user.id && (u.admin)).length > 0) {
       return true;
     }
 
