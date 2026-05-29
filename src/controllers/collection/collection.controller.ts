@@ -11,8 +11,9 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
+import { CollectionEntity } from '../../common/entities/collection.entity';
 import { CollectionService } from '../../services/collection/collection.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
@@ -38,6 +39,7 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @ApiOkResponse({ type: CollectionEntity })
   @Get(':colId')
   async collection(@Param('colId') colId: number) {
     const col = await this.collectionService
@@ -54,6 +56,9 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @ApiOkResponse({
+    description: 'Paginated copies for the collection, grouped by game.',
+  })
   @Get(':colId/copiesByGames')
   async collectionCopiesByGames(
     @Param('colId') colId: number,
@@ -78,6 +83,7 @@ export class CollectionController {
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CollectionEntity })
   @Put(':colId')
   async updateCollection(
     @Param('colId') colId: number,
@@ -92,6 +98,10 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @ApiOkResponse({
+    description:
+      'The deleted collection, or a message explaining why it could not be deleted.',
+  })
   @Delete(':colId')
   async deleteCollection(@Param('colId') colId: number) {
     const collection = await this.collectionService.collection(
@@ -122,6 +132,7 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @ApiOkResponse({ type: CollectionEntity })
   @Put(':colId/archive')
   async archiveCollection(@Param('colId') colId: number) {
     return await this.collectionService.archiveCollection(

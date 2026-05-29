@@ -14,8 +14,17 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiAcceptedResponse,
+} from '@nestjs/swagger';
 import { Convention } from '@prisma/client';
+import { ConventionEntity } from '../../common/entities/convention.entity';
+import { AttendeeEntity } from '../../common/entities/attendee.entity';
+import { CollectionEntity } from '../../common/entities/collection.entity';
+import { ConventionCollectionsEntity } from '../../common/entities/convention-collections.entity';
 import { CreateConventionDto } from './dto/create-convention.dto';
 import { UpdateConventionDto } from './dto/update-convention.dto';
 import { ImportAttendeesDto } from './dto/import-attendees.dto';
@@ -53,6 +62,7 @@ export class ConventionController {
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: ConventionEntity })
   @Post()
   async createConvention(
     @Body() conventionData: CreateConventionDto,
@@ -61,12 +71,14 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: ConventionEntity, isArray: true })
   @Get()
   async getConventions(@User() user: any) {
     return this.conventionService.conventions(user, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: ConventionEntity })
   @Get(':id')
   async getConvention(@Param('id') id: number) {
     const con = await this.conventionService
@@ -89,6 +101,7 @@ export class ConventionController {
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: ConventionEntity })
   @Put(':id')
   async updateConvention(
     @Param('id') id: number,
@@ -103,6 +116,9 @@ export class ConventionController {
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @HttpCode(202)
+  @ApiAcceptedResponse({
+    description: 'Import started in the background; progress is in the server logs.',
+  })
   @Post(':id/importAttendeesCSV')
   async importAttendeesCSV(
     @Req() request: fastify.FastifyRequest,
@@ -122,6 +138,9 @@ export class ConventionController {
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @HttpCode(202)
+  @ApiAcceptedResponse({
+    description: 'Import started in the background; progress is in the server logs.',
+  })
   @Post(':id/importAttendees')
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async importAttendees(
@@ -135,6 +154,7 @@ export class ConventionController {
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: AttendeeEntity })
   @Post(':id/attendee')
   async createAttendee(
     @Param('id') id: number,
@@ -151,12 +171,17 @@ export class ConventionController {
   @Get(':id/exportBadgeFile')
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="badgeFile.csv"')
+  @ApiOkResponse({
+    description: 'CSV badge file as an attachment.',
+    content: { 'text/csv': { schema: { type: 'string' } } },
+  })
   async exportBadgeFile(@Param('id') id: number) {
     return await this.conventionService.exportBadgeFile(Number(id), this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CollectionEntity })
   @Post(':id/collection')
   async createCollection(
     @Param('id') id: number,
@@ -171,6 +196,7 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard, CollectionWriteGuard)
+  @ApiOkResponse({ type: ConventionCollectionsEntity })
   @Post(':conId/conventionCollection/:colId')
   async attachCollection(
     @Param('conId') conId: number,
@@ -184,6 +210,7 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard, CollectionWriteGuard)
+  @ApiOkResponse({ type: ConventionCollectionsEntity })
   @Delete(':conId/conventionCollection/:colId')
   async detachCollection(
     @Param('conId') conId: number,

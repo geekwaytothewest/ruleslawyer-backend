@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserConventionPermissions } from '@prisma/client';
+import { UserConventionPermissionsEntity } from '../../common/entities/user-convention-permissions.entity';
 import { CreateConventionPermissionDto } from './dto/create-convention-permission.dto';
 import { UpdateConventionPermissionDto } from './dto/update-convention-permission.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -29,6 +30,7 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiOkResponse({ type: UserConventionPermissionsEntity, isArray: true })
   @Get(':id')
   async getUserConventionPermissions(
     @Param('id') id: string,
@@ -40,6 +42,7 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @ApiOkResponse({ type: UserConventionPermissionsEntity, isArray: true })
   @Get('convention/:id')
   async getConventionUsers(@Param('id') id: string) {
     const permissions =
@@ -58,6 +61,7 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiOkResponse({ type: Number, description: 'Number of convention permissions for the user.' })
   @Get(':id/count')
   async getUserConventionCount(@Param('id') id: string): Promise<number> {
     return await this.userConventionPermissionsService.userConventionCount(
@@ -68,6 +72,7 @@ export class UserConventionPermissionsController {
 
   @UseGuards(JwtAuthGuard, ConventionCreatePermissionsGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: UserConventionPermissionsEntity })
   @Post()
   async createConventionPermission(
     @Body() permissionData: CreateConventionPermissionDto,
@@ -93,6 +98,7 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionPermissionsGuard, ConventionPermissionsSelfUpdateGuard)
+  @ApiOkResponse({ type: UserConventionPermissionsEntity })
   @Delete(':id')
   async deleteConventionPermission(@Param('id') id: string) {
     return await this.userConventionPermissionsService.deletePermission(
@@ -103,6 +109,7 @@ export class UserConventionPermissionsController {
 
   @UseGuards(JwtAuthGuard, ConventionPermissionsGuard, ConventionPermissionsSelfUpdateGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: UserConventionPermissionsEntity })
   @Put(':id')
   async updateConventionPermission(
     @Param('id') id: string,

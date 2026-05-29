@@ -11,7 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import {
   Collection,
   Convention,
@@ -19,6 +19,13 @@ import {
   Organization,
   Prisma,
 } from '@prisma/client';
+import { OrganizationEntity } from '../../common/entities/organization.entity';
+import { ConventionEntity } from '../../common/entities/convention.entity';
+import { ConventionTypeEntity } from '../../common/entities/convention-type.entity';
+import { CollectionEntity } from '../../common/entities/collection.entity';
+import { CopyEntity } from '../../common/entities/copy.entity';
+import { CheckOutEntity } from '../../common/entities/check-out.entity';
+import { GameEntity } from '../../common/entities/game.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateConventionForOrgDto } from './dto/create-convention-for-org.dto';
 import { CreateConventionTypeDto } from './dto/create-convention-type.dto';
@@ -68,6 +75,7 @@ export class OrganizationController {
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: OrganizationEntity })
   @Post()
   async createOrganization(
     @Body() organizationData: CreateOrganizationDto,
@@ -82,6 +90,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: OrganizationEntity })
   @Get(':id')
   async organization(@Param('id') id: number): Promise<Organization | null> {
     return this.organizationService.organization({ id: Number(id) }, this.ctx);
@@ -89,6 +98,7 @@ export class OrganizationController {
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: ConventionEntity })
   @Post(':id/con')
   async createConvention(
     @Body() conventionData: CreateConventionForOrgDto,
@@ -107,6 +117,11 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard, UploadGuard)
+  @ApiOkResponse({
+    type: CopyEntity,
+    isArray: true,
+    description: 'The copies created from the imported collection file.',
+  })
   @Post(':id/col')
   async importCollection(
     @Req() request: fastify.FastifyRequest,
@@ -130,6 +145,10 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard, CollectionWriteGuard)
+  @ApiOkResponse({
+    description:
+      'The deleted collection, or a message explaining why it could not be deleted (e.g. tied to a convention).',
+  })
   @Delete(':id/col/:colId')
   async deleteCollection(
     @Param('id') id: number,
@@ -140,6 +159,7 @@ export class OrganizationController {
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard, CollectionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CopyEntity })
   @Post(':id/col/:colId/copy')
   async createCopy(
     @Param('id') id: number,
@@ -165,6 +185,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: CheckOutEntity })
   @Post(':id/con/:conId/col/:colId/copy/:copyBarcode/checkOut/:attendeeBarcode')
   async checkOutCopy(
     @Param('id') id: number,
@@ -186,6 +207,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: CheckOutEntity })
   @Post(':id/con/:conId/col/:colId/copy/:copyBarcode/checkIn')
   async checkInCopy(
     @Param('id') id: number,
@@ -197,6 +219,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: CheckOutEntity })
   @Post(':id/con/:conId/col/:colId/checkOut/:checkOutId')
   async submitPrizeEntry(
     @Param('id') id: number,
@@ -221,6 +244,7 @@ export class OrganizationController {
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: ConventionTypeEntity })
   @Post(':id/conventionType')
   async createConventionType(
     @Param('id') id: number,
@@ -239,6 +263,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: ConventionTypeEntity, isArray: true })
   @Get(':id/conventionType')
   async getConventionTypes(
     @Param('id') id: number,
@@ -247,24 +272,28 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: ConventionEntity, isArray: true })
   @Get(':id/conventions')
   async getConventions(@Param('id') id: number): Promise<Convention[] | void> {
     return this.conventionService.conventionsByOrg(Number(id), this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: CollectionEntity, isArray: true })
   @Get(':id/collections')
   async getCollections(@Param('id') id: number): Promise<Collection[] | void> {
     return this.collectionService.collectionsByOrg(Number(id), this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: GameEntity, isArray: true })
   @Get(':id/games')
   async getGames(@Param('id') id: number) {
     return this.gameService.games(Number(id), this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: GameEntity, isArray: true })
   @Get(':id/games/withCopies')
   async getGamesWithCopies(@Param('id') id: number, @User() user: any) {
     return this.gameService.search(
@@ -324,6 +353,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: GameEntity, isArray: true })
   @Get(':id/games/search/:gameName')
   async searchGames(@Param('gameName') gameName: string) {
     return this.gameService.search(
@@ -336,6 +366,19 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({
+    description: 'Up to 10 id/name pairs for autocomplete.',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'number', example: 42 },
+          name: { type: 'string', example: 'Wingspan' },
+        },
+      },
+    },
+  })
   @Get(':id/games/autocomplete/:gameName')
   async autocompleteGames(@Param('gameName') gameName: string) {
     return this.gameService.search(
@@ -351,6 +394,7 @@ export class OrganizationController {
 
   @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CollectionEntity })
   @Post(':id/collections')
   async createCollection(
     @Param('id') id: number,

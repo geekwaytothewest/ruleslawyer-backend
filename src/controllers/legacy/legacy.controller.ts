@@ -14,7 +14,18 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiAcceptedResponse,
+} from '@nestjs/swagger';
+import { LegacyResponseDto } from './dto/legacy-response.dto';
+import { CopyEntity } from '../../common/entities/copy.entity';
+import { AttendeeEntity } from '../../common/entities/attendee.entity';
+import { CollectionEntity } from '../../common/entities/collection.entity';
+import { CheckOutEntity } from '../../common/entities/check-out.entity';
+import { GameEntity } from '../../common/entities/game.entity';
 import { LegacyUpdateCopyDto } from './dto/update-copy.dto';
 import { LegacyAddCopyDto } from './dto/add-copy.dto';
 import { LegacyAttendeeDto } from './dto/attendee.dto';
@@ -77,6 +88,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/copycollections')
   async getCopyCollections(@Param('orgId') orgId: number) {
     this.logger.log(`Getting collections for orgId=${orgId}`);
@@ -159,6 +171,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, CopyGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CopyEntity })
   @Put('org/:orgId/con/:conId/copies/:oldBarcodeLabel')
   async updateCopy(
     @Param('oldBarcodeLabel') oldBarcodeLabel: string,
@@ -192,6 +205,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, CollectionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CopyEntity })
   @Post('org/:orgId/con/:conId/copycollections/:colId/copies')
   async addCopy(
     @Param('orgId') orgId: number,
@@ -235,6 +249,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/attendees')
   async getAttendees(
     @Param('conId') conId: number,
@@ -333,6 +348,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: AttendeeEntity })
   @Post('org/:orgId/con/:conId/attendees')
   async addAttendee(
     @Param('conId') conId: number,
@@ -378,6 +394,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: AttendeeEntity })
   @Put('org/:orgId/con/:conId/attendees/:badgeNumber')
   async updateAttendee(
     @Param('badgeNumber') badgeNumber: string,
@@ -425,6 +442,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/checkouts/checkedOutLongest')
   async getLongestCheckouts(
     @Param('orgId') orgId: number,
@@ -511,6 +529,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/checkouts/recentCheckouts')
   async getRecentCheckouts(
     @Param('orgId') orgId: number,
@@ -595,6 +614,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/copies/:copyBarcode')
   async getCopy(
     @Param('orgId') orgId: number,
@@ -752,6 +772,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/copies')
   async searchCopies(
     @Query('query') query: string,
@@ -853,6 +874,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Post('org/:orgId/con/:conId/checkouts')
   async checkoutCopy(
     @Body() body: LegacyCheckoutCopyDto,
@@ -1045,6 +1067,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, CheckOutGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Put('org/:orgId/con/:conId/checkouts/checkin/:copyBarcode')
   async checkinCopy(
     @Param('orgId') orgId: number,
@@ -1181,6 +1204,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/prizeEntryCheckouts')
   async getPrizeEntries(@Query('badgeId') badgeId: string) {
     this.logger.log(`Getting prize entries for badgeId=${badgeId}`);
@@ -1223,6 +1247,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/plays')
   async getPlays(@Param('conId') conId: number) {
     this.logger.log(`Getting plays for conId=${conId}`);
@@ -1263,6 +1288,7 @@ export class LegacyController {
     };
   }
   @UseGuards(JwtAuthGuard, ConventionReadGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/coll/:collId/plays')
   async getCollPlays(
     @Param('conId') conId: number,
@@ -1312,6 +1338,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, PrizeEntryGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CheckOutEntity })
   @Post('org/:orgId/con/:conId/plays')
   async submitPrizeEntry(@Body() entry: LegacySubmitPrizeEntryDto) {
     this.logger.log(
@@ -1332,6 +1359,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @ApiOkResponse({ type: CopyEntity, isArray: true })
   @Post('org/:orgId/con/:conId/importCollection')
   async importCollection(
     @Req() request: fastify.FastifyRequest,
@@ -1362,6 +1390,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CollectionEntity })
   @Post('org/:orgId/con/:conId/addCollection')
   async addCollection(
     @Param('orgId') orgId: number,
@@ -1380,6 +1409,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: CollectionEntity })
   @Post('org/:orgId/con/:conId/collection/:colId')
   async updateCollection(
     @Param('orgId') orgId: number,
@@ -1396,6 +1426,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/games')
   async getGames(@Param('orgId') orgId: number) {
     this.logger.log(`Getting games for orgId=${orgId}`);
@@ -1449,6 +1480,7 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/coll/:collId/games')
   async getGamesByCollectionId(
     @Param('orgId') orgId: number,
@@ -1508,6 +1540,7 @@ export class LegacyController {
   //This route is used by the legacy admin app's games page
   //It was renamed to gameList to not interfere with the pnwpicker code which uses 'games' as its route
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: GameEntity, isArray: true })
   @Get('org/:orgId/con/:conId/gameList')
   async getGameList(@Param('orgId') orgId: number) {
     this.logger.log(`Getting game list`);
@@ -1516,6 +1549,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: GameEntity })
   @Post('org/:orgId/con/:conId/gameList')
   async addGame(
     @Param('orgId') orgId: number,
@@ -1535,6 +1569,7 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: GameEntity })
   @Put('org/:orgId/con/:conId/gameList/:gameId')
   async updateGame(
     @Param('orgId') orgId: number,
@@ -1557,6 +1592,11 @@ export class LegacyController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @ApiOkResponse({
+    type: CopyEntity,
+    isArray: true,
+    description: 'The copies created from the uploaded file.',
+  })
   @Post('org/:orgId/con/:conId/copycollections/:collId/copies/upload')
   async uploadCopies(
     @Req() request: fastify.FastifyRequest,
@@ -1584,6 +1624,9 @@ export class LegacyController {
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @HttpCode(202)
+  @ApiAcceptedResponse({
+    description: 'Import started in the background; progress is in the server logs.',
+  })
   @Put('org/:orgId/con/:conId/attendees/import')
   async importAttendees(
     @Req() request: fastify.FastifyRequest,
