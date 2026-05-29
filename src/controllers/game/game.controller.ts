@@ -19,7 +19,8 @@ import {
   ApiAcceptedResponse,
 } from '@nestjs/swagger';
 import { GameEntity } from '../../common/entities/game.entity';
-import { CopyEntity } from '../../common/entities/copy.entity';
+import { GameWithCopiesEntity } from '../../common/entities/game-with-copies.entity';
+import { CopyWithRelationsEntity } from '../../common/entities/copy-with-relations.entity';
 import { PaginatedGamesDto } from './dto/paginated-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
@@ -86,7 +87,7 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ type: GameEntity })
+  @ApiOkResponse({ type: GameWithCopiesEntity })
   @Get(':id')
   async getGame(@Param('id') id: number, @User() user: any) {
     return this.gameService.game(
@@ -99,7 +100,7 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ type: GameEntity, isArray: true })
+  @ApiOkResponse({ type: GameWithCopiesEntity, isArray: true })
   @Get()
   async getGames(
     @User() user: any,
@@ -369,7 +370,7 @@ export class GameController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ type: CopyEntity, isArray: true })
+  @ApiOkResponse({ type: CopyWithRelationsEntity, isArray: true })
   @Get(':id/copies')
   async getCopies(
     @Param('id') id: number,

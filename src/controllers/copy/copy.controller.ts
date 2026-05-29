@@ -12,6 +12,7 @@ import {
 import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UpdateCopyDto } from './dto/update-copy.dto';
 import { CopyEntity } from '../../common/entities/copy.entity';
+import { CopyWithRelationsEntity } from '../../common/entities/copy-with-relations.entity';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { CopyGuard } from '../../guards/copy/copy.guard';
 import { CopyService } from '../../services/copy/copy.service';
@@ -34,17 +35,14 @@ export class CopyController {
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
-  @ApiOkResponse({ type: CopyEntity })
+  @ApiOkResponse({ type: CopyWithRelationsEntity })
   @Get(':id')
   async getCopy(@Param('id') id: number) {
     return await this.copyService.copy({ id: Number(id) }, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)
-  @ApiOkResponse({
-    type: CopyEntity,
-    description: 'The copy, including its nested checkOuts at runtime.',
-  })
+  @ApiOkResponse({ type: CopyWithRelationsEntity })
   @Get(':id/withCheckOuts')
   async getCopyWithCheckOuts(@Param('id') id: number) {
     return await this.copyService.copyWithCheckouts(

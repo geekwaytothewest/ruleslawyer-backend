@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, UsePipes, V
 import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserOrganizationPermissions } from '@prisma/client';
 import { UserOrganizationPermissionsEntity } from '../../common/entities/user-organization-permissions.entity';
+import { UserOrganizationPermissionsWithUserEntity } from '../../common/entities/permission-with-relations.entity';
 import { CreateOrganizationPermissionDto } from './dto/create-organization-permission.dto';
 import { UpdateOrganizationPermissionDto } from './dto/update-organization-permission.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -45,7 +46,7 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
-  @ApiOkResponse({ type: UserOrganizationPermissionsEntity, isArray: true })
+  @ApiOkResponse({ type: UserOrganizationPermissionsWithUserEntity, isArray: true })
   @Get('organization/:id')
   async getOrganizationUsers(@Param('id') id: string) {
     const orgId = Number(id);

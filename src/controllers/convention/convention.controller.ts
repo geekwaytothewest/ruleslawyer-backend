@@ -22,6 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { Convention } from '@prisma/client';
 import { ConventionEntity } from '../../common/entities/convention.entity';
+import { ConventionWithCollectionsEntity } from '../../common/entities/convention-with-collections.entity';
 import { AttendeeEntity } from '../../common/entities/attendee.entity';
 import { CollectionEntity } from '../../common/entities/collection.entity';
 import { ConventionCollectionsEntity } from '../../common/entities/convention-collections.entity';
@@ -78,7 +79,7 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ type: ConventionEntity })
+  @ApiOkResponse({ type: ConventionWithCollectionsEntity })
   @Get(':id')
   async getConvention(@Param('id') id: number) {
     const con = await this.conventionService

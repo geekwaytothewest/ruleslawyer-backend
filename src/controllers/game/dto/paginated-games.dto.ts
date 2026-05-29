@@ -1,12 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { GameEntity } from '../../../common/entities/game.entity';
+import { GameWithCopiesEntity } from '../../../common/entities/game-with-copies.entity';
 
-// Response shape for the paginated `withCopies` listing. The `data` items
-// include nested copies/checkOuts at runtime; only the base Game scalars are
-// documented here (see GameEntity).
+// Response shape for the paginated `withCopies` listing. Each item is a game
+// with its nested copies (and their checkOuts).
 export class PaginatedGamesDto {
-  @ApiProperty({ type: GameEntity, isArray: true })
-  data: GameEntity[];
+  @ApiProperty({ type: GameWithCopiesEntity, isArray: true })
+  data: GameWithCopiesEntity[];
 
   @ApiProperty({ description: 'Total games matching the query (across all pages).' })
   total: number;

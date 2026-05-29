@@ -2,6 +2,10 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UsePipes, V
 import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserConventionPermissions } from '@prisma/client';
 import { UserConventionPermissionsEntity } from '../../common/entities/user-convention-permissions.entity';
+import {
+  UserConventionPermissionsWithUserEntity,
+  UserConventionPermissionsWithConventionEntity,
+} from '../../common/entities/permission-with-relations.entity';
 import { CreateConventionPermissionDto } from './dto/create-convention-permission.dto';
 import { UpdateConventionPermissionDto } from './dto/update-convention-permission.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -30,7 +34,7 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
-  @ApiOkResponse({ type: UserConventionPermissionsEntity, isArray: true })
+  @ApiOkResponse({ type: UserConventionPermissionsWithConventionEntity, isArray: true })
   @Get(':id')
   async getUserConventionPermissions(
     @Param('id') id: string,
@@ -42,7 +46,7 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionReadGuard)
-  @ApiOkResponse({ type: UserConventionPermissionsEntity, isArray: true })
+  @ApiOkResponse({ type: UserConventionPermissionsWithUserEntity, isArray: true })
   @Get('convention/:id')
   async getConventionUsers(@Param('id') id: string) {
     const permissions =
