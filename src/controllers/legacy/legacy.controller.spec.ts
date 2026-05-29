@@ -913,6 +913,82 @@ describe('LegacyController', () => {
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
     });
+
+    const makeAttendee = (id: number, badgeName: string, badgeNumber: string) =>
+      ({
+        id,
+        badgeName,
+        badgeFirstName: badgeName,
+        badgeLastName: badgeName,
+        legalName: badgeName,
+        conventionId: 1,
+        badgeNumber,
+        barcode: `*${badgeNumber}*`,
+        userId: null,
+        tteBadgeNumber: null,
+        tteBadgeId: 'xxx',
+        badgeTypeId: 1,
+        email: 'test@geekway.com',
+        pronounsId: 1,
+        checkedIn: false,
+        printed: false,
+        registrationCode: 'fake code',
+        merch: null,
+        eligibleForPrizes: true,
+        lostBadge: false,
+      }) as any;
+
+    const req = { user: { user: { id: 1 } } };
+
+    it('refuses overly broad searches as TooBroad', async () => {
+      const attendees = Array.from({ length: 30 }, (_, i) =>
+        makeAttendee(i + 1, `Andrew ${i}`, String(i + 1)),
+      );
+      mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
+
+      const response = await controller.getAttendees(1, 'and', req);
+
+      expect(response.Result.Attendees.length).toBe(0);
+      expect((response.Result as any).TooBroad).toBe(true);
+    });
+
+    it('ignores name searches shorter than the minimum length', async () => {
+      const attendees = [
+        makeAttendee(1, 'Andrew', '1'),
+        makeAttendee(2, 'Andrea', '2'),
+      ];
+      mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
+
+      const response = await controller.getAttendees(1, 'an', req);
+
+      expect(response.Result.Attendees.length).toBe(0);
+    });
+
+    it('matches on name-word prefix, not arbitrary substring', async () => {
+      const attendees = [
+        makeAttendee(1, 'Andrew Smith', '1'),
+        makeAttendee(2, 'Alexander Jones', '2'), // contains "and" but not as a word prefix
+      ];
+      mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
+
+      const response = await controller.getAttendees(1, 'and', req);
+
+      expect(response.Result.Attendees.length).toBe(1);
+      expect(response.Result.Attendees[0].ID).toBe(1);
+    });
+
+    it('still allows exact badge-number lookup regardless of length', async () => {
+      const attendees = [
+        makeAttendee(1, 'Andrew', '7'),
+        makeAttendee(2, 'Andrea', '8'),
+      ];
+      mockCtx.prisma.attendee.findMany.mockResolvedValue(attendees);
+
+      const response = await controller.getAttendees(1, '7', req);
+
+      expect(response.Result.Attendees.length).toBe(1);
+      expect(response.Result.Attendees[0].BadgeNumber).toBe('7');
+    });
   });
 
   describe('addAttendee', () => {
