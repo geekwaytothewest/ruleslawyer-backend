@@ -89,15 +89,17 @@ The SPAs enable refresh tokens with `localStorage` caching
 ### Per-client URL/value reference
 
 Hosting paths come from each app's webpack `publicPath` / nginx config; fill in
-your real host.
+your real host. Each client must also register its **local Docker dev** callback
+/ origin (ports from [`ruleslawyer-backend/docker-compose.yml`](../docker-compose.yml)),
+so logins work against `docker compose up` — these are in `tenant.yaml`.
 
-| Client | Callback URL | Logout URL | Notes |
-| --- | --- | --- | --- |
-| ruleslawyer-frontend | `<APP_BASE_URL>/auth/callback` | `<APP_BASE_URL>` | nextjs-auth0 mounts `/auth/*` (login, logout, callback). |
-| Swagger UI | `<API_HOST>/api/docs/oauth2-redirect.html` | — | Uses `SWAGGER_AUTH0_CLIENT_ID`; sends `audience` as an extra authorize param. |
-| board-game-admin | `<host>/admin` (`AUTH_CALLBACK`) | `LOGOUT_RETURN_URL` | publicPath `/admin/`. |
-| librarian | `<host>/librarian` (`AUTH_CALLBACK`) | `LOGOUT_RETURN_URL` | publicPath `/librarian/`. |
-| play-prize-entry | `<host>/playandwin` (`AUTH_CALLBACK`) | window origin | publicPath `/playandwin/`. |
+| Client | Callback URL | Logout URL | Docker dev callback / origin | Notes |
+| --- | --- | --- | --- | --- |
+| ruleslawyer-frontend | `<APP_BASE_URL>/auth/callback` | `<APP_BASE_URL>` | `http://localhost:8084/auth/callback` / `http://localhost:8084` | nextjs-auth0 mounts `/auth/*` (login, logout, callback). |
+| Swagger UI | `<API_HOST>/api/docs/oauth2-redirect.html` | — | `http://localhost:8080/api/docs/oauth2-redirect.html` / `http://localhost:8080` | Uses `SWAGGER_AUTH0_CLIENT_ID`; sends `audience` as an extra authorize param. |
+| board-game-admin | `<host>/admin` (`AUTH_CALLBACK`) | `LOGOUT_RETURN_URL` | `http://localhost:8081/admin` / `http://localhost:8081` | publicPath `/admin/`. |
+| librarian | `<host>/librarian` (`AUTH_CALLBACK`) | `LOGOUT_RETURN_URL` | `http://localhost:8082/librarian` / `http://localhost:8082` | publicPath `/librarian/`. |
+| play-prize-entry | `<host>/playandwin` (`AUTH_CALLBACK`) | window origin | `http://localhost:8083/playandwin` / `http://localhost:8083` | publicPath `/playandwin/`. |
 
 ### Per-client scopes requested at login
 
