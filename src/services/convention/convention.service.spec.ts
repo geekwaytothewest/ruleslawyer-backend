@@ -25,29 +25,6 @@ describe('ConventionService', () => {
 
   describe('createConvention', () => {
     it('should create a convention', async () => {
-      const organization = {
-        id: 1,
-        name: 'Geekway to the Testing',
-        ownerId: 1,
-        users: [
-          {
-            id: 1,
-            organizationId: 1,
-            admin: true,
-            geekGuide: false,
-            readOnly: false,
-            userId: 1,
-          },
-        ],
-        owner: {
-          id: 1,
-        },
-      };
-
-      mockCtx.prisma.organization.findUnique.mockResolvedValueOnce(
-        organization,
-      );
-
       mockCtx.prisma.convention.create.mockResolvedValueOnce({
         id: 1,
         organizationId: 1,
@@ -1021,8 +998,8 @@ describe('ConventionService', () => {
       throw new Error('db error');
     };
 
-    it('createConvention rejects when the org lookup fails', async () => {
-      mockCtx.prisma.organization.findUnique.mockRejectedValue(
+    it('createConvention rejects when the create throws', async () => {
+      mockCtx.prisma.convention.create.mockRejectedValue(
         new Error('db error'),
       );
       await expect(

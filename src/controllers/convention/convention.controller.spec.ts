@@ -56,30 +56,6 @@ describe('ConventionController', () => {
         tteConventionId: '',
       };
 
-      const organization = {
-        id: 1,
-        name: 'Geekeway to the Testing',
-        ownerId: 1,
-        users: [
-          {
-            id: 1,
-            organizationId: 1,
-            admin: true,
-            geekGuide: false,
-            readyOnly: false,
-            userId: 1,
-          },
-        ],
-        owner: {
-          id: 1,
-          name: 'Test User',
-        },
-      };
-
-      mockCtx.prisma.organization.findUnique.mockResolvedValueOnce(
-        organization,
-      );
-
       mockCtx.prisma.convention.create.mockResolvedValueOnce(convention);
 
       const createConvention = await controller.createConvention({
@@ -102,7 +78,7 @@ describe('ConventionController', () => {
     });
 
     it('should throw an error', async () => {
-      mockCtx.prisma.organization.findUnique.mockImplementationOnce(() => {
+      mockCtx.prisma.convention.create.mockImplementationOnce(() => {
         throw new BadGatewayException();
       });
 

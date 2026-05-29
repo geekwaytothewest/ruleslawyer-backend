@@ -33,6 +33,7 @@ import { ConventionTypeService } from '../../services/convention-type/convention
 import { User } from '../../modules/authz/user.decorator';
 import { GameService } from '../../services/game/game.service';
 import { SuperAdminGuard } from '../../guards/superAdmin/superAdmin.guard';
+import { OrganizationAdminGuard } from '../../guards/organization/organization-admin.guard';
 
 @Controller()
 export class OrganizationController {
@@ -73,7 +74,7 @@ export class OrganizationController {
     return this.organizationService.organization({ id: Number(id) }, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
   @Post(':id/con')
   async createConvention(
     @Body() conventionData: Prisma.ConventionCreateInput,
@@ -88,7 +89,7 @@ export class OrganizationController {
     return this.conventionService.createConvention(conventionData, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, UploadGuard)
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard, UploadGuard)
   @Post(':id/col')
   async importCollection(
     @Req() request: fastify.FastifyRequest,
@@ -111,7 +112,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionWriteGuard)
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard, CollectionWriteGuard)
   @Delete(':id/col/:colId')
   async deleteCollection(
     @Param('id') id: number,
@@ -120,7 +121,7 @@ export class OrganizationController {
     return await this.collectionService.deleteCollection(colId, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard, CollectionWriteGuard)
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard, CollectionWriteGuard)
   @Post(':id/col/:colId/copy')
   async createCopy(
     @Param('id') id: number,
@@ -192,7 +193,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
   @Post(':id/conventionType')
   async createConventionType(
     @Param('id') id: number,
@@ -322,7 +323,7 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
   @Post(':id/collections')
   async createCollection(
     @Param('id') id: number,
