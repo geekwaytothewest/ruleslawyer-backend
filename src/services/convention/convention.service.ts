@@ -4,7 +4,6 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
-import { OrganizationService } from '../organization/organization.service';
 import { AttendeeService } from '../attendee/attendee.service';
 import { TabletopeventsService } from '../tabletopevents/tabletopevents.service';
 import * as crypto from 'crypto';
@@ -23,7 +22,6 @@ export class ConventionService {
   // attendees to a convention, so only one may run at a time.
   private importInProgress = false;
   constructor(
-    private readonly organizationService: OrganizationService,
     private readonly attendeeService: AttendeeService,
     private readonly tteService: TabletopeventsService,
     private readonly checkOutService: CheckOutService,
@@ -34,34 +32,6 @@ export class ConventionService {
     ctx: Context,
   ): Promise<Convention> {
     try {
-      const org = await this.organizationService.organizationWithUsers(
-        {
-          id: data.organization.connect?.id,
-        },
-        ctx,
-      );
-
-      const userPermissions = org.users.map((u) => {
-        return {
-          userId: u.userId,
-          admin: true,
-          geekGuide: false,
-          attendee: false,
-        };
-      });
-
-      data.users = {
-        create: [
-          {
-            userId: org.owner.id,
-            admin: true,
-            geekGuide: false,
-            attendee: false,
-          },
-          ...userPermissions.filter((up) => up.userId !== org.owner.id),
-        ],
-      };
-
       const con = await ctx.prisma.convention.create({
         data,
       });
