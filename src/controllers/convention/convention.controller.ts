@@ -24,7 +24,7 @@ import fastify = require('fastify');
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { CollectionService } from '../../services/collection/collection.service';
 import { User } from '../../modules/authz/user.decorator';
-import { ConventionAdminGuard } from 'src/guards/convention/convention-admin.guard';
+import { ConventionAdminGuard } from '../../guards/convention/convention-admin.guard';
 
 @Controller()
 export class ConventionController {
