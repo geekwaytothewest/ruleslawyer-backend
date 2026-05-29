@@ -1,11 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { UserConventionPermissions } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
-import { ConventionWriteGuard } from '../../guards/convention/convention-write.guard';
 import { UserConventionPermissionsService } from '../../services/user-convention-permissions/user-convention-permissions.service';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserGuard } from '../../guards/user/user.guard';
+import { ConventionPermissionsSelfUpdateGuard } from '../../guards/permissions/convention-permissions-self-update.guard';
+import { ConventionPermissionsGuard } from '../../guards/permissions/convention-permissions.guard';
+import { ConventionCreatePermissionsGuard } from '../../guards/permissions/convention-create-permissions.guard';
 
 @Controller()
 export class UserConventionPermissionsController {
@@ -40,9 +42,9 @@ export class UserConventionPermissionsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @UseGuards(JwtAuthGuard, ConventionCreatePermissionsGuard)
   @Post()
-  async createPermission(
+  async createConventionPermission(
     @Body()
     permissionData: {
       userId: number;
@@ -68,6 +70,32 @@ export class UserConventionPermissionsController {
         geekGuide: permissionData.geekGuide,
         attendee: permissionData.attendee,
       },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionPermissionsGuard, ConventionPermissionsSelfUpdateGuard)
+  @Delete(':id')
+  async deleteConventionPermission(@Param('id') id: string) {
+    return await this.userConventionPermissionsService.deletePermission(
+      Number(id),
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionPermissionsGuard, ConventionPermissionsSelfUpdateGuard)
+  @Put(':id')
+  async updateConventionPermission(
+    @Param('id') id: string,
+    @Body() permissionData: {
+      admin: boolean;
+      geekGuide: boolean;
+      attendee: boolean;
+    },
+  ) {
+    return await this.userConventionPermissionsService.updatePermission(
+      Number(id),
+      permissionData,
       this.ctx,
     );
   }

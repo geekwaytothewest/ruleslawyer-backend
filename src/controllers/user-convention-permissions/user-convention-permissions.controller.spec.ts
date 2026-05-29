@@ -44,7 +44,7 @@ describe('UserConventionPermissionsController', () => {
         permission,
       );
 
-      const p = await controller.createPermission({
+      const p = await controller.createConventionPermission({
         userId: 1,
         conventionId: 1,
         admin: true,

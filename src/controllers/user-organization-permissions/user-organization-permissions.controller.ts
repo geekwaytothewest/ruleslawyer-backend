@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards } from '@nestjs/common';
 import { UserOrganizationPermissions } from '@prisma/client';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
@@ -6,8 +6,10 @@ import { UserOrganizationPermissionsService } from '../../services/user-organiza
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { UserGuard } from '../../guards/user/user.guard';
-import { OrganizationService } from '../../services/organization/organization.service';
 import { User } from '../../modules/authz/user.decorator';
+import { OrganizationPermissionsSelfUpdateGuard } from '../../guards/permissions/organization-permissions-self-update.guard';
+import { OrganizationPermissionsGuard } from '../../guards/permissions/organization-permissions.guard';
+import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 
 @Controller()
 export class UserOrganizationPermissionsController {
@@ -15,7 +17,6 @@ export class UserOrganizationPermissionsController {
 
   constructor(
     private readonly userOrganizationPermissionsService: UserOrganizationPermissionsService,
-    private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
   ) {
     this.ctx = {
@@ -29,43 +30,31 @@ export class UserOrganizationPermissionsController {
     @Param('id') id: string,
     @User() user: any,
   ): Promise<UserOrganizationPermissions[]> {
-    let userOrgPermissions: any = [];
-    let userOrgs: any = [];
+    return this.userOrganizationPermissionsService.userOrganizationPermissionsWithOwned(
+      id,
+      user,
+      this.ctx,
+    );
+  }
 
-    if (user.superAdmin) {
-      userOrgs = await this.organizationService.allOrganizations(this.ctx);
-    } else {
-      userOrgPermissions =
-        await this.userOrganizationPermissionsService.userOrganizationPermissions(
-          id,
-          this.ctx,
-        );
+  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @Get('organization/:id')
+  async getOrganizationUsers(@Param('id') id: string) {
+    const orgId = Number(id);
 
-      userOrgs = await this.organizationService.organizationByOwner(
-        Number(id),
+    const permissions =
+      await this.userOrganizationPermissionsService.getPermissionsBySearch(
+        {
+          organizationId: orgId,
+        },
         this.ctx,
       );
+
+    if (!permissions) {
+      return [];
     }
 
-    userOrgs.forEach((uo) => {
-      const uop = userOrgPermissions.find(
-        (uop) => uop.organizationId === uo.id,
-      );
-
-      if (uop) {
-        uop.admin = true;
-      } else {
-        userOrgPermissions.push({
-          id: -1,
-          userId: id,
-          organizationId: uo.id,
-          admin: true,
-          organization: uo,
-        });
-      }
-    });
-
-    return userOrgPermissions;
+    return permissions;
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
@@ -105,6 +94,37 @@ export class UserOrganizationPermissionsController {
   async getUserConventionCount(@Param('id') id: string): Promise<number> {
     return await this.userOrganizationPermissionsService.userOrganizationCount(
       id,
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @Delete(':id')
+  async deleteOrganizationPermission(@Param('id') id: string) {
+    return await this.userOrganizationPermissionsService.deletePermission(
+      Number(id),
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @Put(':id')
+  async updateOrganizationPermission(
+    @Param('id') id: string,
+    @Body()
+    permissionData: {
+      admin: boolean;
+      geekGuide: boolean;
+      readOnly: boolean;
+    },
+  ) {
+    return await this.userOrganizationPermissionsService.updatePermission(
+      Number(id),
+      {
+        admin: permissionData.admin,
+        geekGuide: permissionData.geekGuide,
+        readOnly: permissionData.readOnly,
+      },
       this.ctx,
     );
   }
