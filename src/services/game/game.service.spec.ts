@@ -267,21 +267,20 @@ describe('GameService', () => {
     });
   });
 
-  describe('enrichCoverArt', () => {
-    it('fetches each thumbnail and writes coverArt', async () => {
+  describe('drainCoverArtQueue', () => {
+    it('fetches each queued thumbnail and writes coverArt', async () => {
       bgg.getImage.mockResolvedValue(Buffer.from('x'));
 
-      await (service as any).enrichCoverArt(
-        [
-          { id: 1, thumbnail: 'a' },
-          { id: 2, thumbnail: 'b' },
-        ],
-        ctx,
-        5,
-      );
+      const queue = [
+        { id: 1, thumbnail: 'a' },
+        { id: 2, thumbnail: 'b' },
+      ];
+
+      await (service as any).drainCoverArtQueue(queue, () => true, ctx);
 
       expect(bgg.getImage).toHaveBeenCalledTimes(2);
       expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(2);
+      expect(queue).toHaveLength(0);
     });
 
     it('skips the DB write when an image fails to download', async () => {
@@ -289,14 +288,12 @@ describe('GameService', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(Buffer.from('x'));
 
-      await (service as any).enrichCoverArt(
-        [
-          { id: 1, thumbnail: 'a' },
-          { id: 2, thumbnail: 'b' },
-        ],
-        ctx,
-        5,
-      );
+      const queue = [
+        { id: 1, thumbnail: 'a' },
+        { id: 2, thumbnail: 'b' },
+      ];
+
+      await (service as any).drainCoverArtQueue(queue, () => true, ctx);
 
       expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(1);
       expect(mockCtx.prisma.game.update).toHaveBeenCalledWith({
@@ -305,11 +302,29 @@ describe('GameService', () => {
       });
     });
 
-    it('does nothing when there are no jobs', async () => {
-      await (service as any).enrichCoverArt([], ctx, 5);
+    it('exits immediately when the producer is done and the queue is empty', async () => {
+      await (service as any).drainCoverArtQueue([], () => true, ctx);
 
       expect(bgg.getImage).not.toHaveBeenCalled();
       expect(mockCtx.prisma.game.update).not.toHaveBeenCalled();
+    });
+
+    it('drains jobs the producer appends after the worker starts', async () => {
+      bgg.getImage.mockResolvedValue(Buffer.from('x'));
+
+      const queue: { id: number; thumbnail: string }[] = [];
+      let done = false;
+      const worker = (service as any).drainCoverArtQueue(queue, () => done, ctx);
+
+      // Producer appends a job after the worker is already polling, then signals
+      // completion — the worker must pick it up before exiting.
+      queue.push({ id: 7, thumbnail: 'late' });
+      done = true;
+
+      await worker;
+
+      expect(bgg.getImage).toHaveBeenCalledWith('late');
+      expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(1);
     });
   });
 
