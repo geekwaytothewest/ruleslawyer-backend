@@ -259,18 +259,16 @@ export class LegacyController {
         const permissions =
           await this.userConventionPermissionsService.getPermissionsBySearch(
             {
-              userId_conventionId: {
-                userId: Number(user.id),
-                conventionId: Number(conId),
-              },
+              conventionId: Number(conId),
+              userId: user.id
             },
             this.ctx,
           );
 
         if (
-          permissions?.attendee &&
-          !permissions.geekGuide &&
-          !permissions.admin
+          permissions[0]?.attendee &&
+          !permissions[0]?.geekGuide &&
+          !permissions[0]?.admin
         ) {
           this.logger.warn(
             `user ${user.id} does not have permission to view attendees`,
