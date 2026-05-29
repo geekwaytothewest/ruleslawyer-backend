@@ -211,21 +211,61 @@ describe('BoardGameGeekService', () => {
   });
 
   describe('getImage', () => {
-    it('returns a buffer of the fetched image', async () => {
+    it('returns a buffer of the fetched image and sends a timeout', async () => {
       http.get.mockResolvedValue({ data: Buffer.from('imgbytes') });
 
       const image = await service.getImage('https://img');
 
       expect(image).toBeInstanceOf(Buffer);
       expect(image?.toString()).toBe('imgbytes');
+      expect(http.get.mock.calls[0][1]).toMatchObject({
+        responseType: 'arraybuffer',
+        timeout: expect.any(Number),
+      });
     });
 
-    it('returns null when the fetch fails', async () => {
+    it('retries a transient failure then succeeds', async () => {
+      http.get
+        .mockRejectedValueOnce(new Error('socket hang up'))
+        .mockResolvedValueOnce({ data: Buffer.from('imgbytes') });
+
+      const image = await service.getImage('https://img');
+
+      expect(image?.toString()).toBe('imgbytes');
+      expect(http.get).toHaveBeenCalledTimes(2);
+    });
+
+    it('retries a 429 honoring Retry-After', async () => {
+      http.get
+        .mockRejectedValueOnce(rateLimited({ 'retry-after': '1' }))
+        .mockResolvedValueOnce({ data: Buffer.from('imgbytes') });
+
+      const image = await service.getImage('https://img');
+
+      expect(image?.toString()).toBe('imgbytes');
+      expect(http.get).toHaveBeenCalledTimes(2);
+      expect((service as any).sleep).toHaveBeenCalledWith(1000);
+    });
+
+    it('returns null after exhausting retries', async () => {
       http.get.mockRejectedValue(new Error('boom'));
 
       const image = await service.getImage('https://img');
 
       expect(image).toBeNull();
+      // initial attempt + 2 retries
+      expect(http.get).toHaveBeenCalledTimes(3);
+    });
+
+    it('does not retry a non-retryable 4xx', async () => {
+      const notFound: any = new Error('Request failed with status code 404');
+      notFound.response = { status: 404, headers: {} };
+      http.get.mockRejectedValue(notFound);
+
+      const image = await service.getImage('https://img');
+
+      expect(image).toBeNull();
+      expect(http.get).toHaveBeenCalledTimes(1);
     });
   });
 
