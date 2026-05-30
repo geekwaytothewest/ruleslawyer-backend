@@ -512,26 +512,31 @@ export class ConventionService {
   async conventions(user: any, ctx: Context) {
     try {
       return await ctx.prisma.convention.findMany({
-        where: {
-          OR: [
-            {
-              organization: {
-                users: {
-                  some: {
-                    userId: user.id,
+        // Super admins can see every convention; everyone else is limited to
+        // conventions in an organization they belong to or that they have a
+        // direct permission on.
+        where: user.superAdmin
+          ? undefined
+          : {
+              OR: [
+                {
+                  organization: {
+                    users: {
+                      some: {
+                        userId: user.id,
+                      },
+                    },
                   },
                 },
-              },
-            },
-            {
-              users: {
-                some: {
-                  userId: user.id,
+                {
+                  users: {
+                    some: {
+                      userId: user.id,
+                    },
+                  },
                 },
-              },
+              ],
             },
-          ],
-        },
         orderBy: {
           startDate: 'desc',
         },
