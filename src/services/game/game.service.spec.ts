@@ -400,8 +400,6 @@ describe('GameService', () => {
         minage: { '@_value': '8' },
         description: 'A great game',
         statistics: { ratings: { averageweight: { '@_value': '2.5' } } },
-        rank: 5,
-        rating: 7.8,
         link: [
           { '@_type': 'boardgamepublisher', '@_value': 'Pub A' },
           { '@_type': 'boardgamepublisher', '@_value': 'Pub B' },
@@ -424,8 +422,6 @@ describe('GameService', () => {
       expect(data.publisher).toBe('Pub A, Pub B');
       expect(data.designer).toBe('Designer A');
       expect(data.artist).toBe('Artist A');
-      expect(data.bggRank).toBe(5);
-      expect(data.bggRating).toBe(7.8);
     });
 
     it('passes bggRank/bggRating straight through and leaves them undefined when absent', async () => {
