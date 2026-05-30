@@ -198,17 +198,17 @@ export class GameService {
           coverArt: deferImage ? undefined : (imageResponse as Prisma.Bytes | null),
           bggRank: (() => {
             const ranks = gameData?.statistics?.ratings?.ranks?.rank;
-            if (!ranks) return null;
+            if (!ranks) return undefined;
 
             // Fastxml-parser can return a single object or an array. Force an array format.
             const ranksArray = Array.isArray(ranks) ? ranks : [ranks];
             const boardgameRank = ranksArray.find((r: any) => r['@_name'] === 'boardgame')?.['@_value'];
 
-            return boardgameRank && boardgameRank !== 'Not Ranked' ? parseInt(boardgameRank) : null;
+            return boardgameRank && boardgameRank !== 'Not Ranked' ? parseInt(boardgameRank) : undefined;
           })(),
           bggRating:  gameData?.statistics?.ratings?.bayesaverage?.['@_value']
             ? parseFloat(gameData.statistics.ratings.bayesaverage['@_value'])
-            : null,
+            : undefined,
           lastBGGSync: new Date(),
         },
       });
