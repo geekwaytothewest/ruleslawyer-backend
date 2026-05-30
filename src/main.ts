@@ -30,14 +30,17 @@ async function bootstrap() {
   );
   await app.register(multipart);
   app.enableCors({
+    // Reference env vars directly (not via template literals) and filter out any
+    // that are unset, so an absent origin doesn't add the literal string
+    // "undefined" to the allowlist. RULESLAWYER_FRONTEND_ORIGIN2 is a second
+    // dashboard origin used only in local dev; it's unset in deployed envs.
     origin: [
-      `${process.env.ADMIN_CLIENT_ORIGIN}`,
-      `${process.env.LIBRARIAN_CLIENT_ORIGIN}`,
-      `${process.env.PLAY_AND_WIN_CLIENT_ORIGIN}`,
-      `${process.env.RULESLAWYER_FRONTEND_ORIGIN}`,
-      `${process.env.RULESLAWYER_FRONTEND_ORIGIN}`,
-      `${process.env.RULESLAWYER_FRONTEND_ORIGIN2}`,
-    ],
+      process.env.ADMIN_CLIENT_ORIGIN,
+      process.env.LIBRARIAN_CLIENT_ORIGIN,
+      process.env.PLAY_AND_WIN_CLIENT_ORIGIN,
+      process.env.RULESLAWYER_FRONTEND_ORIGIN,
+      process.env.RULESLAWYER_FRONTEND_ORIGIN2,
+    ].filter((origin): origin is string => Boolean(origin)),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });

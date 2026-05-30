@@ -184,4 +184,90 @@ describe('UserOrganizationPermissionsController', () => {
       expect(p.id).toBe(1);
     });
   });
+
+  describe('addUser', () => {
+    it('adds a permission for an existing user without creating one', async () => {
+      mockCtx.prisma.user.findUnique.mockResolvedValue({
+        id: 7,
+        email: 'existing@example.com',
+      } as any);
+      mockCtx.prisma.userOrganizationPermissions.create.mockResolvedValue({
+        id: 99,
+      } as any);
+
+      const result = await controller.addUser('10', {
+        email: 'existing@example.com',
+        admin: true,
+        geekGuide: false,
+        readOnly: true,
+      });
+
+      expect(result?.id).toBe(99);
+      expect(mockCtx.prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'existing@example.com' },
+      });
+      expect(mockCtx.prisma.user.create).not.toHaveBeenCalled();
+      expect(
+        mockCtx.prisma.userOrganizationPermissions.create,
+      ).toHaveBeenCalledWith({
+        data: {
+          userId: 7,
+          organizationId: 10,
+          admin: true,
+          geekGuide: false,
+          readOnly: true,
+        },
+      });
+    });
+
+    it('creates the user first when none exists for the email', async () => {
+      mockCtx.prisma.user.findUnique.mockResolvedValue(null as any);
+      mockCtx.prisma.user.create.mockResolvedValue({
+        id: 12,
+        email: 'new@example.com',
+      } as any);
+      mockCtx.prisma.userOrganizationPermissions.create.mockResolvedValue({
+        id: 100,
+      } as any);
+
+      const result = await controller.addUser('10', {
+        email: 'new@example.com',
+        admin: false,
+        geekGuide: true,
+        readOnly: false,
+      });
+
+      expect(result?.id).toBe(100);
+      expect(mockCtx.prisma.user.create).toHaveBeenCalledWith({
+        data: { email: 'new@example.com' },
+      });
+      expect(
+        mockCtx.prisma.userOrganizationPermissions.create,
+      ).toHaveBeenCalledWith({
+        data: {
+          userId: 12,
+          organizationId: 10,
+          admin: false,
+          geekGuide: true,
+          readOnly: false,
+        },
+      });
+    });
+
+    it('rejects when the permission cannot be created', async () => {
+      mockCtx.prisma.user.findUnique.mockResolvedValue({ id: 7 } as any);
+      mockCtx.prisma.userOrganizationPermissions.create.mockRejectedValue(
+        new Error('db error'),
+      );
+
+      await expect(
+        controller.addUser('10', {
+          email: 'existing@example.com',
+          admin: true,
+          geekGuide: false,
+          readOnly: true,
+        }),
+      ).rejects.toThrow('db error');
+    });
+  });
 });

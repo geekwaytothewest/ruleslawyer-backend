@@ -5,9 +5,10 @@ import {
   UseGuards,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserService } from '../../services/user/user.service';
 import { User as UserModel } from '@prisma/client';
+import { UserEntity } from '../../common/entities/user.entity';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { UserGuard } from '../../guards/user/user.guard';
 import { Context } from '../../services/prisma/context';
@@ -29,6 +30,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiOkResponse({ type: UserEntity })
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserModel | null> {
     let user: UserModel | null;

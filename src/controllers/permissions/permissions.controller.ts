@@ -5,7 +5,8 @@ import {
   UseGuards,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import { PermissionsResponseDto } from './dto/permissions-response.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { UserSelfGuard } from '../../guards/user/user-self.guard';
 import { User } from '../../modules/authz/user.decorator';
@@ -33,6 +34,7 @@ export class PermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserSelfGuard)
+  @ApiOkResponse({ type: PermissionsResponseDto })
   @Get(':id')
   async getPermissions(@Param('id') id: string, @User() authUser: any) {
     const user = await this.userService.user(

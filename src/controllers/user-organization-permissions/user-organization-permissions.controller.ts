@@ -1,8 +1,11 @@
 import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserOrganizationPermissions } from '@prisma/client';
+import { UserOrganizationPermissionsEntity } from '../../common/entities/user-organization-permissions.entity';
+import { UserOrganizationPermissionsWithUserEntity } from '../../common/entities/permission-with-relations.entity';
 import { CreateOrganizationPermissionDto } from './dto/create-organization-permission.dto';
 import { UpdateOrganizationPermissionDto } from './dto/update-organization-permission.dto';
+import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
 import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
@@ -13,6 +16,8 @@ import { User } from '../../modules/authz/user.decorator';
 import { OrganizationPermissionsSelfUpdateGuard } from '../../guards/permissions/organization-permissions-self-update.guard';
 import { OrganizationPermissionsGuard } from '../../guards/permissions/organization-permissions.guard';
 import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
+import { OrganizationAdminGuard } from '../../guards/organization/organization-admin.guard';
+import { OrganizationService } from '../../services/organization/organization.service';
 
 @ApiTags('user-organization-permissions')
 @ApiBearerAuth('jwt')
@@ -22,6 +27,7 @@ export class UserOrganizationPermissionsController {
 
   constructor(
     private readonly userOrganizationPermissionsService: UserOrganizationPermissionsService,
+    private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
   ) {
     this.ctx = {
@@ -30,6 +36,7 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiOkResponse({ type: UserOrganizationPermissionsEntity, isArray: true })
   @Get(':id')
   async getUserOrganizationPermissions(
     @Param('id') id: string,
@@ -43,6 +50,7 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @ApiOkResponse({ type: UserOrganizationPermissionsWithUserEntity, isArray: true })
   @Get('organization/:id')
   async getOrganizationUsers(@Param('id') id: string) {
     const orgId = Number(id);
@@ -64,6 +72,7 @@ export class UserOrganizationPermissionsController {
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
   @Post()
   async createPermission(
     @Body() permissionData: CreateOrganizationPermissionDto,
@@ -89,6 +98,7 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiOkResponse({ type: Number, description: 'Number of organization permissions for the user.' })
   @Get(':id/count')
   async getUserConventionCount(@Param('id') id: string): Promise<number> {
     return await this.userOrganizationPermissionsService.userOrganizationCount(
@@ -98,6 +108,7 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
   @Delete(':id')
   async deleteOrganizationPermission(@Param('id') id: string) {
     return await this.userOrganizationPermissionsService.deletePermission(
@@ -108,6 +119,7 @@ export class UserOrganizationPermissionsController {
 
   @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
   @Put(':id')
   async updateOrganizationPermission(
     @Param('id') id: string,
@@ -119,6 +131,26 @@ export class UserOrganizationPermissionsController {
         admin: permissionData.admin,
         geekGuide: permissionData.geekGuide,
         readOnly: permissionData.readOnly,
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
+  @Post('organization/:id/addUser')
+  async addUser(
+    @Param('id') id: string,
+    @Body() body: AddUserToOrganizationDto,
+  ) {
+    return await this.organizationService.addUserByEmail(
+      Number(id),
+      body.email,
+      {
+        admin: body.admin,
+        geekGuide: body.geekGuide,
+        readOnly: body.readOnly,
       },
       this.ctx,
     );
