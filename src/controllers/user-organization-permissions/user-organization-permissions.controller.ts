@@ -141,7 +141,7 @@ export class UserOrganizationPermissionsController {
   @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
   @Post('organization/:id/addUser')
   async addUser(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() body: AddUserToOrganizationDto,
   ) {
     return await this.organizationService.addUserByEmail(

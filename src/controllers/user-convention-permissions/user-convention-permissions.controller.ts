@@ -135,7 +135,7 @@ export class UserConventionPermissionsController {
     @ApiOkResponse({ type: UserConventionPermissionsEntity })
     @Post('convention/:id/addUser')
     async addUser(
-      @Param('id') id: string,
+      @Param('id') id: number,
       @Body() body: AddUserToConventionDto,
     ) {
       return await this.conventionService.addUserByEmail(
