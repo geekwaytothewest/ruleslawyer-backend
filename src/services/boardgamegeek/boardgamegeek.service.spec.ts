@@ -301,24 +301,28 @@ describe('BoardGameGeekService', () => {
 
     it('builds a normalized name index from the dump CSV', async () => {
       const csv =
-        'id,name,yearpublished,rank\n' +
-        '13,CATAN,1995,512\n' +
-        '822,Carcassonne,2000,200\n' +
-        '0,BadRow,,\n'; // id=0 should be skipped
+        'id,name,yearpublished,rank,bayesaverage\n' +
+        '13,CATAN,1995,512,7.2\n' +
+        '822,Carcassonne,2000,200,7.4\n' +
+        '0,BadRow,,,\n'; // id=0 should be skipped
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
       const index = await service.getRankDumpIndex('https://signed-url');
 
-      expect(index.get('catan')).toEqual([{ id: 13, year: 1995, rank: 512 }]);
-      expect(index.get('carcassonne')).toEqual([{ id: 822, year: 2000, rank: 200 }]);
+      expect(index.get('catan')).toEqual([
+        { id: 13, year: 1995, rank: 512, rating: 7.2 },
+      ]);
+      expect(index.get('carcassonne')).toEqual([
+        { id: 822, year: 2000, rank: 200, rating: 7.4 },
+      ]);
       expect(index.has('badrow')).toBe(false);
     });
 
     it('groups duplicate names under one key', async () => {
       const csv =
-        'id,name,yearpublished,rank\n' +
-        '2655,Hive,2001,300\n' +
-        '999,Hive,2018,0\n';
+        'id,name,yearpublished,rank,bayesaverage\n' +
+        '2655,Hive,2001,300,6.9\n' +
+        '999,Hive,2018,0,2.3\n';
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
       const index = await service.getRankDumpIndex('https://signed-url');
@@ -332,26 +336,26 @@ describe('BoardGameGeekService', () => {
 
     it('skips rows whose name normalizes to empty', async () => {
       const csv =
-        'id,name,yearpublished,rank\n' +
-        '13,CATAN,1995,512\n' +
-        '77,   ,2000,100\n'; // whitespace-only name normalizes to empty -> skipped
+        'id,name,yearpublished,rank,bayesaverage\n' +
+        '13,CATAN,1995,512,6.9\n' +
+        '77,   ,2000,100,6.9\n'; // whitespace-only name normalizes to empty -> skipped
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
       const index = await service.getRankDumpIndex('https://signed-url');
 
-      expect(index.get('catan')).toEqual([{ id: 13, year: 1995, rank: 512 }]);
+      expect(index.get('catan')).toEqual([{ id: 13, year: 1995, rank: 512, rating: 6.9 }]);
       // The whitespace-named row produced no key.
       expect(index.size).toBe(1);
     });
 
     it('stores a null year when yearpublished is missing', async () => {
-      const csv = 'id,name,yearpublished,rank\n' + '55,Untimed Game,,300\n';
+      const csv = 'id,name,yearpublished,rank,bayesaverage\n' + '55,Untimed Game,,300,5.9\n';
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
       const index = await service.getRankDumpIndex('https://signed-url');
 
       expect(index.get('untimed game')).toEqual([
-        { id: 55, year: null, rank: 300 },
+        { id: 55, year: null, rank: 300, rating: 5.9 },
       ]);
     });
 

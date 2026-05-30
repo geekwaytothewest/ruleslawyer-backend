@@ -38,6 +38,16 @@ export class CreateGameDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsInt()
+  bggRank?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  bggRating?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   shortDescription?: string;
 

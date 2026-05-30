@@ -52,6 +52,8 @@ describe('GameService', () => {
         weight: new Prisma.Decimal(2.5),
         minAge: 10,
         yearPublished: null,
+        bggRank: null,
+        bggRating: null,
         organizationId: 1,
       });
 
@@ -80,6 +82,8 @@ describe('GameService', () => {
           weight: new Prisma.Decimal(2.5),
           minAge: 10,
           yearPublished: null,
+          bggRank: null,
+          bggRating: null,
           organizationId: 1,
         });
 
@@ -133,6 +137,8 @@ describe('GameService', () => {
           weight: new Prisma.Decimal(2.5),
           minAge: 10,
           yearPublished: null,
+          bggRank: null,
+          bggRating: null,
           organizationId: 1,
         });
 
@@ -168,7 +174,7 @@ describe('GameService', () => {
     it('matches a single candidate by normalized name and writes its bggId', async () => {
       mockCtx.prisma.game.findMany.mockResolvedValue([gameRow({ id: 1, name: 'CATAN' })]);
       bgg.getRankDumpIndex.mockResolvedValue(
-        new Map([['catan', [{ id: 13, year: 1995, rank: 512 }]]]),
+        new Map([['catan', [{ id: 13, year: 1995, rank: 512, rating: 7.2 }]]]),
       );
 
       const matched = await service.backfillBggIdsFromRankDump(1, ctx, 'url');
@@ -201,8 +207,8 @@ describe('GameService', () => {
           [
             'hive',
             [
-              { id: 2655, year: 2001, rank: 300 },
-              { id: 999, year: 2018, rank: null },
+              { id: 2655, year: 2001, rank: 300, rating: 7.1 },
+              { id: 999, year: 2018, rank: null, rating: 8.3 },
             ],
           ],
         ]),
@@ -225,9 +231,9 @@ describe('GameService', () => {
           [
             'generic',
             [
-              { id: 1, year: 2000, rank: null },
-              { id: 2, year: 2001, rank: 300 },
-              { id: 3, year: 2002, rank: 100 },
+              { id: 1, year: 2000, rank: null, rating: 6.5 },
+              { id: 2, year: 2001, rank: 300, rating: 7.0 },
+              { id: 3, year: 2002, rank: 100, rating: 8.1 },
             ],
           ],
         ]),
@@ -394,6 +400,8 @@ describe('GameService', () => {
         minage: { '@_value': '8' },
         description: 'A great game',
         statistics: { ratings: { averageweight: { '@_value': '2.5' } } },
+        rank: 5,
+        rating: 7.8,
         link: [
           { '@_type': 'boardgamepublisher', '@_value': 'Pub A' },
           { '@_type': 'boardgamepublisher', '@_value': 'Pub B' },
@@ -416,6 +424,18 @@ describe('GameService', () => {
       expect(data.publisher).toBe('Pub A, Pub B');
       expect(data.designer).toBe('Designer A');
       expect(data.artist).toBe('Artist A');
+      expect(data.bggRank).toBe(5);
+      expect(data.bggRating).toBe(7.8);
+    });
+
+    it('passes bggRank/bggRating straight through and leaves them undefined when absent', async () => {
+      bgg.getImage.mockResolvedValue(Buffer.from('img'));
+
+      await service.bggUpdate(1, { '@_id': '42' }, ctx);
+
+      const data = (mockCtx.prisma.game.update.mock.calls[0][0] as any).data;
+      expect(data.bggRank).toBeUndefined();
+      expect(data.bggRating).toBeUndefined();
     });
   });
 
