@@ -134,6 +134,8 @@ describe('CollectionService', () => {
         minPlayers: null,
         maxPlayers: null,
         bggId: null,
+        bggRank: null,
+        bggRating: null,
         artist: null,
         coverArt: null,
         designer: null,
