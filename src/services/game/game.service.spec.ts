@@ -394,6 +394,8 @@ describe('GameService', () => {
         minage: { '@_value': '8' },
         description: 'A great game',
         statistics: { ratings: { averageweight: { '@_value': '2.5' } } },
+        rank: 5,
+        rating: 7.8,
         link: [
           { '@_type': 'boardgamepublisher', '@_value': 'Pub A' },
           { '@_type': 'boardgamepublisher', '@_value': 'Pub B' },
