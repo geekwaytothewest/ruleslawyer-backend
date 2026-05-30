@@ -5,6 +5,7 @@ import { UserOrganizationPermissionsEntity } from '../../common/entities/user-or
 import { UserOrganizationPermissionsWithUserEntity } from '../../common/entities/permission-with-relations.entity';
 import { CreateOrganizationPermissionDto } from './dto/create-organization-permission.dto';
 import { UpdateOrganizationPermissionDto } from './dto/update-organization-permission.dto';
+import { AddUserToOrganizationDto } from './dto/add-user-to-organization.dto';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
 import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
 import { UserOrganizationPermissionsService } from '../../services/user-organization-permissions/user-organization-permissions.service';
@@ -15,6 +16,8 @@ import { User } from '../../modules/authz/user.decorator';
 import { OrganizationPermissionsSelfUpdateGuard } from '../../guards/permissions/organization-permissions-self-update.guard';
 import { OrganizationPermissionsGuard } from '../../guards/permissions/organization-permissions.guard';
 import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
+import { OrganizationAdminGuard } from '../../guards/organization/organization-admin.guard';
+import { OrganizationService } from '../../services/organization/organization.service';
 
 @ApiTags('user-organization-permissions')
 @ApiBearerAuth('jwt')
@@ -24,6 +27,7 @@ export class UserOrganizationPermissionsController {
 
   constructor(
     private readonly userOrganizationPermissionsService: UserOrganizationPermissionsService,
+    private readonly organizationService: OrganizationService,
     private readonly prismaService: PrismaService,
   ) {
     this.ctx = {
@@ -127,6 +131,26 @@ export class UserOrganizationPermissionsController {
         admin: permissionData.admin,
         geekGuide: permissionData.geekGuide,
         readOnly: permissionData.readOnly,
+      },
+      this.ctx,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
+  @Post('organization/:id/addUser')
+  async addUser(
+    @Param('id') id: string,
+    @Body() body: AddUserToOrganizationDto,
+  ) {
+    return await this.organizationService.addUserByEmail(
+      Number(id),
+      body.email,
+      {
+        admin: body.admin,
+        geekGuide: body.geekGuide,
+        readOnly: body.readOnly,
       },
       this.ctx,
     );

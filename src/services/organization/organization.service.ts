@@ -89,4 +89,41 @@ export class OrganizationService {
       return Promise.reject(ex);
     }
   }
+
+  async addUserByEmail(
+    organizationId: Number,
+    email: string,
+    permissions: {
+      admin: boolean;
+      geekGuide: boolean;
+      readOnly: boolean;
+    },
+    ctx: Context,
+  ) {
+    try {
+      let user = await ctx.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (!user) {
+        user = await ctx.prisma.user.create({
+          data: {
+            email,
+          },
+        });
+      }
+
+      return await ctx.prisma.userOrganizationPermissions.create({
+        data: {
+          userId: user.id,
+          organizationId: Number(organizationId),
+          admin: permissions.admin,
+          geekGuide: permissions.geekGuide,
+          readOnly: permissions.readOnly,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
 }
