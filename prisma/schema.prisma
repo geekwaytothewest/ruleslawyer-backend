@@ -212,6 +212,8 @@ model Game {
   artist           String?
   publisher        String?
   longDescription  String?
+  bggRank          Int?
+  bggRating        Decimal?
   minPlayers       Int?
   maxPlayers       Int?
   /// Minimum expected play time in minutes.

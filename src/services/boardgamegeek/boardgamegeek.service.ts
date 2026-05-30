@@ -9,6 +9,7 @@ export interface RankDumpEntry {
   id: number;
   year: number | null;
   rank: number | null;
+  rating: number | null;
 }
 
 /**
@@ -363,6 +364,7 @@ export class BoardGameGeekService {
         id,
         year: parseInt(row.yearpublished) || null,
         rank: parseInt(row.rank) || null,
+        rating: parseFloat(row.bayesaverage) || null,
       };
 
       const existing = index.get(key);

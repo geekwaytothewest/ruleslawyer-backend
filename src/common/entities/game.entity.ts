@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Game, Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 // Response shape for the Game scalar fields. `implements Game` makes the
 // compiler fail if this drifts from the Prisma model, so the Swagger schema
@@ -15,6 +16,8 @@ export class GameEntity implements Game {
   organizationId: number;
   /** BoardGameGeek game id used for metadata sync. */
   bggId: number | null;
+  bggRank: number | null;
+  bggRating: Decimal | null;
   /** Timestamp of the last successful BoardGameGeek sync. */
   lastBGGSync: Date | null;
   name: string;
