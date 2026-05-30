@@ -196,6 +196,8 @@ export class GameService {
           minAge: gameData?.minage?.['@_value'] ? parseInt(gameData.minage['@_value']) : null,
           weight: gameData?.statistics?.ratings?.averageweight?.['@_value'] ? parseFloat(gameData.statistics.ratings.averageweight['@_value']) : null,
           coverArt: deferImage ? undefined : (imageResponse as Prisma.Bytes | null),
+          bggRank: gameData?.rank,
+          bggRating: gameData?.rating,
           lastBGGSync: new Date(),
         },
       });
