@@ -187,7 +187,7 @@ export class BoardGameGeekService {
       const response = await this.getWithRetry(
         // No type filter: fetching by known id should return the thing whatever
         // its type (e.g. boardgameexpansion), which `&type=boardgame` excludes.
-        this.bggApiUrl + `thing?id=${bggIds.join(',')}`,
+        this.bggApiUrl + `thing?id=${bggIds.join(',')}&stats=1`,
         { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
       );
 
@@ -225,7 +225,7 @@ export class BoardGameGeekService {
         const game = await this.getWithRetry(
           // No type filter (see batch method): expansions are excluded by
           // `&type=boardgame`, but a lookup by known id should still resolve them.
-          this.bggApiUrl + `thing?id=${bggId}`,
+          this.bggApiUrl + `thing?id=${bggId}&stats=1`,
           { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
         );
 
