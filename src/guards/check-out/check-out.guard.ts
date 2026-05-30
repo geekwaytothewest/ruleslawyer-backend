@@ -56,7 +56,7 @@ export class CheckOutGuard implements CanActivate {
     }
 
     const users = convention?.users?.filter(
-      (u) => u.id === user.id && (u.admin || u.geekGuide),
+      (u) => u.userId === user.id && (u.admin || u.geekGuide),
     );
 
     if (users && users.length > 0) {
