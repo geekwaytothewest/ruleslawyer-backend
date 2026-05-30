@@ -924,6 +924,23 @@ describe('ConventionService', () => {
       expect(args.where.OR).toHaveLength(2);
       expect(args.orderBy).toEqual({ startDate: 'desc' });
     });
+
+    it('should return every convention for a super admin', async () => {
+      mockCtx.prisma.convention.findMany.mockResolvedValue([
+        { id: 1 },
+        { id: 2 },
+      ] as any);
+
+      const result = await service.conventions(
+        { id: 1, superAdmin: true },
+        ctx,
+      );
+
+      expect(result.length).toBe(2);
+      const args = mockCtx.prisma.convention.findMany.mock.calls[0][0] as any;
+      expect(args.where).toBeUndefined();
+      expect(args.orderBy).toEqual({ startDate: 'desc' });
+    });
   });
 
   describe('attachCollection', () => {
