@@ -264,7 +264,7 @@ export class OrganizationController {
     return this.conventionTypeService.createConventionType(data, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationReadGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: ConventionTypeEntity, isArray: true })
   @Get(':id/conventionType')
   async getConventionTypes(
