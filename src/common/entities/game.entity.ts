@@ -15,6 +15,8 @@ export class GameEntity implements Game {
   organizationId: number;
   /** BoardGameGeek game id used for metadata sync. */
   bggId: number | null;
+  bggRank: number | null;
+  bggRating: number | null;
   /** Timestamp of the last successful BoardGameGeek sync. */
   lastBGGSync: Date | null;
   name: string;
