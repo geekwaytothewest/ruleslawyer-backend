@@ -576,4 +576,41 @@ export class ConventionService {
       return Promise.reject(ex);
     }
   }
+
+  async addUserByEmail(
+    conventionId: number,
+    email: string,
+    permissions: {
+      admin: boolean;
+      geekGuide: boolean;
+      attendee: boolean;
+    },
+    ctx: Context,
+  ) {
+    try {
+      let user = await ctx.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (!user) {
+        user = await ctx.prisma.user.create({
+          data: {
+            email,
+          },
+        });
+      }
+
+      return await ctx.prisma.userConventionPermissions.create({
+        data: {
+          userId: user.id,
+          conventionId: Number(conventionId),
+          admin: permissions.admin,
+          geekGuide: permissions.geekGuide,
+          attendee: permissions.attendee,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
 }

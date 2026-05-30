@@ -17,6 +17,9 @@ import { ConventionPermissionsSelfUpdateGuard } from '../../guards/permissions/c
 import { ConventionPermissionsGuard } from '../../guards/permissions/convention-permissions.guard';
 import { ConventionCreatePermissionsGuard } from '../../guards/permissions/convention-create-permissions.guard';
 import { ConventionReadGuard } from '../../guards/convention/convention-read.guard';
+import { OrganizationAdminGuard } from '../../guards/organization/organization-admin.guard';
+import { AddUserToConventionDto } from './dto/add-user-to-convention.dto';
+import { ConventionService } from '../../services/convention/convention.service';
 
 @ApiTags('user-convention-permissions')
 @ApiBearerAuth('jwt')
@@ -26,6 +29,7 @@ export class UserConventionPermissionsController {
 
   constructor(
     private readonly userConventionPermissionsService: UserConventionPermissionsService,
+    private readonly conventionService: ConventionService,
     private readonly prismaService: PrismaService,
   ) {
     this.ctx = {
@@ -125,4 +129,24 @@ export class UserConventionPermissionsController {
       this.ctx,
     );
   }
+
+    @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
+    @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+    @ApiOkResponse({ type: UserConventionPermissionsEntity })
+    @Post('organization/:id/addUser')
+    async addUser(
+      @Param('id') id: string,
+      @Body() body: AddUserToConventionDto,
+    ) {
+      return await this.conventionService.addUserByEmail(
+        Number(id),
+        body.email,
+        {
+          admin: body.admin,
+          geekGuide: body.geekGuide,
+          attendee: body.attendee,
+        },
+        this.ctx,
+      );
+    }
 }
