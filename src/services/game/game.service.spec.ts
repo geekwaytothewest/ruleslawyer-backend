@@ -399,7 +399,18 @@ describe('GameService', () => {
         maxplaytime: { '@_value': '60' },
         minage: { '@_value': '8' },
         description: 'A great game',
-        statistics: { ratings: { averageweight: { '@_value': '2.5' } } },
+        statistics: {
+          ratings: {
+            averageweight: { '@_value': '2.5' },
+            average: { '@_value': '7.83456' },
+            ranks: {
+              rank: [
+                { '@_name': 'boardgame', '@_value': '5' },
+                { '@_name': 'strategygames', '@_value': '3' },
+              ],
+            },
+          },
+        },
         link: [
           { '@_type': 'boardgamepublisher', '@_value': 'Pub A' },
           { '@_type': 'boardgamepublisher', '@_value': 'Pub B' },
@@ -422,14 +433,76 @@ describe('GameService', () => {
       expect(data.publisher).toBe('Pub A, Pub B');
       expect(data.designer).toBe('Designer A');
       expect(data.artist).toBe('Artist A');
+      // bggRank: the 'boardgame' entry's @_value; bggRating: the raw average.
+      expect(data.bggRank).toBe(5);
+      expect(data.bggRating).toBeCloseTo(7.83456);
+    });
+  });
+
+  describe('bggUpdate rank/rating extraction', () => {
+    const dataFrom = () =>
+      (mockCtx.prisma.game.update.mock.calls[0][0] as any).data;
+
+    const withRanks = (rank: any, average?: { '@_value': string }) => ({
+      '@_id': '1',
+      statistics: { ratings: { ...(average ? { average } : {}), ranks: { rank } } },
     });
 
-    it('passes bggRank/bggRating straight through and leaves them undefined when absent', async () => {
-      bgg.getImage.mockResolvedValue(Buffer.from('img'));
+    beforeEach(() => bgg.getImage.mockResolvedValue(Buffer.from('img')));
 
+    it('pulls the boardgame rank out of a ranks array', async () => {
+      await service.bggUpdate(1, withRanks([
+        { '@_name': 'strategygames', '@_value': '3' },
+        { '@_name': 'boardgame', '@_value': '42' },
+      ]), ctx);
+
+      expect(dataFrom().bggRank).toBe(42);
+    });
+
+    it('handles a single rank object (not wrapped in an array)', async () => {
+      await service.bggUpdate(
+        1,
+        withRanks({ '@_name': 'boardgame', '@_value': '7' }),
+        ctx,
+      );
+
+      expect(dataFrom().bggRank).toBe(7);
+    });
+
+    it('treats "Not Ranked" as undefined', async () => {
+      await service.bggUpdate(
+        1,
+        withRanks({ '@_name': 'boardgame', '@_value': 'Not Ranked' }),
+        ctx,
+      );
+
+      expect(dataFrom().bggRank).toBeUndefined();
+    });
+
+    it('leaves bggRank undefined when there is no boardgame rank entry', async () => {
+      await service.bggUpdate(
+        1,
+        withRanks({ '@_name': 'strategygames', '@_value': '3' }),
+        ctx,
+      );
+
+      expect(dataFrom().bggRank).toBeUndefined();
+    });
+
+    it('parses bggRating from statistics.ratings.average', async () => {
+      await service.bggUpdate(
+        1,
+        withRanks({ '@_name': 'boardgame', '@_value': '5' }, { '@_value': '8.21' }),
+        ctx,
+      );
+
+      expect(dataFrom().bggRating).toBeCloseTo(8.21);
+    });
+
+    it('leaves both undefined when statistics are absent', async () => {
       await service.bggUpdate(1, { '@_id': '42' }, ctx);
 
-      const data = (mockCtx.prisma.game.update.mock.calls[0][0] as any).data;
+      const data = dataFrom();
       expect(data.bggRank).toBeUndefined();
       expect(data.bggRating).toBeUndefined();
     });
