@@ -206,8 +206,8 @@ export class GameService {
 
             return boardgameRank && boardgameRank !== 'Not Ranked' ? parseInt(boardgameRank) : undefined;
           })(),
-          bggRating:  gameData?.statistics?.ratings?.bayesaverage?.['@_value']
-            ? parseFloat(gameData.statistics.ratings.bayesaverage['@_value'])
+          bggRating:  gameData?.statistics?.ratings?.average?.['@_value']
+            ? parseFloat(gameData.statistics.ratings.average['@_value'])
             : undefined,
           lastBGGSync: new Date(),
         },
