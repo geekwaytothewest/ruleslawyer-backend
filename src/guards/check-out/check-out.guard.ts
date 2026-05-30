@@ -21,7 +21,6 @@ export class CheckOutGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
     let organizationId = context.getArgByIndex(0).params?.id;
-    const collectionId = context.getArgByIndex(0).params?.colId;
     const conventionId = context.getArgByIndex(0).params?.conId;
 
     if (!user) {
@@ -55,17 +54,12 @@ export class CheckOutGuard implements CanActivate {
       return false;
     }
 
-    if (
-      collectionId &&
-      convention?.playAndWinCollectionId === Number(collectionId)
-    ) {
-      const users = convention?.users?.filter(
-        (u) => u.id === user.id && (u.admin || u.geekGuide),
-      );
+    const users = convention?.users?.filter(
+      (u) => u.userId === user.id && (u.admin || u.geekGuide),
+    );
 
-      if (users && users.length > 0) {
-        return true;
-      }
+    if (users && users.length > 0) {
+      return true;
     }
 
     const organization = await this.organizationService.organizationWithUsers(
