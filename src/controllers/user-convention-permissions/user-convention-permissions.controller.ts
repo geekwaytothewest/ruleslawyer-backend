@@ -133,7 +133,7 @@ export class UserConventionPermissionsController {
     @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
     @ApiOkResponse({ type: UserConventionPermissionsEntity })
-    @Post('organization/:id/addUser')
+    @Post('convention/:id/addUser')
     async addUser(
       @Param('id') id: string,
       @Body() body: AddUserToConventionDto,
