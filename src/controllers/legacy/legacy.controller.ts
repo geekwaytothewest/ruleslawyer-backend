@@ -90,8 +90,8 @@ export class LegacyController {
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/copycollections')
-  async getCopyCollections(@Param('orgId') orgId: number, @Param('condId') conId: number) {
-    this.logger.log(`Getting collections for orgId=${orgId}`);
+  async getCopyCollections(@Param('orgId') orgId: number, @Param('conId') conId: number) {
+    this.logger.log(`Getting collections for orgId=${orgId} and conId=${conId}`);
     const collections = await this.collectionService.collectionsByOrgAndConWithCopies(
       Number(orgId),
       Number(conId),

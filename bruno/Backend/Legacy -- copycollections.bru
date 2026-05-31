@@ -1,0 +1,21 @@
+meta {
+  name: Legacy -- copycollections
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{apiUrl}}/legacy/org/:orgId/con/:conId/copycollections
+  body: none
+  auth: inherit
+}
+
+params:path {
+  orgId: 1
+  conId: 3
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
