@@ -404,6 +404,7 @@ export class OrganizationController {
   ) {
     return this.collectionService.createCollection(
       id,
+      undefined,
       collectionData.name,
       collectionData.allowWinning,
       this.ctx,

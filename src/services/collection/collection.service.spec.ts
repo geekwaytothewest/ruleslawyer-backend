@@ -519,7 +519,7 @@ describe('CollectionService', () => {
     it('creates a collection', async () => {
       mockCtx.prisma.collection.create.mockResolvedValue({ id: 1 } as any);
 
-      const result = await service.createCollection(1, 'New', false, ctx);
+      const result = await service.createCollection(1, 1, 'New', false, ctx);
 
       expect(result.id).toBe(1);
     });
@@ -530,7 +530,7 @@ describe('CollectionService', () => {
       });
 
       await expect(
-        service.createCollection(1, 'New', false, ctx),
+        service.createCollection(1, 1, 'New', false, ctx),
       ).rejects.toThrow('db error');
     });
   });

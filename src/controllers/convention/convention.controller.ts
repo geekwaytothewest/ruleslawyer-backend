@@ -190,6 +190,7 @@ export class ConventionController {
   ) {
     return await this.collectionService.createCollection(
       id,
+      undefined,
       collection.name,
       collection.allowWinning,
       this.ctx,

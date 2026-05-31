@@ -208,6 +208,7 @@ export class CollectionService {
 
   async createCollection(
     orgId: number,
+    conId: number | undefined,
     name: string,
     allowWinning: boolean,
     ctx: Context,
@@ -221,6 +222,11 @@ export class CollectionService {
           name: name,
           organizationId: Number(orgId),
           allowWinning: allowWinning,
+          conventions: {
+            connect: {
+              id: conId
+            }
+          }
         },
       });
     } catch (ex) {
