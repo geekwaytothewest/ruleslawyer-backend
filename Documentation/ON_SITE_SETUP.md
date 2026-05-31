@@ -17,9 +17,9 @@ authenticates through Auth0. The pieces you interact with on the floor:
 
 | Station            | What it runs                                   | Used by                  |
 | ------------------ | ---------------------------------------------- | ------------------------ |
-| Library checkout   | Librarian frontend (`/librarian`) + scanner    | Library attendants       |
-| Play & Win kiosk   | Play-prize-entry frontend (`/playandwin`)      | Attendees (self-serve)   |
-| Admin station      | Board-game-admin frontend (`/admin`)           | Convention organizers    |
+| Library checkout   | Librarian frontend (`/legacy/librarian`) + scanner | Library attendants       |
+| Play & Win kiosk   | Play-prize-entry frontend (`/legacy/playandwin`) | Attendees (self-serve)   |
+| Admin station      | Board-game-admin frontend (`/legacy/admin`)     | Convention organizers    |
 | Drawing laptop     | `pnw-picker` (standalone Python/Gooey tool)    | Organizers, end of con   |
 
 In production these frontends are served behind CloudFront at the convention's
@@ -30,7 +30,7 @@ public host; routes and hosts are listed in [`../DEPLOYMENT.md`](../DEPLOYMENT.m
 
 ### Library checkout (one or more)
 
-- A machine running the **librarian** frontend (`/librarian`) in a browser.
+- A machine running the **librarian** frontend (`/legacy/librarian`) in a browser.
 - A **barcode scanner** (USB or Bluetooth, configured as a keyboard-emulation
   HID device) for scanning game and badge barcodes.
 - Recommended: a wired or otherwise stable network connection — checkouts and
@@ -43,7 +43,7 @@ public host; routes and hosts are listed in [`../DEPLOYMENT.md`](../DEPLOYMENT.m
 
 ### Play & Win kiosks (one or more)
 
-- A kiosk device running the **play-prize-entry** frontend (`/playandwin`).
+- A kiosk device running the **play-prize-entry** frontend (`/legacy/playandwin`).
   Geekway uses iPads in kiosk/guided-access mode.
 - These are self-serve: attendees record the games they've played so they're
   eligible for the end-of-con Play & Win drawing.
@@ -51,7 +51,7 @@ public host; routes and hosts are listed in [`../DEPLOYMENT.md`](../DEPLOYMENT.m
 
 ### Admin station (at least one)
 
-- Any computer that can reach the **board-game-admin** frontend (`/admin`) and,
+- Any computer that can reach the **board-game-admin** frontend (`/legacy/admin`) and,
   if you're running the drawing here, the `pnw-picker` tool.
 - Used to manage the convention, games/copies, attendees, and permissions.
 

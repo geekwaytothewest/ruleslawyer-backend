@@ -50,10 +50,10 @@ On startup the backend container automatically runs Prisma migrations and seeds 
 | ------------------- | ---------------------------------- |
 | Backend             | http://localhost:8080              |
 | Backend debugger    | localhost:9229                     |
-| Admin               | http://localhost:8081/admin        |
-| Librarian           | http://localhost:8082/librarian    |
-| Play and Win        | http://localhost:8083/playandwin   |
-| Ruleslawyer dashboard | http://localhost:8084/ruleslawyer |
+| Admin               | http://localhost:8081/legacy/admin        |
+| Librarian           | http://localhost:8082/legacy/librarian    |
+| Play and Win        | http://localhost:8083/legacy/playandwin   |
+| Ruleslawyer dashboard | http://localhost:8084              |
 | Database (Postgres) | localhost:5432                     |
 
 ## Using compose profiles

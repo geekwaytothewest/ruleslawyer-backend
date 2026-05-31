@@ -97,9 +97,9 @@ so logins work against `docker compose up` — these are in `tenant.yaml`.
 | --- | --- | --- | --- | --- |
 | ruleslawyer-frontend | `<APP_BASE_URL>/auth/callback` | `<APP_BASE_URL>` | `http://localhost:8084/auth/callback` / `http://localhost:8084` | nextjs-auth0 mounts `/auth/*` (login, logout, callback). |
 | Swagger UI | `<API_HOST>/api/docs/oauth2-redirect.html` | — | `http://localhost:8080/api/docs/oauth2-redirect.html` / `http://localhost:8080` | Uses `SWAGGER_AUTH0_CLIENT_ID`; sends `audience` as an extra authorize param. |
-| board-game-admin | `<host>/admin` (`AUTH_CALLBACK`) | `LOGOUT_RETURN_URL` | `http://localhost:8081/admin` / `http://localhost:8081` | publicPath `/admin/`. |
-| librarian | `<host>/librarian` (`AUTH_CALLBACK`) | `LOGOUT_RETURN_URL` | `http://localhost:8082/librarian` / `http://localhost:8082` | publicPath `/librarian/`. |
-| play-prize-entry | `<host>/playandwin` (`AUTH_CALLBACK`) | window origin | `http://localhost:8083/playandwin` / `http://localhost:8083` | publicPath `/playandwin/`. |
+| board-game-admin | `<host>/legacy/admin/callback` (`AUTH_CALLBACK`) | `<host>/legacy/admin` (`LOGOUT_RETURN_URL`) | `http://localhost:8081/legacy/admin/callback` / `http://localhost:8081` | publicPath `/legacy/admin/`. |
+| librarian | `<host>/legacy/librarian` (`AUTH_CALLBACK`) | `<host>/legacy/librarian` (`LOGOUT_RETURN_URL`) | `http://localhost:8082/legacy/librarian` / `http://localhost:8082` | publicPath `/legacy/librarian/`. |
+| play-prize-entry | `<host>/legacy/playandwin` (`AUTH_CALLBACK`) | `<host>/legacy/playandwin` | `http://localhost:8083/legacy/playandwin` / `http://localhost:8083` | publicPath `/legacy/playandwin/`. |
 
 ### Per-client scopes requested at login
 
