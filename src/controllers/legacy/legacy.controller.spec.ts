@@ -2317,7 +2317,7 @@ describe('LegacyController', () => {
         archived: false,
       });
 
-      const result = (await controller.addCollection(1, {
+      const result = (await controller.addCollection(1, 1, {
         name: 'New',
         allowWinning: true,
       })) as any;
