@@ -161,18 +161,12 @@ export class CollectionService {
     this.logger.log(`Getting collections for orgId=${orgId} and conId=${conId}`);
     return await ctx.prisma.collection.findMany({
       where: {
-        AND: [
-          {
-            organizationId: orgId
-          },
-          {
-            conventions: {
-              some: {
-                id: conId,
-              }
-            }
+        organizationId: orgId,
+        conventions: {
+          some: {
+            conventionId: conId,
           }
-        ]
+        }
       },
       include: {
         copies: {
