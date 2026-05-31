@@ -166,8 +166,8 @@ export class CollectionService {
             organizationId: orgId
           },
           {
-            some: {
-              conventions: {
+            conventions: {
+              some: {
                 id: conId,
               }
             }
