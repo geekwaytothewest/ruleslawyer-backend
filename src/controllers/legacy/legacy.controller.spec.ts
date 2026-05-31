@@ -63,7 +63,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
 
-      const bigResponse = await controller.getCopyCollections(1);
+      const bigResponse = await controller.getCopyCollections(1, 2);
 
       expect(bigResponse.Result.length).toBe(1);
     });
@@ -102,7 +102,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
 
-      const bigResponse = await controller.getCopyCollections(1);
+      const bigResponse = await controller.getCopyCollections(1, 1);
 
       expect(bigResponse.Result.length).toBe(1);
     });
@@ -141,7 +141,7 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.collection.findMany.mockResolvedValue(bigCollection);
 
-      const bigResponse = await controller.getCopyCollections(1);
+      const bigResponse = await controller.getCopyCollections(1, 1);
 
       expect(bigResponse.Result.length).toBe(1);
     });

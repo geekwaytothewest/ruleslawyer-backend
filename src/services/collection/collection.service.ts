@@ -157,6 +157,46 @@ export class CollectionService {
     });
   }
 
+  async collectionsByOrgAndConWithCopies(orgId: number, conId: number, ctx: Context) {
+    this.logger.log(`Getting collections for orgId=${orgId} and conId=${conId}`);
+    return await ctx.prisma.collection.findMany({
+      where: {
+        AND: [
+          {
+            organizationId: orgId
+          },
+          {
+            conventions: {
+              some: {
+                id: conId,
+              }
+            }
+          }
+        ]
+      },
+      include: {
+        copies: {
+          include: {
+            checkOuts: {
+              include: {
+                attendee: true,
+              },
+              orderBy: {
+                checkOut: 'desc',
+              },
+            },
+            collection: true,
+            game: true,
+          },
+        },
+        _count: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
   async collectionsByOrg(orgId: number, ctx: Context) {
     this.logger.log(`Getting collections for orgId=${orgId}`);
     return await ctx.prisma.collection.findMany({
