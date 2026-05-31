@@ -92,7 +92,7 @@ export class LegacyController {
   @Get('org/:orgId/con/:conId/copycollections')
   async getCopyCollections(@Param('orgId') orgId: number, @Param('condId') conId: number) {
     this.logger.log(`Getting collections for orgId=${orgId}`);
-    const collections = await this.collectionService.collectionsByOrgAndConventionWithCopies(
+    const collections = await this.collectionService.collectionsByOrgAndConWithCopies(
       Number(orgId),
       Number(conId),
       this.ctx,
