@@ -1395,6 +1395,7 @@ export class LegacyController {
   @Post('org/:orgId/con/:conId/addCollection')
   async addCollection(
     @Param('orgId') orgId: number,
+    @Param('conId') conId: number,
     @Body() collection: CreateCollectionDto,
   ) {
     this.logger.log(
@@ -1402,6 +1403,7 @@ export class LegacyController {
     );
     return this.collectionService.createCollection(
       Number(orgId),
+      Number(conId),
       collection.name,
       collection.allowWinning,
       this.ctx,
