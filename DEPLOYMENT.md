@@ -1,44 +1,66 @@
 # Deployment
 
-All Geekway to the West Rules Lawyer services deploy to **AWS ECS** via **GitHub Actions**. This is the canonical deployment guide; each repo's README links here and only lists its own service-specific names.
+All Geekway to the West Rules Lawyer services run on **AWS ECS** and are released
+via **GitHub Actions**. This is the canonical release guide for the apps; each
+repo's README links here and lists only its own service names.
+
+> **Infrastructure is defined and provisioned by the `ruleslawyer-infra` CDK
+> project** — the ECS clusters and services, ECR repos, ALB/routing, RDS, IAM, and
+> every **task definition** (container env vars, secrets, CPU/memory) live there
+> and are its single source of truth. This repo's pipeline only ships a new image;
+> it does not define or provision any of that. To stand up an environment, change
+> runtime env/secrets/sizing, or migrate prod, see `ruleslawyer-infra`:
+> `README.md` (deployment model), `DEPLOYMENT.md` (from-scratch bring-up), and
+> `CUTOVER.md` (migrating the existing hand-built prod).
 
 ## How it works
 
 Every service follows the same pipeline, triggered manually:
 
-1. **Trigger** — run the repo's deploy workflow from the GitHub **Actions** tab (`workflow_dispatch`), choosing `nonprod` or `prod`.
-2. **Build** — the workflow builds the Docker image and tags it with the commit SHA.
-3. **Push** — the image is pushed to the service's **ECR** repository.
-4. **Render** — `aws-actions/amazon-ecs-render-task-definition` injects the new image URI into `.aws/taskdefinition-{env}.json`.
-5. **Deploy** — `aws-actions/amazon-ecs-deploy-task-definition` updates the ECS service on the `geekway-{env}` cluster and waits for the service to stabilize.
+1. **Trigger** — run the repo's deploy workflow from the GitHub **Actions** tab
+   (`workflow_dispatch`), choosing `nonprod` or `prod`.
+2. **Build** — the workflow builds the Docker image.
+3. **Push** — it's pushed to the service's **ECR** repo under two tags: the commit
+   SHA (immutable record) and `latest` (what the CDK-owned task definition
+   references).
+4. **Deploy** — `aws ecs update-service --force-new-deployment` restarts the
+   service on the `geekway-{env}` cluster so its tasks re-pull `latest`, then waits
+   for the service to stabilize.
+
+The workflow no longer renders or registers a task definition — CDK owns it.
+Changing container env vars or secrets is an **infra change in `ruleslawyer-infra`**
+(edit `config.ts`, `cdk deploy`), not a change in this repo.
 
 ## Services
 
-| Repo                                  | Workflow                  | ECR repo / ECS service    | Task definitions                          |
-| ------------------------------------- | ------------------------- | ------------------------- | ----------------------------------------- |
-| `ruleslawyer-backend`                 | Build and Deploy          | `ruleslawyer-backend`     | `.aws/taskdefinition-{nonprod,prod}.json` |
-| `frontends` (board-game-admin)        | Deploy Frontends to ECS   | `frontends-admin`         | `.aws/taskdefinition-{nonprod,prod}.json` |
-| `frontends` (librarian)               | Deploy Frontends to ECS   | `frontends-librarian`     | `.aws/taskdefinition-{nonprod,prod}.json` |
-| `frontends` (play-prize-entry)        | Deploy Frontends to ECS   | `frontends-play-and-win`  | `.aws/taskdefinition-{nonprod,prod}.json` |
-| `ruleslawyer-frontend`                | Build and Deploy          | `ruleslawyer-frontend`    | `.aws/taskdefinition-{nonprod,prod}.json` |
+| Repo                           | Workflow                | ECR repo / ECS service   |
+| ------------------------------ | ----------------------- | ------------------------ |
+| `ruleslawyer-backend`          | Build and Deploy        | `ruleslawyer-backend`    |
+| `frontends` (board-game-admin) | Deploy Frontends to ECS | `frontends-admin`        |
+| `frontends` (librarian)        | Deploy Frontends to ECS | `frontends-librarian`    |
+| `frontends` (play-prize-entry) | Deploy Frontends to ECS | `frontends-play-and-win` |
+| `ruleslawyer-frontend`         | Build and Deploy        | `ruleslawyer-frontend`   |
 
-The `frontends` repo has a single **Deploy Frontends to ECS** workflow that fans out to all three apps via reusable workflows; the others are deployed independently.
+The `frontends` repo has a single **Deploy Frontends to ECS** workflow that fans
+out to all three apps via reusable workflows; the others deploy independently.
 
 ## Environments
 
-| Environment | ECS cluster        | Public host                                |
-| ----------- | ------------------ | ------------------------------------------ |
-| `nonprod`   | `geekway-nonprod`  | `nonprod.ruleslawyer.geekway.com` (apps), `nonprod.library.geekway.com/api` |
-| `prod`      | `geekway-prod`     | `library.geekway.com`                      |
+| Environment | ECS cluster       | Public host                  |
+| ----------- | ----------------- | ---------------------------- |
+| `nonprod`   | `geekway-nonprod` | `nonprod.library.geekway.com` |
+| `prod`      | `geekway-prod`    | `library.geekway.com`        |
 
 ## Prerequisites
 
-The workflows **deploy** to existing infrastructure — they do **not provision** it. The following must already exist before a deploy can succeed:
+The workflows **deploy** to infrastructure that `ruleslawyer-infra` provisions — they
+do **not** create it. Before a deploy can succeed:
 
-- The ECS clusters `geekway-nonprod` and `geekway-prod`.
-- Each service's ECS service and its ECR repository (see the table above).
-- The IAM roles referenced by `NONPROD_ROLE_ARN` / `PROD_ROLE_ARN`, with permission to push to ECR and update ECS.
-- The following **GitHub Actions secrets** in each repo:
+- The environment must be stood up via `ruleslawyer-infra` (cluster, services, ECR
+  repos, task definitions). See its `DEPLOYMENT.md`.
+- The deploy credentials must target that environment's account. Either the
+  GitHub Actions secrets below, or the OIDC role `geekway-{env}-github-deploy`
+  that the CDK creates (add `permissions: id-token: write` to the job to use it).
 
   | Secret                                   | Purpose                                              |
   | ---------------------------------------- | ---------------------------------------------------- |
@@ -50,13 +72,21 @@ The workflows **deploy** to existing infrastructure — they do **not provision*
 ## Running a deploy
 
 1. Open the repo on GitHub → **Actions** tab.
-2. Select the deploy workflow (**Build and Deploy**, or **Deploy Frontends to ECS** for `frontends`).
+2. Select the deploy workflow (**Build and Deploy**, or **Deploy Frontends to
+   ECS** for `frontends`).
 3. Click **Run workflow**, choose `nonprod` or `prod`, and run it.
-4. The job pushes the image and waits for the ECS service to reach a stable state before finishing.
+4. The job pushes the image and waits for the ECS service to reach a stable state.
 
 ## Notes
 
-- **Runtime config lives in the task definition.** Container environment variables and secrets are defined in `.aws/taskdefinition-{env}.json`, not in the workflow. The workflow only swaps in the freshly built image.
-- **Frontend config is baked at build time.** The SPAs and the Next.js dashboard inline their API URL and Auth0 callback/logout URLs as Docker build args (e.g. `NEXT_PUBLIC_API_URL`), so changing them requires a rebuild, not just a task-definition change.
-- **The backend runs migrations and seeds on startup** (`prisma migrate deploy` via its start command), so no separate migration step is part of the deploy.
-- **Rollback** by re-running the workflow against an earlier commit, or by rolling the ECS service back to a previous task-definition revision in the AWS console.
+- **Runtime config lives in CDK, not here.** Container env vars, secrets, and
+  CPU/memory are defined in `ruleslawyer-infra` and are the source of truth. The
+  workflow only ships a new image.
+- **Frontend config is baked at build time.** The SPAs and the Next.js dashboard
+  inline their API URL and Auth0 callback/logout URLs as Docker build args (e.g.
+  `NEXT_PUBLIC_API_URL`), so changing them requires a rebuild, not just an infra
+  change.
+- **The backend runs migrations on startup** (`prisma migrate deploy` via its
+  start command), so no separate migration step is part of the deploy.
+- **Rollback** by re-tagging an earlier image as `latest` in ECR and forcing a new
+  deployment, or by re-running the workflow against an earlier commit.
