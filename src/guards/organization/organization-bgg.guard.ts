@@ -19,11 +19,7 @@ export class OrganizationBggGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
-    let orgId = context.getArgByIndex(0).params?.id;
-
-    if (!orgId) {
-      orgId = context.getArgByIndex(0).params?.orgId;
-    }
+    let orgId = context.getArgByIndex(0).params?.orgId;
 
     if (!orgId) {
       orgId = context.getArgByIndex(0).body?.organizationId;
