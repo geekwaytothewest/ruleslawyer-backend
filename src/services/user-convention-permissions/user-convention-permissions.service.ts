@@ -32,6 +32,70 @@ export class UserConventionPermissionsService {
     }
   }
 
+  /**
+   * Resolves which convention the play-and-win PWA should default to for this
+   * user when no convention is encoded in the URL (e.g. the installed app
+   * launched from its convention-agnostic start_url). Returns the "current"
+   * convention plus the full picker list so the frontend can fall back to a
+   * chooser when nothing is currently active.
+   *
+   * "current" = among the user's non-cancelled conventions whose endDate has
+   * not passed, prefer one that is active now (startDate <= now <= endDate),
+   * tie-broken by the most recent startDate; otherwise the soonest upcoming
+   * convention. Null when the user has no active or upcoming convention.
+   */
+  async resolveConventions(
+    userId: number,
+    ctx: Context,
+  ): Promise<{
+    current: { organizationId: number; conventionId: number } | null;
+    conventions: {
+      organizationId: number;
+      conventionId: number;
+      name: string;
+      annual: string;
+      startDate: Date;
+      endDate: Date;
+    }[];
+  }> {
+    const permissions = await ctx.prisma.userConventionPermissions.findMany({
+      where: { userId },
+      include: { convention: true },
+      orderBy: { convention: { startDate: 'desc' } },
+    });
+
+    const cons = permissions
+      .map((p) => p.convention)
+      .filter((c): c is NonNullable<typeof c> => Boolean(c));
+
+    const now = new Date();
+    const notEnded = cons.filter((c) => !c.cancelled && c.endDate >= now);
+    const active = notEnded.filter((c) => c.startDate <= now);
+
+    let chosen: (typeof cons)[number] | null = null;
+    if (active.length > 0) {
+      // Active now: the most recently started wins.
+      chosen = active.reduce((a, b) => (b.startDate > a.startDate ? b : a));
+    } else if (notEnded.length > 0) {
+      // Only upcoming: the soonest to start wins.
+      chosen = notEnded.reduce((a, b) => (b.startDate < a.startDate ? b : a));
+    }
+
+    return {
+      current: chosen
+        ? { organizationId: chosen.organizationId, conventionId: chosen.id }
+        : null,
+      conventions: cons.map((c) => ({
+        organizationId: c.organizationId,
+        conventionId: c.id,
+        name: c.name,
+        annual: c.annual,
+        startDate: c.startDate,
+        endDate: c.endDate,
+      })),
+    };
+  }
+
   async userConventionCount(id: string, ctx: Context): Promise<number> {
     const userId = await this.userService.convertToUserId(id, ctx);
 
