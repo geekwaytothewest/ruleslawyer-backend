@@ -26,6 +26,10 @@ jobs:
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
+    # Real GitHub Environment (configure required reviewers on `prod`). Gates the
+    # deploy on approval AND scopes the OIDC sub to `…:environment:<env>`, which is
+    # what the deploy role's trust policy now requires.
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: Checkout
