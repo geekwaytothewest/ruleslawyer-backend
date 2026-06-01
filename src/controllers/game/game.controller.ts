@@ -11,6 +11,8 @@ import {
   HttpCode,
   UsePipes,
   ValidationPipe,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -492,7 +494,7 @@ export class GameController {
         `Game with id=${id} not found.`,
       );
 
-      return null;
+      throw new NotFoundException('Game not found.');
     }
 
     if (!game.bggId) {
@@ -500,7 +502,9 @@ export class GameController {
         `Game with id=${id} does not have a bggId, cannot sync.`,
       );
 
-      return null;
+      throw new BadRequestException(
+        'This game has no BoardGameGeek ID to sync.',
+      );
     }
 
     return this.gameService.syncBGGGame(id, this.ctx);

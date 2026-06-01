@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { GameController } from './game.controller';
 import {
   Context,
@@ -287,17 +288,17 @@ describe('GameController', () => {
   });
 
   describe('syncBGGGame', () => {
-    it('should return null when the game is not found', async () => {
+    it('should throw NotFoundException when the game is not found', async () => {
       mockCtx.prisma.game.findUnique.mockResolvedValue(null);
       const spy = jest.spyOn(gameService, 'syncBGGGame');
 
-      const result = await controller.syncBGGGame(1, { id: 1 });
-
-      expect(result).toBeNull();
+      await expect(controller.syncBGGGame(1, { id: 1 })).rejects.toThrow(
+        NotFoundException,
+      );
       expect(spy).not.toHaveBeenCalled();
     });
 
-    it('should return null when the game has no bggId', async () => {
+    it('should throw BadRequestException when the game has no bggId', async () => {
       mockCtx.prisma.game.findUnique.mockResolvedValue({
         id: 1,
         name: 'Catan',
@@ -305,9 +306,9 @@ describe('GameController', () => {
       } as any);
       const spy = jest.spyOn(gameService, 'syncBGGGame');
 
-      const result = await controller.syncBGGGame(1, { id: 1 });
-
-      expect(result).toBeNull();
+      await expect(controller.syncBGGGame(1, { id: 1 })).rejects.toThrow(
+        BadRequestException,
+      );
       expect(spy).not.toHaveBeenCalled();
     });
 
