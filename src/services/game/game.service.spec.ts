@@ -26,6 +26,13 @@ describe('GameService', () => {
     service = module.get<GameService>(GameService);
     // Skip the real setTimeout-based pacing in the sync loop.
     (service as any).sleep = jest.fn().mockResolvedValue(undefined);
+    // bggUpdate now loads the game first (to read bggVersionId for the cover-art
+    // override), so default findUnique to a real row; specs that care about the
+    // loaded game (e.g. the override or syncBGGGame) override this per-test.
+    mockCtx.prisma.game.findUnique.mockResolvedValue({
+      id: 1,
+      bggVersionId: null,
+    } as any);
   });
 
   it('should be defined', () => {
@@ -40,6 +47,7 @@ describe('GameService', () => {
         minPlayers: 1,
         maxPlayers: 99,
         bggId: null,
+        bggVersionId: null,
         artist: 'Test Artist',
         coverArt: Buffer.from(''),
         designer: 'Test Designer',
@@ -70,6 +78,7 @@ describe('GameService', () => {
           minPlayers: 1,
           maxPlayers: 99,
           bggId: null,
+          bggVersionId: null,
           artist: 'Test Artist',
           coverArt: Buffer.from(''),
           designer: 'Test Designer',
@@ -125,6 +134,7 @@ describe('GameService', () => {
           minPlayers: 1,
           maxPlayers: 99,
           bggId: null,
+          bggVersionId: null,
           artist: 'Test Artist',
           coverArt: Buffer.from(''),
           designer: 'Test Designer',
@@ -273,6 +283,65 @@ describe('GameService', () => {
     });
   });
 
+  describe('bggUpdate bggVersionId cover-art override', () => {
+    // A factory, not a shared const: the override mutates gameData.thumbnail in
+    // place, so each test needs its own object to avoid cross-test pollution.
+    const versionedData = () => ({
+      '@_id': '13',
+      thumbnail: 'http://img/default.jpg',
+      versions: {
+        item: [
+          { '@_id': '500', thumbnail: 'http://img/v500.jpg' },
+          { '@_id': '600', thumbnail: 'http://img/v600.jpg' },
+        ],
+      },
+    });
+
+    it('downloads the matching version thumbnail when bggVersionId is set', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 600 } as any);
+      bgg.getImage.mockResolvedValue(Buffer.from('v'));
+
+      await service.bggUpdate(1, versionedData(), ctx);
+
+      // 600 matches despite the XML attribute being the string "600".
+      expect(bgg.getImage).toHaveBeenCalledWith('http://img/v600.jpg');
+    });
+
+    it('handles a single version object (not wrapped in an array)', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 700 } as any);
+      bgg.getImage.mockResolvedValue(Buffer.from('v'));
+
+      await service.bggUpdate(
+        1,
+        {
+          '@_id': '13',
+          thumbnail: 'http://img/default.jpg',
+          versions: { item: { '@_id': '700', thumbnail: 'http://img/v700.jpg' } },
+        },
+        ctx,
+      );
+
+      expect(bgg.getImage).toHaveBeenCalledWith('http://img/v700.jpg');
+    });
+
+    it('falls back to the default thumbnail when the version id is not found', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 999 } as any);
+      bgg.getImage.mockResolvedValue(Buffer.from('d'));
+
+      await service.bggUpdate(1, versionedData(), ctx);
+
+      expect(bgg.getImage).toHaveBeenCalledWith('http://img/default.jpg');
+    });
+
+    it('does not apply the override when deferImage is true', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 600 } as any);
+
+      await service.bggUpdate(1, versionedData(), ctx, true);
+
+      expect(bgg.getImage).not.toHaveBeenCalled();
+    });
+  });
+
   describe('drainCoverArtQueue', () => {
     it('fetches each queued thumbnail and writes coverArt', async () => {
       bgg.getImage.mockResolvedValue(Buffer.from('x'));
@@ -304,7 +373,7 @@ describe('GameService', () => {
       expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(1);
       expect(mockCtx.prisma.game.update).toHaveBeenCalledWith({
         where: { id: 2 },
-        data: { coverArt: expect.any(Buffer) },
+        data: { coverArt: expect.any(Buffer), lastBGGSync: expect.any(Date) },
       });
     });
 
@@ -597,6 +666,33 @@ describe('GameService', () => {
       expect(bgg.getBoardGameBatchByBGGIds).toHaveBeenCalledWith([13]);
       // one update for the bggUpdate (deferred) + one for the cover art pass
       expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(2);
+    });
+
+    it('queues the version thumbnail for cover art when bggVersionId is set', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([
+        { id: 1, bggId: 13, bggVersionId: 600 },
+      ] as any);
+      bgg.getBoardGameBatchByBGGIds.mockResolvedValue([
+        {
+          '@_id': '13',
+          thumbnail: 'http://img/default.jpg',
+          versions: {
+            item: [
+              { '@_id': '500', thumbnail: 'http://img/v500.jpg' },
+              { '@_id': '600', thumbnail: 'http://img/v600.jpg' },
+            ],
+          },
+        },
+      ] as any);
+      bgg.getImage.mockResolvedValue(Buffer.from('img'));
+      mockCtx.prisma.game.update.mockResolvedValue({ id: 1 } as any);
+      mockCtx.prisma.game.count.mockResolvedValue(0);
+
+      await service.syncAndConnectGamesWithBGG(1, ctx);
+
+      // The cover-art pass pulls the version's thumbnail, not the game default.
+      expect(bgg.getImage).toHaveBeenCalledWith('http://img/v600.jpg');
+      expect(bgg.getImage).not.toHaveBeenCalledWith('http://img/default.jpg');
     });
 
     it('warns but does not update when no BGG data matches a game in the batch', async () => {

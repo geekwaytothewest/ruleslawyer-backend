@@ -38,6 +38,7 @@ describe('CopyController', () => {
         winnable: true,
         winnerId: null,
         coverArtOverride: null,
+        bggVersionOverride: null,
         barcode: '*00001*',
         barcodeLabel: '1',
         collectionId: 1,
@@ -63,6 +64,7 @@ describe('CopyController', () => {
         winnable: false,
         winnerId: null,
         coverArtOverride: null,
+        bggVersionOverride: null,
         barcode: '*00001*',
         barcodeLabel: '1',
         collectionId: 1,
@@ -80,6 +82,7 @@ describe('CopyController', () => {
       const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
       mockCtx.prisma.copy.findUnique.mockResolvedValue({
         coverArtOverride: png,
+        bggVersionOverride: null,
       } as any);
 
       const file = await controller.getCover(1);
@@ -91,6 +94,7 @@ describe('CopyController', () => {
     it('404s when the copy has no override', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue({
         coverArtOverride: null,
+        bggVersionOverride: null,
       } as any);
 
       await expect(controller.getCover(1)).rejects.toThrow(

@@ -36,6 +36,14 @@ export class CreateGameDto {
   @IsInt()
   bggId?: number;
 
+  @ApiPropertyOptional({
+    description:
+      'BoardGameGeek version id; when set, cover art is sourced from this version.',
+  })
+  @IsOptional()
+  @IsInt()
+  bggVersionId?: number;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsInt()

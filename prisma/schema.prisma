@@ -205,6 +205,8 @@ model Game {
   organizationId   Int
   /// BoardGameGeek game id used for metadata sync.
   bggId            Int?
+  /// BoardGameGeek version id used for metadata sync. Overrides coverart.
+  bggVersionId     Int?
   /// Timestamp of the last successful BoardGameGeek sync.
   lastBGGSync      DateTime?
   name             String       @unique
@@ -233,30 +235,31 @@ model Game {
 /// A physical, lendable instance of a Game in the library. Barcodes are unique
 /// within both the owning collection and organization.
 model Copy {
-  id               Int          @id @default(autoincrement())
-  game             Game         @relation(fields: gameId, references: [id])
-  gameId           Int
-  dateAdded        DateTime
+  id                    Int          @id @default(autoincrement())
+  game                  Game         @relation(fields: gameId, references: [id])
+  gameId                Int
+  dateAdded             DateTime
   /// Human-readable label printed on the copy's barcode sticker.
-  barcodeLabel     String
+  barcodeLabel          String
   /// Scannable barcode value.
-  barcode          String
+  barcode               String
   /// When set, the copy has been removed from circulation.
-  dateRetired      DateTime?
-  comments         String?
+  dateRetired           DateTime?
+  comments              String?
   /// Whether this copy is available to be won as a prize.
-  winnable         Boolean      @default(true)
+  winnable              Boolean      @default(true)
   /// The attendee who won this copy, if any. Restrict prevents deleting a
   /// winning attendee while the win record stands.
-  winner           Attendee?    @relation(fields: winnerId, references: [id], onDelete: Restrict)
-  winnerId         Int?
+  winner                Attendee?    @relation(fields: winnerId, references: [id], onDelete: Restrict)
+  winnerId              Int?
   /// Per-copy cover art overriding the game's default art.
   coverArtOverride Bytes?
-  collection       Collection   @relation(fields: collectionId, references: [id])
-  collectionId     Int
-  checkOuts        CheckOut[]
-  organization     Organization @relation(fields: organizationId, references: [id])
-  organizationId   Int
+  bggVersionOverride    Int?
+  collection            Collection   @relation(fields: collectionId, references: [id])
+  collectionId          Int
+  checkOuts             CheckOut[]
+  organization          Organization @relation(fields: organizationId, references: [id])
+  organizationId        Int
 
   @@unique([collectionId, barcode])
   @@unique([collectionId, barcodeLabel])
