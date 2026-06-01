@@ -461,9 +461,10 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard, OrganizationBggGuard, GameGuard)
   @ApiOkResponse({ type: GameEntity })
-  @Put(':id/connectBGGByName')
+  @Put(':id/orgId/:orgId/connectBGGByName')
   async connectBGGGameByName(
     @Param('id') id: number,
+    @Param('orgId') orgId: number,
     @User() user: any,
   ) {
     const game = await this.gameService.game(
@@ -501,9 +502,10 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard, OrganizationBggGuard, GameGuard)
   @ApiOkResponse({ type: GameEntity })
-  @Put(':id/syncWithBGG')
+  @Put(':id/orgId/:orgId/syncWithBGG')
   async syncBGGGame(
     @Param('id') id: number,
+    @Param('orgId') orgId: number,
     @User() user: any,
   ) {
     const game = await this.gameService.game(

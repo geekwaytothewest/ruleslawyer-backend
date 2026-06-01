@@ -33,10 +33,10 @@ describe('OrganizationBggGuard', () => {
     expect(mockCtx.prisma.organization.findUnique).not.toHaveBeenCalled();
   });
 
-  it('should return true when org has BGG support enabled (params.id)', async () => {
+  it('should return true when org has BGG support enabled (params.orgId)', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
-        params: { id: 1 },
+        params: { orgId: 1 },
       }),
     });
 
@@ -56,7 +56,7 @@ describe('OrganizationBggGuard', () => {
   it('should return false when org has BGG support disabled', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
-        params: { id: 1 },
+        params: { orgId: 1 },
       }),
     });
 
@@ -73,7 +73,7 @@ describe('OrganizationBggGuard', () => {
   it('should return false when the org does not exist', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
-        params: { id: 99 },
+        params: { orgId: 99 },
       }),
     });
 
@@ -107,7 +107,7 @@ describe('OrganizationBggGuard', () => {
     expect(await guard.canActivate(bodyContext)).toBeTruthy();
   });
 
-  it('should prefer params.id over params.orgId and body.organizationId', async () => {
+  it('should ignore params.id and resolve the org from params.orgId', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
         params: { id: 1, orgId: 2 },
@@ -116,14 +116,15 @@ describe('OrganizationBggGuard', () => {
     });
 
     mockCtx.prisma.organization.findUnique.mockResolvedValue({
-      id: 1,
+      id: 2,
       enableBggSupport: true,
     } as never);
 
     expect(await guard.canActivate(context)).toBeTruthy();
-    // params.id wins — not orgId (2) or body.organizationId (3).
+    // The guard gates on the organization, not the game (params.id), so the
+    // org comes from params.orgId (2) — not params.id (1) or body (3).
     expect(mockCtx.prisma.organization.findUnique).toHaveBeenCalledWith({
-      where: { id: 1 },
+      where: { id: 2 },
     });
   });
 
@@ -150,7 +151,7 @@ describe('OrganizationBggGuard', () => {
   it('should coerce a string org id to a number for the lookup', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
-        params: { id: '1' },
+        params: { orgId: '1' },
       }),
     });
 

@@ -256,7 +256,7 @@ describe('GameController', () => {
       mockCtx.prisma.game.findUnique.mockResolvedValue(null);
       const spy = jest.spyOn(gameService, 'connectBGGGameByName');
 
-      const result = await controller.connectBGGGameByName(1, { id: 1 });
+      const result = await controller.connectBGGGameByName(1, 1, { id: 1 });
 
       expect(result).toBeNull();
       expect(spy).not.toHaveBeenCalled();
@@ -271,7 +271,7 @@ describe('GameController', () => {
         .spyOn(gameService, 'connectBGGGameByName')
         .mockResolvedValue({ id: 1 } as any);
 
-      await controller.connectBGGGameByName(1, { id: 1 });
+      await controller.connectBGGGameByName(1, 1, { id: 1 });
 
       expect(spy).toHaveBeenCalledWith(1, 'Catan', ctx);
     });
@@ -294,7 +294,7 @@ describe('GameController', () => {
       mockCtx.prisma.game.findUnique.mockResolvedValue(null);
       const spy = jest.spyOn(gameService, 'syncBGGGame');
 
-      await expect(controller.syncBGGGame(1, { id: 1 })).rejects.toThrow(
+      await expect(controller.syncBGGGame(1, 1, { id: 1 })).rejects.toThrow(
         NotFoundException,
       );
       expect(spy).not.toHaveBeenCalled();
@@ -308,7 +308,7 @@ describe('GameController', () => {
       } as any);
       const spy = jest.spyOn(gameService, 'syncBGGGame');
 
-      await expect(controller.syncBGGGame(1, { id: 1 })).rejects.toThrow(
+      await expect(controller.syncBGGGame(1, 1, { id: 1 })).rejects.toThrow(
         BadRequestException,
       );
       expect(spy).not.toHaveBeenCalled();
@@ -324,7 +324,7 @@ describe('GameController', () => {
         .spyOn(gameService, 'syncBGGGame')
         .mockResolvedValue({ id: 1 } as any);
 
-      await controller.syncBGGGame(1, { id: 1 });
+      await controller.syncBGGGame(1, 1, { id: 1 });
 
       expect(spy).toHaveBeenCalledWith(1, ctx);
     });
