@@ -290,7 +290,7 @@ describe('GameService', () => {
       '@_id': '13',
       thumbnail: 'http://img/default.jpg',
       versions: {
-        version: [
+        item: [
           { '@_id': '500', thumbnail: 'http://img/v500.jpg' },
           { '@_id': '600', thumbnail: 'http://img/v600.jpg' },
         ],
@@ -316,7 +316,7 @@ describe('GameService', () => {
         {
           '@_id': '13',
           thumbnail: 'http://img/default.jpg',
-          versions: { version: { '@_id': '700', thumbnail: 'http://img/v700.jpg' } },
+          versions: { item: { '@_id': '700', thumbnail: 'http://img/v700.jpg' } },
         },
         ctx,
       );
@@ -373,7 +373,7 @@ describe('GameService', () => {
       expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(1);
       expect(mockCtx.prisma.game.update).toHaveBeenCalledWith({
         where: { id: 2 },
-        data: { coverArt: expect.any(Buffer) },
+        data: { coverArt: expect.any(Buffer), lastBGGSync: expect.any(Date) },
       });
     });
 
@@ -677,7 +677,7 @@ describe('GameService', () => {
           '@_id': '13',
           thumbnail: 'http://img/default.jpg',
           versions: {
-            version: [
+            item: [
               { '@_id': '500', thumbnail: 'http://img/v500.jpg' },
               { '@_id': '600', thumbnail: 'http://img/v600.jpg' },
             ],

@@ -183,8 +183,10 @@ export class GameService {
 
     //If we're not deferring the images, override cover art if the bggVersionId is set and the version has a thumbnail.
     if (!deferImage && game.bggVersionId) {
-      // Fastxml-parser can return a single object or an array. Force an array format.
-      const versions = gameData.versions?.version;
+      // BGG nests versions as <item type="boardgameversion"> inside <versions>,
+      // so the parsed key is `item`, not `version`. The parser forces `item` to
+      // an array (see XMLParser isArray config), but normalize defensively.
+      const versions = gameData.versions?.item;
       const versionsArray = Array.isArray(versions) ? versions : versions ? [versions] : [];
 
       gameData.thumbnail = versionsArray.find((v: any) => parseInt(v['@_id']) === game.bggVersionId)?.thumbnail || gameData.thumbnail;
@@ -251,9 +253,13 @@ export class GameService {
 
       const image = await this.boardGameGeekService.getImage(job.thumbnail);
       if (image) {
+        // Bump lastBGGSync alongside the image so the frontend's cover-art
+        // cache-buster (which keys on lastBGGSync) changes when the bytes do.
+        // bggUpdate set it earlier with the image deferred, so this is the
+        // write that actually makes the new image visible.
         await ctx.prisma.game.update({
           where: { id: job.id },
-          data: { coverArt: image as Prisma.Bytes },
+          data: { coverArt: image as Prisma.Bytes, lastBGGSync: new Date() },
         });
       }
     }
@@ -491,8 +497,9 @@ export class GameService {
 
               //Override the thumbnail with the version's thumbnail if bggVersionId is set and the version has a thumbnail.
               if (game.bggVersionId) {
-                // Fastxml-parser can return a single object or an array. Force an array format.
-                const versions = gameData.versions?.version;
+                // BGG nests versions as <item type="boardgameversion"> inside
+                // <versions>, so the parsed key is `item`, not `version`.
+                const versions = gameData.versions?.item;
                 const versionsArray = Array.isArray(versions) ? versions : versions ? [versions] : [];
 
                 gameData.thumbnail = versionsArray.find((v: any) => parseInt(v['@_id']) === game.bggVersionId)?.thumbnail || gameData.thumbnail;
