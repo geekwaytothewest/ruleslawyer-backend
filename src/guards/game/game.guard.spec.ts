@@ -17,6 +17,7 @@ const org = {
   id: 1,
   ownerId: 1,
   name: 'Geekway to the Test',
+  enableBggSupport: false,
   users: [
     {
       id: 1,
