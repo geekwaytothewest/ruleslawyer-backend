@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserConventionPermissions } from '@prisma/client';
 import { UserConventionPermissionsEntity } from '../../common/entities/user-convention-permissions.entity';
@@ -35,6 +35,23 @@ export class UserConventionPermissionsController {
     this.ctx = {
       prisma: prismaService,
     };
+  }
+
+  // Must be declared before the @Get(':id') route below, otherwise 'current'
+  // is captured as an :id. Resolves the convention the calling user's PWA
+  // should default to (plus a picker list) — keyed off the authenticated user,
+  // so the frontend doesn't need to know its own user id.
+  @UseGuards(JwtAuthGuard)
+  @Get('current')
+  async getCurrentConvention(@Req() req) {
+    const user = req.user?.user;
+    if (!user) {
+      return { current: null, conventions: [] };
+    }
+    return this.userConventionPermissionsService.resolveConventions(
+      user.id,
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
