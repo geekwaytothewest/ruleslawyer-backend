@@ -41,6 +41,7 @@ import { User } from '../../modules/authz/user.decorator';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { GameGuard } from '../../guards/game/game.guard';
 import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
+import { OrganizationBggGuard } from '../../guards/organization/organization-bgg.guard';
 
 // Upper bound on rows returned by the withCopies endpoint, including when the
 // client asks for "All". Prevents oversized responses that fail to serialize.
@@ -458,7 +459,7 @@ export class GameController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, GameGuard)
+  @UseGuards(JwtAuthGuard, OrganizationBggGuard, GameGuard)
   @ApiOkResponse({ type: GameEntity })
   @Put(':id/connectBGGByName')
   async connectBGGGameByName(
@@ -483,7 +484,7 @@ export class GameController {
     return this.gameService.connectBGGGameByName(id, game.name, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
+  @UseGuards(JwtAuthGuard, OrganizationBggGuard, OrganizationWriteGuard)
   @HttpCode(202)
   @ApiAcceptedResponse({
     description: 'Sync started in the background; progress is in the server logs.',
@@ -498,7 +499,7 @@ export class GameController {
     return this.gameService.startSyncAndConnect(Number(orgId), this.ctx, dumpUrl);
   }
 
-  @UseGuards(JwtAuthGuard, GameGuard)
+  @UseGuards(JwtAuthGuard, OrganizationBggGuard, GameGuard)
   @ApiOkResponse({ type: GameEntity })
   @Put(':id/syncWithBGG')
   async syncBGGGame(

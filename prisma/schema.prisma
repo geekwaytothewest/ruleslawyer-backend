@@ -134,18 +134,19 @@ model UserConventionPermissions {
 /// collections, physical copies, and convention templates. All scoped data
 /// hangs off an Organization.
 model Organization {
-  id             Int                           @id @default(autoincrement())
-  name           String                        @unique
+  id                    Int                           @id @default(autoincrement())
+  name                  String                        @unique
   /// The User who owns this organization.
-  owner          User                          @relation(fields: ownerId, references: [id])
-  ownerId        Int
-  users          UserOrganizationPermissions[]
-  collections    Collection[]
-  conventions    Convention[]
-  copies         Copy[]
-  conventionType ConventionType[]
+  owner                 User                          @relation(fields: ownerId, references: [id])
+  ownerId               Int
+  users                 UserOrganizationPermissions[]
+  collections           Collection[]
+  conventions           Convention[]
+  copies                Copy[]
+  conventionType        ConventionType[]
+  enableBggSupport      Boolean                       @default(false)
   /// Game catalog owned by the organization.
-  games          Game[]
+  games                 Game[]
 }
 
 /// A template/branding profile for conventions (name, logos, descriptive
