@@ -14,6 +14,11 @@ describe('TabletopeventsService', () => {
     }).compile();
 
     service = module.get<TabletopeventsService>(TabletopeventsService);
+
+    // Neutralize inter-page throttle sleeps so paging tests run instantly and
+    // leave no real setTimeout pending at teardown (which intermittently
+    // tripped Jest's "worker failed to exit gracefully" warning).
+    jest.spyOn(service, 'sleep').mockResolvedValue(undefined);
   });
 
   it('should be defined', () => {
