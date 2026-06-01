@@ -32,6 +32,7 @@ describe('CopyService', () => {
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
+        bggVersionOverride: null,
         dateRetired: null,
         collectionId: 1,
         organizationId: 1,
@@ -55,6 +56,7 @@ describe('CopyService', () => {
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
+        bggVersionOverride: null,
         dateRetired: null,
         collectionId: 1,
         organizationId: 1,
@@ -74,6 +76,7 @@ describe('CopyService', () => {
           winnable: false,
           winner: undefined,
           coverArtOverride: Buffer.from(''),
+          bggVersionOverride: null,
           dateRetired: null,
           organization: {
             connect: {
@@ -104,6 +107,7 @@ describe('CopyService', () => {
         winnable: true,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
+        bggVersionOverride: null,
         dateRetired: null,
         collectionId: 1,
         organizationId: 1,
@@ -121,6 +125,7 @@ describe('CopyService', () => {
             barcodeLabel: '2',
             winnable: true,
             coverArtOverride: Buffer.from(''),
+            bggVersionOverride: null,
             dateRetired: null,
           },
         },
@@ -143,6 +148,7 @@ describe('CopyService', () => {
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
+        bggVersionOverride: null,
         collectionId: 1,
         comments: null,
         collection: {
@@ -171,6 +177,7 @@ describe('CopyService', () => {
         winnable: false,
         winnerId: null,
         coverArtOverride: Buffer.from(''),
+        bggVersionOverride: null,
         collectionId: 1,
         comments: null,
         collection: {
@@ -212,6 +219,7 @@ describe('CopyService', () => {
           winnable: false,
           winnerId: null,
           coverArtOverride: Buffer.from(''),
+          bggVersionOverride: null,
           collectionId: 1,
           comments: null,
           collection: {
@@ -337,6 +345,7 @@ describe('CopyService', () => {
       const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
       mockCtx.prisma.copy.findUnique.mockResolvedValue({
         coverArtOverride: bytes,
+        bggVersionOverride: null,
       } as any);
 
       const result = await service.getCoverArtOverride(1, ctx);
@@ -353,6 +362,7 @@ describe('CopyService', () => {
     it('returns null when the copy has no override', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue({
         coverArtOverride: null,
+        bggVersionOverride: null,
       } as any);
 
       expect(await service.getCoverArtOverride(1, ctx)).toBeNull();

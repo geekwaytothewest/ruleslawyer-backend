@@ -174,6 +174,22 @@ export class GameService {
   }
 
   async bggUpdate(id, gameData, ctx, deferImage = false) {
+    const game = await ctx.prisma.game.findUnique({ where: { id: Number(id) } });
+
+    if (!game) {
+      this.logger.warn(`Game with id=${id} not found for BGG update.`);
+      return null;
+    }
+
+    //If we're not deferring the images, override cover art if the bggVersionId is set and the version has a thumbnail.
+    if (!deferImage && game.bggVersionId) {
+      // Fastxml-parser can return a single object or an array. Force an array format.
+      const versions = gameData.versions?.version;
+      const versionsArray = Array.isArray(versions) ? versions : versions ? [versions] : [];
+
+      gameData.thumbnail = versionsArray.find((v: any) => parseInt(v['@_id']) === game.bggVersionId)?.thumbnail || gameData.thumbnail;
+    }
+
     // When deferImage is true, the (slow) thumbnail download is skipped and
     // coverArt is left untouched, so a caller can fetch images separately with
     // bounded concurrency. Otherwise behaves as before (inline download).
@@ -445,7 +461,7 @@ export class GameService {
       // which would otherwise load every game's image blob into memory at once.
       const gamesWithBGGId = await ctx.prisma.game.findMany({
         where: { organizationId: orgId, NOT: { bggId: null } },
-        select: { id: true, bggId: true },
+        select: { id: true, bggId: true, bggVersionId: true },
       });
 
       const batches = gamesWithBGGId.reduce((resultArray: any[], item, index) => {
@@ -467,11 +483,20 @@ export class GameService {
 
         // Persist the batch's games in parallel; each is an independent DB write.
         await Promise.all(
-          batch.map(async (game: { id: number; bggId: number }) => {
+          batch.map(async (game: { id: number; bggId: number, bggVersionId?: number }) => {
             const gameData = gameDataBatch.find((data) => parseInt(data?.['@_id']) === game.bggId);
 
             if (gameData) {
               await this.bggUpdate(game.id, gameData, ctx, true);
+
+              //Override the thumbnail with the version's thumbnail if bggVersionId is set and the version has a thumbnail.
+              if (game.bggVersionId) {
+                // Fastxml-parser can return a single object or an array. Force an array format.
+                const versions = gameData.versions?.version;
+                const versionsArray = Array.isArray(versions) ? versions : versions ? [versions] : [];
+
+                gameData.thumbnail = versionsArray.find((v: any) => parseInt(v['@_id']) === game.bggVersionId)?.thumbnail || gameData.thumbnail;
+              }
 
               if (gameData?.thumbnail) {
                 imageQueue.push({ id: game.id, thumbnail: gameData.thumbnail });

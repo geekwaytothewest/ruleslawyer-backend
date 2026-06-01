@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsInt,
   IsOptional,
   IsString,
   ValidateNested,
@@ -33,4 +34,12 @@ export class CreateCopyDto {
   @IsOptional()
   @IsBoolean()
   winnable?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      "BoardGameGeek version id; when set, the copy's cover art is sourced from this version, overriding the game's default art.",
+  })
+  @IsOptional()
+  @IsInt()
+  bggVersionOverride?: number;
 }
