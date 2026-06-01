@@ -17,6 +17,7 @@ const org = {
   id: 1,
   ownerId: 1,
   name: 'Geekway to the Test',
+  enableBggSupport: false,
   users: [
     {
       id: 1,
@@ -133,6 +134,26 @@ describe('GameGuard', () => {
       mockCtx.prisma.organization.findUnique.mockResolvedValue(org);
 
       expect(await guard.canActivate(context)).toBeFalsy();
+    });
+
+    // The game id resolves from params.id, falling back to params.gameId.
+    // Supply both with conflicting values and assert the lookup used the
+    // higher-priority source, so a reordered fallback would fail.
+    it('prefers params.id over params.gameId', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({
+          user: { user: { id: 1, superAdmin: false } },
+          params: { id: 1, gameId: 2 },
+        }),
+      });
+
+      mockCtx.prisma.game.findUnique.mockResolvedValue(game);
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(org);
+
+      expect(await guard.canActivate(context)).toBeTruthy();
+      expect(mockCtx.prisma.game.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 1 } }),
+      );
     });
   });
 });

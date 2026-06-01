@@ -28,6 +28,7 @@ describe('OrganizationService', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
       });
 
       const org = await service.organization(
@@ -47,6 +48,7 @@ describe('OrganizationService', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         users: [
           {
             id: 1,
@@ -74,6 +76,7 @@ describe('OrganizationService', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -98,8 +101,8 @@ describe('OrganizationService', () => {
   describe('allOrganizations', () => {
     it('should return every organization', async () => {
       mockCtx.prisma.organization.findMany.mockResolvedValue([
-        { id: 1, name: 'A', ownerId: 1 },
-        { id: 2, name: 'B', ownerId: 2 },
+        { id: 1, name: 'A', ownerId: 1, enableBggSupport: false },
+        { id: 2, name: 'B', ownerId: 2, enableBggSupport: false },
       ]);
 
       const orgs = await service.allOrganizations(ctx);
@@ -111,7 +114,7 @@ describe('OrganizationService', () => {
   describe('organizationByOwner', () => {
     it('should return organizations owned by the user', async () => {
       mockCtx.prisma.organization.findMany.mockResolvedValue([
-        { id: 1, name: 'A', ownerId: 7 },
+        { id: 1, name: 'A', ownerId: 7, enableBggSupport: false },
       ]);
 
       const orgs = await service.organizationByOwner(7, ctx);
@@ -129,6 +132,7 @@ describe('OrganizationService', () => {
         id: 1,
         name: 'New Org',
         ownerId: 3,
+        enableBggSupport: false,
       });
 
       const org = await service.createOrganization('New Org', 3, ctx);

@@ -239,6 +239,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -322,6 +323,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -394,6 +396,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -466,6 +469,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -549,6 +553,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -597,6 +602,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -682,6 +688,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -767,6 +774,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1179,6 +1187,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1308,6 +1317,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1440,6 +1450,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1533,6 +1544,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1628,6 +1640,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1720,6 +1733,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1812,6 +1826,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1904,6 +1919,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,
@@ -1996,6 +2012,7 @@ describe('LegacyController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         collections: [
           {
             id: 1,

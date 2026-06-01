@@ -4,6 +4,7 @@ import { createMock } from '@golevelup/ts-jest';
 import { MockContext, createMockContext } from '../../services/prisma/context';
 import { ConventionReadGuard } from './convention-read.guard';
 import { ConventionWriteGuard } from './convention-write.guard';
+import { ConventionAdminGuard } from './convention-admin.guard';
 import { ConventionModule } from '../../modules/convention/convention.module';
 
 const baseCon = {
@@ -208,6 +209,25 @@ describe('ConventionReadGuard', () => {
 
     expect(await guard.canActivate(context)).toBeFalsy();
   });
+
+  // conId resolves from params.id, falling back to params.conId. Supply both
+  // with conflicting values and assert the lookup used the higher-priority one.
+  it('prefers params.id over params.conId', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1, conId: 2 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, attendee: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+    expect(mockCtx.prisma.convention.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1 } }),
+    );
+  });
 });
 
 describe('ConventionWriteGuard', () => {
@@ -392,5 +412,58 @@ describe('ConventionWriteGuard', () => {
     } as any);
 
     expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  // conId resolves from params.id, falling back to params.conId. Supply both
+  // with conflicting values and assert the lookup used the higher-priority one.
+  it('prefers params.id over params.conId', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1, conId: 2 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, admin: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+    expect(mockCtx.prisma.convention.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1 } }),
+    );
+  });
+});
+
+describe('ConventionAdminGuard', () => {
+  let guard: ConventionAdminGuard;
+  let mockCtx: MockContext;
+
+  beforeEach(async () => {
+    mockCtx = createMockContext();
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [ConventionModule],
+    }).compile();
+
+    guard = module.get<ConventionAdminGuard>(ConventionAdminGuard);
+    guard.ctx = mockCtx;
+  });
+
+  // conId resolves from params.id, falling back to params.conId. Supply both
+  // with conflicting values and assert the lookup used the higher-priority one.
+  it('prefers params.id over params.conId', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1, conId: 2 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, admin: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+    expect(mockCtx.prisma.convention.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1 } }),
+    );
   });
 });

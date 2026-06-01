@@ -402,5 +402,38 @@ describe('CheckOutGuard', () => {
 
       await expect(guard.canActivate(context)).resolves.toBeFalsy();
     });
+
+    // organizationId resolves from params.id, falling back to params.orgId.
+    // The convention belongs to org 1, so if the fallback wrongly preferred
+    // params.orgId (2) the org-match check would fail; asserting the org
+    // lookup id pins down which source won.
+    it('prefers params.id over params.orgId for the organization id', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({
+          user: {
+            user: { id: 1, superAdmin: false },
+          },
+          params: {
+            id: 1,
+            orgId: 2,
+            conId: 1,
+            colId: 1,
+          },
+        }),
+      });
+
+      const con = buildConvention({ organizationId: 1, users: [] });
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue(con);
+
+      const org = buildOrganization({ ownerId: 1, users: [] });
+
+      mockCtx.prisma.organization.findUnique.mockResolvedValue(org);
+
+      await expect(guard.canActivate(context)).resolves.toBeTruthy();
+      expect(mockCtx.prisma.organization.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 1 } }),
+      );
+    });
   });
 });
