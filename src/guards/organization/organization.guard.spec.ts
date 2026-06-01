@@ -71,6 +71,7 @@ describe('OrganizationGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -103,6 +104,7 @@ describe('OrganizationGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -137,6 +139,7 @@ describe('OrganizationGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -169,6 +172,7 @@ describe('OrganizationGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -248,6 +252,7 @@ describe('OrganizationGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [],
     };
     mockCtx.prisma.organization.findUnique.mockResolvedValue(org);
@@ -285,6 +290,7 @@ describe('OrganizationGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
