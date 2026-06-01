@@ -58,15 +58,16 @@ do **not** create it. Before a deploy can succeed:
 
 - The environment must be stood up via `ruleslawyer-infra` (cluster, services, ECR
   repos, task definitions). See its `DEPLOYMENT.md`.
-- The deploy credentials must target that environment's account. Either the
-  GitHub Actions secrets below, or the OIDC role `geekway-{env}-github-deploy`
-  that the CDK creates (add `permissions: id-token: write` to the job to use it).
+- The deploy credentials must target that environment's account. Auth is GitHub
+  OIDC only — no static keys. The workflow assumes the per-app deploy role
+  `geekway-{env}-github-deploy-backend` that the CDK creates; the job already
+  declares `permissions: id-token: write` and selects the role ARN per
+  environment (`PROD_ROLE_ARN` / `NONPROD_ROLE_ARN`).
 
   | Secret                                   | Purpose                                              |
   | ---------------------------------------- | ---------------------------------------------------- |
-  | `ACCESS_KEY_ID`, `SECRET_ACCESS_KEY`     | AWS credentials used to assume the deploy role       |
   | `AWS_REGION`                             | Target AWS region                                    |
-  | `NONPROD_ROLE_ARN`, `PROD_ROLE_ARN`      | IAM role assumed per environment                     |
+  | `NONPROD_ROLE_ARN`, `PROD_ROLE_ARN`      | IAM role assumed per environment (this repo's own)   |
   | `API_URL`, `API_URL_NONPROD` (frontends) | Backend API base URL baked into the frontend bundles |
 
 ## Running a deploy
