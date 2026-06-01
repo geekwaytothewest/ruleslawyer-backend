@@ -147,6 +147,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -186,6 +187,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -227,6 +229,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -266,6 +269,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -307,6 +311,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -346,6 +351,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -388,6 +394,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -428,6 +435,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -618,6 +626,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 3,
@@ -657,6 +666,7 @@ describe('CollectionGuard', () => {
       id: 1,
       ownerId: 1,
       name: 'Geekway to the Test',
+      enableBggSupport: false,
       users: [
         {
           id: 3,

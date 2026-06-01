@@ -39,6 +39,7 @@ describe('OrganizationController', () => {
         id: 1,
         name: 'Geekway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         users: [
           {
             id: 1,
@@ -102,6 +103,7 @@ describe('OrganizationController', () => {
         id: 1,
         name: 'Geekeway to the Testing',
         ownerId: 1,
+        enableBggSupport: false,
         users: [
           {
             id: 1,
@@ -437,6 +439,7 @@ describe('OrganizationController', () => {
         id: 1,
         name: 'Geekway',
         ownerId: 1,
+        enableBggSupport: false,
       });
 
       const org = await controller.organization(1);
