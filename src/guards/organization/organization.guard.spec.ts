@@ -3,12 +3,14 @@ import { ExecutionContext } from '@nestjs/common';
 import { createMock } from '@golevelup/ts-jest';
 import { OrganizationWriteGuard } from './organization-write.guard';
 import { OrganizationReadGuard } from './organization-read.guard';
+import { OrganizationAdminGuard } from './organization-admin.guard';
 import { MockContext, createMockContext } from '../../services/prisma/context';
 import { OrganizationModule } from '../../modules/organization/organization.module';
 
 describe('OrganizationGuard', () => {
   let readGuard: OrganizationReadGuard;
   let writeGuard: OrganizationWriteGuard;
+  let adminGuard: OrganizationAdminGuard;
   let mockCtx: MockContext;
 
   beforeEach(async () => {
@@ -22,6 +24,9 @@ describe('OrganizationGuard', () => {
 
     writeGuard = module.get<OrganizationWriteGuard>(OrganizationWriteGuard);
     writeGuard.ctx = mockCtx;
+
+    adminGuard = module.get<OrganizationAdminGuard>(OrganizationAdminGuard);
+    adminGuard.ctx = mockCtx;
   });
 
   it('should be defined', () => {
@@ -306,4 +311,53 @@ describe('OrganizationGuard', () => {
 
     expect(await readGuard.canActivate(context)).toBeFalsy();
   });
+
+  // All three guards resolve the org id from the same fallback chain:
+  // params.id -> params.orgId -> body.organizationId. These cases supply
+  // conflicting values across sources and assert the lookup used the
+  // higher-priority one, so a reordered/overwriting fallback would fail.
+  describe.each(['read', 'write', 'admin'] as const)(
+    '%s guard id source precedence',
+    (which) => {
+      const guardFor = () =>
+        ({ read: readGuard, write: writeGuard, admin: adminGuard })[which];
+
+      // A non-superAdmin owner so the guard actually resolves an org id
+      // instead of short-circuiting on superAdmin.
+      const owner = { user: { id: 1, superAdmin: false } };
+      const org = { id: 1, ownerId: 1, name: 'Geekway to the Test', users: [] };
+
+      it('prefers params.id over params.orgId and body.organizationId', async () => {
+        const context = createMock<ExecutionContext>({
+          getArgByIndex: () => ({
+            user: owner,
+            params: { id: 1, orgId: 2 },
+            body: { organizationId: 3 },
+          }),
+        });
+        mockCtx.prisma.organization.findUnique.mockResolvedValue(org as never);
+
+        expect(await guardFor().canActivate(context)).toBeTruthy();
+        expect(mockCtx.prisma.organization.findUnique).toHaveBeenCalledWith(
+          expect.objectContaining({ where: { id: 1 } }),
+        );
+      });
+
+      it('prefers params.orgId over body.organizationId when params.id is absent', async () => {
+        const context = createMock<ExecutionContext>({
+          getArgByIndex: () => ({
+            user: owner,
+            params: { orgId: 2 },
+            body: { organizationId: 3 },
+          }),
+        });
+        mockCtx.prisma.organization.findUnique.mockResolvedValue(org as never);
+
+        expect(await guardFor().canActivate(context)).toBeTruthy();
+        expect(mockCtx.prisma.organization.findUnique).toHaveBeenCalledWith(
+          expect.objectContaining({ where: { id: 2 } }),
+        );
+      });
+    },
+  );
 });
