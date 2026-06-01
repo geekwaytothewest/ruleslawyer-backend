@@ -68,6 +68,7 @@ describe('CopyGuard', () => {
       id: 1,
       name: 'Test Organization',
       ownerId: 1,
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -121,6 +122,7 @@ describe('CopyGuard', () => {
       id: 1,
       name: 'Test Organization',
       ownerId: 1,
+      enableBggSupport: false,
       users: [
         {
           id: 1,
@@ -251,6 +253,30 @@ describe('CopyGuard', () => {
     );
   });
 
+  // copyId resolves from params.id, falling back to params.copyId. Supply both
+  // with conflicting values and assert the lookup used the higher-priority one.
+  it('prefers params.id over params.copyId', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 9, superAdmin: true } },
+        params: { id: 1, copyId: 5 },
+      }),
+    });
+
+    mockCtx.prisma.copy.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      collection: { id: 1, archived: false },
+    } as any);
+
+    const authed = await guard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+    expect(mockCtx.prisma.copy.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1 } }),
+    );
+  });
+
   it('should return false when no copyId and no barcodeLabel are provided', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
@@ -341,6 +367,7 @@ describe('CopyGuard', () => {
       id: 1,
       name: 'Test Organization',
       ownerId: 1,
+      enableBggSupport: false,
       users: [
         {
           id: 1,
