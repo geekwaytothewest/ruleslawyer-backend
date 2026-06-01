@@ -9,9 +9,13 @@ import { Decimal } from '@prisma/client/runtime/library';
 // include them.
 //
 // Most fields are picked up automatically by the @nestjs/swagger CLI plugin;
-// only the Prisma-specific types (Decimal, Bytes) need an explicit @ApiProperty
-// because the plugin can't map them.
-export class GameEntity implements Game {
+// only the Prisma-specific Decimal type needs an explicit @ApiProperty because
+// the plugin can't map it.
+//
+// coverArt (Bytes) is intentionally excluded from this response shape: the image
+// blob is omitted from all read queries (see PrismaService) and served
+// separately from `GET /api/game/:id/cover`, so it is never part of this JSON.
+export class GameEntity implements Omit<Game, 'coverArt'> {
   id: number;
   organizationId: number;
   /** BoardGameGeek game id used for metadata sync. */
@@ -37,10 +41,6 @@ export class GameEntity implements Game {
   /** BGG complexity/weight rating, serialized as a decimal string. */
   @ApiProperty({ type: String, nullable: true, example: '2.34' })
   weight: Prisma.Decimal | null;
-
-  /** Cover art image bytes stored in the database. */
-  @ApiProperty({ type: String, format: 'binary', nullable: true })
-  coverArt: Prisma.Bytes | null;
 
   yearPublished: number | null;
 }
