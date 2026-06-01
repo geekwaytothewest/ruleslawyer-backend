@@ -331,4 +331,37 @@ describe('CopyService', () => {
       ).rejects.toThrow('db error');
     });
   });
+
+  describe('getCoverArtOverride', () => {
+    it('selects only coverArtOverride and returns it as a Buffer', async () => {
+      const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+      mockCtx.prisma.copy.findUnique.mockResolvedValue({
+        coverArtOverride: bytes,
+      } as any);
+
+      const result = await service.getCoverArtOverride(1, ctx);
+
+      expect(Buffer.isBuffer(result)).toBe(true);
+      expect(result).toEqual(bytes);
+      // The explicit select is what overrides PrismaService's global omit.
+      expect(mockCtx.prisma.copy.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        select: { coverArtOverride: true },
+      });
+    });
+
+    it('returns null when the copy has no override', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue({
+        coverArtOverride: null,
+      } as any);
+
+      expect(await service.getCoverArtOverride(1, ctx)).toBeNull();
+    });
+
+    it('returns null when the copy does not exist', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(null as any);
+
+      expect(await service.getCoverArtOverride(999, ctx)).toBeNull();
+    });
+  });
 });

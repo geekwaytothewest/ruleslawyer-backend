@@ -1,9 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Copy, Prisma } from '@prisma/client';
+import { Copy } from '@prisma/client';
 
-// Scalar response shape for Copy. The Bytes field needs an explicit
-// @ApiProperty since the plugin can't map Prisma.Bytes; the rest are inferred.
-export class CopyEntity implements Copy {
+// Scalar response shape for Copy.
+//
+// coverArtOverride (Bytes) is intentionally excluded: the image blob is omitted
+// from all read queries (see PrismaService) and served separately from
+// `GET /api/copy/:id/cover`, so it is never part of this JSON response.
+export class CopyEntity implements Omit<Copy, 'coverArtOverride'> {
   id: number;
   gameId: number;
   dateAdded: Date;
@@ -17,10 +19,6 @@ export class CopyEntity implements Copy {
   /** Whether this copy is available to be won as a prize. */
   winnable: boolean;
   winnerId: number | null;
-
-  /** Per-copy cover art overriding the game's default art. */
-  @ApiProperty({ type: String, format: 'binary', nullable: true })
-  coverArtOverride: Prisma.Bytes | null;
 
   collectionId: number;
   organizationId: number;

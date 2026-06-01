@@ -8,7 +8,9 @@ import {
   Param,
   Query,
   Delete,
+  Header,
   HttpCode,
+  StreamableFile,
   UsePipes,
   ValidationPipe,
   BadRequestException,
@@ -19,7 +21,9 @@ import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiAcceptedResponse,
+  ApiProduces,
 } from '@nestjs/swagger';
+import { detectImageMime } from '../../utils/image-mime';
 import { GameEntity } from '../../common/entities/game.entity';
 import { GameWithCopiesEntity } from '../../common/entities/game-with-copies.entity';
 import { CopyWithRelationsEntity } from '../../common/entities/copy-with-relations.entity';
@@ -223,6 +227,26 @@ export class GameController {
   @Get(':id/copyCount')
   async getCopyCount(@Param('id') id: number) {
     return this.gameService.gameCopyCount(this.ctx, id);
+  }
+
+  // Public (no JwtAuthGuard): cover art is non-sensitive BGG imagery, and
+  // serving it from a dedicated URL lets the frontend lazy-load images via
+  // <img src> (which can't attach an Authorization header) instead of inlining
+  // the blob into every game JSON payload. The image blob is omitted from all
+  // other read paths (see PrismaService), so this is the only route that loads
+  // it — and only one image at a time.
+  @ApiProduces('image/png', 'image/jpeg', 'image/gif', 'image/webp')
+  @ApiOkResponse({
+    description: "The game's cover-art image, or 404 if none is set.",
+  })
+  @Header('Cache-Control', 'public, max-age=86400')
+  @Get(':id/cover')
+  async getCover(@Param('id') id: number): Promise<StreamableFile> {
+    const image = await this.gameService.getCoverArt(Number(id), this.ctx);
+    if (!image) {
+      throw new NotFoundException(`No cover art set for game ${id}.`);
+    }
+    return new StreamableFile(image, { type: detectImageMime(image) });
   }
 
   @UseGuards(JwtAuthGuard)

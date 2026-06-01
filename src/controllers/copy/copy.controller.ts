@@ -3,13 +3,22 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
+  NotFoundException,
   Param,
   Put,
+  StreamableFile,
   UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiProduces,
+} from '@nestjs/swagger';
+import { detectImageMime } from '../../utils/image-mime';
 import { UpdateCopyDto } from './dto/update-copy.dto';
 import { CopyEntity } from '../../common/entities/copy.entity';
 import { CopyWithRelationsEntity } from '../../common/entities/copy-with-relations.entity';
@@ -68,6 +77,31 @@ export class CopyController {
       },
       this.ctx,
     );
+  }
+
+  // Public (no JwtAuthGuard): per-copy cover-art override is non-sensitive
+  // imagery, served from a dedicated URL so the frontend can lazy-load it via
+  // <img src> rather than inlining the blob into copy JSON payloads. The blob is
+  // omitted from all other read paths (see PrismaService), so this is the only
+  // route that loads it — one image at a time.
+  @ApiProduces('image/png', 'image/jpeg', 'image/gif', 'image/webp')
+  @ApiOkResponse({
+    description:
+      "The copy's cover-art override image, or 404 if none is set.",
+  })
+  @Header('Cache-Control', 'public, max-age=86400')
+  @Get(':id/cover')
+  async getCover(@Param('id') id: number): Promise<StreamableFile> {
+    const image = await this.copyService.getCoverArtOverride(
+      Number(id),
+      this.ctx,
+    );
+    if (!image) {
+      throw new NotFoundException(
+        `No cover-art override set for copy ${id}.`,
+      );
+    }
+    return new StreamableFile(image, { type: detectImageMime(image) });
   }
 
   @UseGuards(JwtAuthGuard, CopyGuard)

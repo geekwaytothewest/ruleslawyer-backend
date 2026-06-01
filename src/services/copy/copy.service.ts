@@ -190,6 +190,20 @@ export class CopyService {
     }
   }
 
+  /**
+   * Fetches just a copy's cover-art-override bytes for the streaming image
+   * endpoint. The explicit `select` overrides the global `omit` of
+   * coverArtOverride configured in PrismaService, so this is the one read path
+   * that loads the blob.
+   */
+  async getCoverArtOverride(id: number, ctx: Context): Promise<Buffer | null> {
+    const copy = await ctx.prisma.copy.findUnique({
+      where: { id: Number(id) },
+      select: { coverArtOverride: true },
+    });
+    return copy?.coverArtOverride ? Buffer.from(copy.coverArtOverride) : null;
+  }
+
   async deleteCopy(id: number, ctx: Context) {
     return ctx.prisma.copy.delete({
       where: {

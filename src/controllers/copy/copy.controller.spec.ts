@@ -74,4 +74,28 @@ describe('CopyController', () => {
       expect(copy?.id).toBe(1);
     });
   });
+
+  describe('getCover', () => {
+    it('streams the override image with a sniffed content type', async () => {
+      const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+      mockCtx.prisma.copy.findUnique.mockResolvedValue({
+        coverArtOverride: png,
+      } as any);
+
+      const file = await controller.getCover(1);
+
+      expect(file.getStream().read()).toEqual(png);
+      expect(file.options.type).toBe('image/png');
+    });
+
+    it('404s when the copy has no override', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue({
+        coverArtOverride: null,
+      } as any);
+
+      await expect(controller.getCover(1)).rejects.toThrow(
+        'No cover-art override set for copy 1.',
+      );
+    });
+  });
 });

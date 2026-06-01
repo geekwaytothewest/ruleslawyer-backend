@@ -327,4 +327,25 @@ describe('GameController', () => {
       expect(spy).toHaveBeenCalledWith(1, ctx);
     });
   });
+
+  describe('getCover', () => {
+    it('streams the cover image with a sniffed content type', async () => {
+      const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
+      jest.spyOn(gameService, 'getCoverArt').mockResolvedValue(jpeg);
+
+      const file = await controller.getCover(1);
+
+      expect(gameService.getCoverArt).toHaveBeenCalledWith(1, ctx);
+      expect(file.getStream().read()).toEqual(jpeg);
+      expect(file.options.type).toBe('image/jpeg');
+    });
+
+    it('404s when the game has no cover art', async () => {
+      jest.spyOn(gameService, 'getCoverArt').mockResolvedValue(null);
+
+      await expect(controller.getCover(1)).rejects.toThrow(
+        'No cover art set for game 1.',
+      );
+    });
+  });
 });

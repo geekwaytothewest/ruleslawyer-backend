@@ -731,4 +731,37 @@ describe('GameService', () => {
       );
     });
   });
+
+  describe('getCoverArt', () => {
+    it('selects only coverArt and returns it as a Buffer', async () => {
+      const bytes = Buffer.from([0xff, 0xd8, 0xff]);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        coverArt: bytes,
+      } as any);
+
+      const result = await service.getCoverArt(1, ctx);
+
+      expect(Buffer.isBuffer(result)).toBe(true);
+      expect(result).toEqual(bytes);
+      // The explicit select is what overrides PrismaService's global omit.
+      expect(mockCtx.prisma.game.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        select: { coverArt: true },
+      });
+    });
+
+    it('returns null when the game has no cover art', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        coverArt: null,
+      } as any);
+
+      expect(await service.getCoverArt(1, ctx)).toBeNull();
+    });
+
+    it('returns null when the game does not exist', async () => {
+      mockCtx.prisma.game.findUnique.mockResolvedValue(null as any);
+
+      expect(await service.getCoverArt(999, ctx)).toBeNull();
+    });
+  });
 });

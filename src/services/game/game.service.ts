@@ -511,6 +511,19 @@ export class GameService {
     }
   }
 
+  /**
+   * Fetches just a game's cover-art bytes for the streaming image endpoint. The
+   * explicit `select` overrides the global `omit` of coverArt configured in
+   * PrismaService, so this is the one read path that loads the blob.
+   */
+  async getCoverArt(id: number, ctx: Context): Promise<Buffer | null> {
+    const game = await ctx.prisma.game.findUnique({
+      where: { id: Number(id) },
+      select: { coverArt: true },
+    });
+    return game?.coverArt ? Buffer.from(game.coverArt) : null;
+  }
+
   async gameCopyCount(ctx: Context, gameId: number): Promise<number> {
     try {
       this.logger.log(`Getting copy count for gameId=${gameId}...`);
