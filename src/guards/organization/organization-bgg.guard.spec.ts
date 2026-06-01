@@ -107,6 +107,46 @@ describe('OrganizationBggGuard', () => {
     expect(await guard.canActivate(bodyContext)).toBeTruthy();
   });
 
+  it('should prefer params.id over params.orgId and body.organizationId', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        params: { id: 1, orgId: 2 },
+        body: { organizationId: 3 },
+      }),
+    });
+
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      enableBggSupport: true,
+    } as never);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+    // params.id wins — not orgId (2) or body.organizationId (3).
+    expect(mockCtx.prisma.organization.findUnique).toHaveBeenCalledWith({
+      where: { id: 1 },
+    });
+  });
+
+  it('should prefer params.orgId over body.organizationId when params.id is absent', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        params: { orgId: 2 },
+        body: { organizationId: 3 },
+      }),
+    });
+
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 2,
+      enableBggSupport: true,
+    } as never);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+    // params.orgId wins over body.organizationId (3).
+    expect(mockCtx.prisma.organization.findUnique).toHaveBeenCalledWith({
+      where: { id: 2 },
+    });
+  });
+
   it('should coerce a string org id to a number for the lookup', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { GameController } from './game.controller';
 import {
   Context,
@@ -9,6 +10,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { GameModule } from '../../modules/game/game.module';
 import { GameService } from '../../services/game/game.service';
+import { OrganizationBggGuard } from '../../guards/organization/organization-bgg.guard';
 
 describe('GameController', () => {
   let controller: GameController;
@@ -346,6 +348,25 @@ describe('GameController', () => {
       await expect(controller.getCover(1)).rejects.toThrow(
         'No cover art set for game 1.',
       );
+    });
+  });
+
+  // Unit tests invoke handlers directly, which bypasses guards entirely, so
+  // assert at the metadata level that the BGG gate is wired onto every
+  // BGG-related route. This fails the moment OrganizationBggGuard is dropped
+  // from a @UseGuards line, which would silently expose the endpoint.
+  describe('BGG gate wiring', () => {
+    const reflector = new Reflector();
+
+    it.each([
+      'connectBGGGameByName',
+      'syncAndConnectGamesWithBGG',
+      'syncBGGGame',
+    ] as const)('gates %s with OrganizationBggGuard', (method) => {
+      const guards =
+        reflector.get('__guards__', GameController.prototype[method]) ?? [];
+
+      expect(guards).toContain(OrganizationBggGuard);
     });
   });
 });
