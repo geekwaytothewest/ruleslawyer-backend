@@ -5,4 +5,5 @@ export class OrganizationEntity implements Organization {
   id: number;
   name: string;
   ownerId: number;
+  enableBggSupport: boolean;
 }
