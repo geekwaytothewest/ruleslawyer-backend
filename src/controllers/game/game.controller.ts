@@ -24,6 +24,7 @@ import {
   ApiProduces,
 } from '@nestjs/swagger';
 import { detectImageMime } from '../../utils/image-mime';
+import { gameNameSearchClauses } from '../../utils/game-name-search';
 import { GameEntity } from '../../common/entities/game.entity';
 import { GameWithCopiesEntity } from '../../common/entities/game-with-copies.entity';
 import { CopyWithRelationsEntity } from '../../common/entities/copy-with-relations.entity';
@@ -364,11 +365,7 @@ export class GameController {
         AND: [
           query.where!,
           {
-            OR: [
-              { name: { search: filter.split(' ').join(' <-> ') } },
-              { name: { contains: filter, mode: 'insensitive' } },
-              { name: { startsWith: filter, mode: 'insensitive' } },
-            ],
+            OR: gameNameSearchClauses(filter),
           },
         ],
       };

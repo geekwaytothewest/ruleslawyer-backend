@@ -4,6 +4,7 @@ import { Context } from '../prisma/context';
 import { Collection, Copy, Prisma } from '@prisma/client';
 import { CopyService } from '../copy/copy.service';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
+import { gameNameSearchClauses } from '../../utils/game-name-search';
 
 // Upper bound on games returned per page by collectionCopiesByGames, including
 // when no/invalid limit is supplied. Without a bound, Prisma fetches every game
@@ -78,11 +79,7 @@ export class CollectionService {
       gameQuery.where = {
         AND: [
           {
-            OR: [
-              { name: { search: filter.split(' ').join(' <-> ') } },
-              { name: { contains: filter, mode: 'insensitive' } },
-              { name: { startsWith: filter, mode: 'insensitive' } },
-            ],
+            OR: gameNameSearchClauses(filter),
           },
           {
             copies: {
