@@ -185,6 +185,27 @@ describe('GameController', () => {
       expect(args.where.AND[1].OR).toBeDefined();
     });
 
+    it('should url-decode the filter before searching', async () => {
+      mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 1] as any);
+
+      await controller.getGamesWithCopies(
+        { id: 1 },
+        '25',
+        'Settlers%20of%20Catan%3A%20Cities%20%26%20Knights',
+        '1',
+        '',
+      );
+
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      const decoded = 'Settlers of Catan: Cities & Knights';
+      const nameOr = args.where.AND[1].OR;
+      expect(nameOr).toContainEqual({ name: { contains: decoded, mode: 'insensitive' } });
+      expect(nameOr).toContainEqual({ name: { startsWith: decoded, mode: 'insensitive' } });
+      expect(nameOr).toContainEqual({
+        name: { search: decoded.split(' ').join(' <-> ') },
+      });
+    });
+
     it('should compute skip from the page number and report hasMore', async () => {
       mockCtx.prisma.$transaction.mockResolvedValue([[{ id: 1 }], 60] as any);
 
