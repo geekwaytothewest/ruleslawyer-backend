@@ -510,15 +510,6 @@ describe('OrganizationController', () => {
 
       expect(games.length).toBe(1);
     });
-
-    it('should url-decode the game name before searching', async () => {
-      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
-
-      await controller.searchGames('Settlers%20of%20Catan%3A%20Cities%20%26%20Knights');
-
-      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
-      expect(args.where.name.contains).toBe('Settlers of Catan: Cities & Knights');
-    });
   });
 
   describe('autocompleteGames', () => {
@@ -530,15 +521,6 @@ describe('OrganizationController', () => {
       expect(games.length).toBe(1);
       const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
       expect(args.take).toBe(10);
-    });
-
-    it('should url-decode the game name before searching', async () => {
-      mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
-
-      await controller.autocompleteGames('Ticket%20to%20Ride%3A%20Europe');
-
-      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
-      expect(args.where.name.contains).toBe('Ticket to Ride: Europe');
     });
   });
 

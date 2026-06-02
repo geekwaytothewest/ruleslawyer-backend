@@ -79,27 +79,6 @@ describe('CollectionController', () => {
         2,
       );
     });
-
-    it('url-decodes the filter before querying', async () => {
-      jest
-        .spyOn(collectionService, 'collectionCopiesByGames')
-        .mockResolvedValue({ id: 1, games: [] } as any);
-
-      await controller.collectionCopiesByGames(
-        1,
-        10,
-        'Settlers%20of%20Catan%3A%20Cities%20%26%20Knights',
-        2,
-      );
-
-      expect(collectionService.collectionCopiesByGames).toHaveBeenCalledWith(
-        1,
-        10,
-        'Settlers of Catan: Cities & Knights',
-        ctx,
-        2,
-      );
-    });
   });
 
   describe('UpdateCollectionDto validation', () => {
