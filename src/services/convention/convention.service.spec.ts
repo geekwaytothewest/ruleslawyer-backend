@@ -762,6 +762,7 @@ describe('ConventionService', () => {
         gameId: 1,
         winnable: true,
         coverArtOverride: null,
+        bggVersionOverride: null,
         dateAdded: new Date(),
         dateRetired: null,
         barcodeLabel: '1',

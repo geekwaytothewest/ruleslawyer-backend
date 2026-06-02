@@ -20,6 +20,8 @@ export class GameEntity implements Omit<Game, 'coverArt'> {
   organizationId: number;
   /** BoardGameGeek game id used for metadata sync. */
   bggId: number | null;
+  /** BoardGameGeek version id; when set, overrides where cover art is sourced. */
+  bggVersionId: number | null;
   bggRank: number | null;
   bggRating: Decimal | null;
   /** Timestamp of the last successful BoardGameGeek sync. */

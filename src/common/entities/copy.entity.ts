@@ -19,6 +19,12 @@ export class CopyEntity implements Omit<Copy, 'coverArtOverride'> {
   /** Whether this copy is available to be won as a prize. */
   winnable: boolean;
   winnerId: number | null;
+  /**
+   * BoardGameGeek version id for this copy; when set, the copy's cover-art
+   * override is sourced from this version. The image blob itself
+   * (coverArtOverride) is omitted from this response (see above).
+   */
+  bggVersionOverride: number | null;
 
   collectionId: number;
   organizationId: number;

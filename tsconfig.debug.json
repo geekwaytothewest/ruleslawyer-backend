@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    // Embed the source map (and TS sources) inside the compiled .js so the
+    // debugger can read them over the inspector protocol. The container's
+    // dist/ is an anonymous volume (see docker-compose.yml), so external
+    // .map files never exist on the host for the debugger to find. Used only
+    // by the Docker debug build; prod stays on external sourceMap.
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "inlineSources": true
+  }
+}
