@@ -92,9 +92,9 @@ expectations of older front-end applications.
 
 Examples of those legacy consumers:
 
-- [frontends](https://github.com/geekwaytothewest/frontends) — the legacy
+- [frontends](https://github.com/rules-lawyer/legacy-frontends) — the legacy
   admin/library apps.
-- [pnw-picker](https://github.com/geekwaytothewest/pnw-picker) — the legacy app
+- [pnw-picker](https://github.com/rules-lawyer/pnw-picker) — the legacy app
   for picking winners from play-and-win collections.
 
 New functionality should generally live in a purpose-specific controller using

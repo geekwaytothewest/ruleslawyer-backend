@@ -1,6 +1,6 @@
 ## Description
 
-Geekway to the West Rules Lawyer is the premier play and win convention backend.
+Rules Lawyer is the premier play and win convention backend.
 
 Built with [NestJS](https://nestjs.com/) (Fastify) + [Prisma](https://www.prisma.io/) on PostgreSQL, with Auth0 for authentication.
 
@@ -24,11 +24,12 @@ git clone https://github.com/geekwaytothewest/pnw-picker.git
 Resulting layout:
 
 ```
-geekway/
+ruleslawyer/
 ├── ruleslawyer-backend/
 ├── ruleslawyer-frontend/
+├── ruleslawyer-infrastructure
 ├── pnw-picker/
-└── frontends/
+└── legacy-frontends/
     ├── board-game-admin/
     ├── librarian/
     └── play-prize-entry/
