@@ -358,9 +358,11 @@ export class OrganizationController {
   @ApiOkResponse({ type: GameEntity, isArray: true })
   @Get(':id/games/search/:gameName')
   async searchGames(@Param('gameName') gameName: string) {
+    const decodedGameName = decodeURIComponent(gameName);
+
     return this.gameService.search(
       {
-        where: { name: { contains: gameName, mode: 'insensitive' } },
+        where: { name: { contains: decodedGameName, mode: 'insensitive' } },
         orderBy: { name: 'asc' },
       },
       this.ctx,
@@ -383,10 +385,12 @@ export class OrganizationController {
   })
   @Get(':id/games/autocomplete/:gameName')
   async autocompleteGames(@Param('gameName') gameName: string) {
+    const decodedGameName = decodeURIComponent(gameName);
+
     return this.gameService.search(
       {
         select: { name: true, id: true },
-        where: { name: { contains: gameName, mode: 'insensitive' } },
+        where: { name: { contains: decodedGameName, mode: 'insensitive' } },
         orderBy: { name: 'asc' },
         take: 10,
       },

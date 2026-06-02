@@ -67,10 +67,12 @@ export class CollectionController {
     @Query('filter') filter: string,
     @Query('page') page: number,
   ) {
+    const decodedFilter = decodeURIComponent(filter);
+
     const col = this.collectionService.collectionCopiesByGames(
       Number(colId),
       limit,
-      filter,
+      decodedFilter,
       this.ctx,
       page,
     );
