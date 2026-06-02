@@ -7,18 +7,19 @@ sits between two other docs:
 
 - [`AUTHORIZATION.md`](../AUTHORIZATION.md) — how the backend *consumes* the
   resulting tokens (validation, guards, role resolution). Read it for the code side.
-- [`ruleslawyer-infra/auth0/README.md`](../../ruleslawyer-infra/auth0/README.md)
+- [`ruleslawyer-infrastructure/auth0/README.md`](../../ruleslawyer-infrastructure/auth0/README.md)
   — how to *apply* the tenant and how its IDs/secrets flow into the AWS deploy.
   Read it to actually stand up or change a tenant.
 
 > The tenant is **config-as-code**, not hand-clicked in the dashboard. Its source
-> of truth is the [`ruleslawyer-infra/auth0/`](../../ruleslawyer-infra/auth0/)
-> directory — [`tenant.yaml`](../../ruleslawyer-infra/auth0/tenant.yaml) (the
-> resources), [`actions/add-user-claims.js`](../../ruleslawyer-infra/auth0/actions/add-user-claims.js)
-> (the Action code), and [`config.json`](../../ruleslawyer-infra/auth0/config.json)
-> (Deploy CLI settings + the `##KEYWORD##` → host/audience mappings) — applied with
-> the [Auth0 Deploy CLI](https://github.com/auth0/auth0-deploy-cli)
-> (`a0deploy import`). Change the tenant by editing those files and re-importing,
+> of truth is the [`ruleslawyer-infrastructure/auth0/`](../../ruleslawyer-infrastructure/auth0/)
+> directory — [`tenant.yaml`](../../ruleslawyer-infrastructure/auth0/tenant.yaml) (the
+> resources), [`actions/add-user-claims.js`](../../ruleslawyer-infrastructure/auth0/actions/add-user-claims.js)
+> (the Action code), and a **per-env** [`config.<env>.json`](../../ruleslawyer-infrastructure/auth0/)
+> (`config.nonprod.json` / `config.prod.json` — Deploy CLI settings + the
+> `##KEYWORD##` → host/audience mappings; `tenant.yaml` itself is env-independent) —
+> applied with the [Auth0 Deploy CLI](https://github.com/auth0/auth0-deploy-cli)
+> (`a0deploy import -c config.<env>.json -i tenant.yaml`). Change the tenant by editing those files and re-importing,
 > not by clicking in the dashboard. The sections below explain each resource and
 > point at where it lives in that config. This (backend) repo only stores the
 > resulting IDs/URLs as environment variables (listed at the end).
@@ -26,10 +27,10 @@ sits between two other docs:
 ## 1. The API (resource server)
 
 The backend validates every token against a single API — the `resourceServers`
-entry in [`tenant.yaml`](../../ruleslawyer-infra/auth0/tenant.yaml).
+entry in [`tenant.yaml`](../../ruleslawyer-infrastructure/auth0/tenant.yaml).
 
 - **Identifier (audience)** — a stable URI, set via the `##API_AUDIENCE##`
-  keyword resolved from [`config.json`](../../ruleslawyer-infra/auth0/config.json)
+  keyword resolved from [`config.<env>.json`](../../ruleslawyer-infrastructure/auth0/)
   per environment. This value becomes `AUTH0_AUDIENCE` (backend) /
   `API_IDENTIFIER` (SPAs) / `AUTH0_AUDIENCE` (frontend). Every client must request
   *this* audience or Auth0 returns an **opaque** token that fails the API's RS256
@@ -48,7 +49,7 @@ and becomes `AUTH0_ISSUER_URL`. **It must keep its trailing `/`** — the backen
 appends paths to it directly (`${issuer}.well-known/jwks.json`,
 `${issuer}authorize`, `${issuer}oauth/token`). The domain isn't in `tenant.yaml`;
 it's the `AUTH0_DOMAIN` the Deploy CLI targets at import time (see the
-[infra auth0 README](../../ruleslawyer-infra/auth0/README.md)).
+[infra auth0 README](../../ruleslawyer-infrastructure/auth0/README.md)).
 
 ## 2. The custom-claims Action (required)
 
@@ -58,9 +59,9 @@ uses `user_name` when auto-provisioning a user. These are **non-standard claim
 names**, so Auth0 will not emit them unless an Action adds them.
 
 The Action lives at
-[`actions/add-user-claims.js`](../../ruleslawyer-infra/auth0/actions/add-user-claims.js)
+[`actions/add-user-claims.js`](../../ruleslawyer-infrastructure/auth0/actions/add-user-claims.js)
 and is wired into the post-login flow by the `actions:` / `triggers:` blocks of
-[`tenant.yaml`](../../ruleslawyer-infra/auth0/tenant.yaml). It sets the claims on
+[`tenant.yaml`](../../ruleslawyer-infrastructure/auth0/tenant.yaml). It sets the claims on
 the **access token** (the token the API receives):
 
 ```js
@@ -83,7 +84,7 @@ succeeds but the API returns `401`, this Action is the first thing to check.
 ## 3. The application clients
 
 Five clients talk to this one API, each a `clients` entry in
-[`tenant.yaml`](../../ruleslawyer-infra/auth0/tenant.yaml). All request the API's
+[`tenant.yaml`](../../ruleslawyer-infrastructure/auth0/tenant.yaml). All request the API's
 audience at login.
 
 | Client (`name` in `tenant.yaml`) | `app_type` | Grant / flow |
@@ -109,10 +110,10 @@ The SPAs enable refresh tokens with `localStorage` caching
 ### Per-client URL/value reference
 
 Hosting paths come from each app's webpack `publicPath` / nginx config. In
-[`tenant.yaml`](../../ruleslawyer-infra/auth0/tenant.yaml) the host portion is a
+[`tenant.yaml`](../../ruleslawyer-infrastructure/auth0/tenant.yaml) the host portion is a
 `##KEYWORD##` placeholder (`##APP_BASE_URL##`, `##API_HOST##`, `##SPA_BASE_URL##`)
 resolved per environment from
-[`config.json`](../../ruleslawyer-infra/auth0/config.json) — the three SPAs share
+[`config.<env>.json`](../../ruleslawyer-infrastructure/auth0/) — the three SPAs share
 the single CloudFront `##SPA_BASE_URL##` host and are distinguished by their
 `/legacy/<app>` path prefix. Each client also registers its **local Docker dev**
 callback / origin (ports from
@@ -150,7 +151,7 @@ authenticated cross-origin requests will be blocked before any token is checked.
 These hold the IDs/URLs produced by importing the tenant. For local/dev, actual
 values live in each project's (gitignored) `.env`. For the AWS deploy, the same
 IDs/secrets are carried into CDK config and Secrets Manager — the
-[infra auth0 README](../../ruleslawyer-infra/auth0/README.md) has the full
+[infra auth0 README](../../ruleslawyer-infrastructure/auth0/README.md) has the full
 "which Auth0 value goes where" table and the per-environment order of operations.
 Client **secrets** are generated by Auth0 (not stored in any repo); read them from
 the dashboard / Management API after import.
@@ -175,7 +176,7 @@ the dashboard / Management API after import.
 | `APP_BASE_URL` | deployment URL | Builds the `/auth/callback` redirect. |
 | `API_URL` / `NEXT_PUBLIC_API_URL` | API host | Where the bearer token is sent. |
 
-### Legacy SPAs ([`frontends/`](../../frontends)) — injected at build time
+### Legacy SPAs ([`legacy-frontends/`](../../frontends)) — injected at build time
 
 These apps have no runtime env; webpack `DefinePlugin` / `EnvironmentPlugin`
 bake a `.env` into globals at build (see each app's `webpack.common.js`). Each

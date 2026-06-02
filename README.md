@@ -112,7 +112,7 @@ npm run test:cov
 
 ## Deployment
 
-Deployed to AWS ECS via the **Build and Deploy** GitHub Action (manual `workflow_dispatch`; choose `nonprod` or `prod`). It builds the Docker image, pushes it to the `ruleslawyer-backend` ECR repo, and updates the `ruleslawyer-backend` ECS service on the `geekway-{env}` cluster using `.aws/taskdefinition-{env}.json`.
+Deployed to AWS ECS via the **Build and Deploy** GitHub Action (manual `workflow_dispatch`; choose `nonprod` or `prod`). It builds the Docker image, pushes it to the `ruleslawyer-backend` ECR repo, and updates the `ruleslawyer-backend` ECS service on the `ruleslawyer-{env}` cluster using `.aws/taskdefinition-{env}.json`.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the full process, prerequisites, and the per-service reference for all repos.
 
