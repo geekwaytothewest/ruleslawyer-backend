@@ -260,8 +260,6 @@ export class GameController {
     @Query('orgId') orgId: string,
     @Query('page') page: string,
   ) {
-    const decodedFilter = decodeURIComponent(filter);
-
     const query: Prisma.GameFindManyArgs = {
       include: {
         copies: {
@@ -358,8 +356,8 @@ export class GameController {
     query.take = pageSize;
     query.skip = (currentPage - 1) * pageSize;
 
-    if (decodedFilter) {
-      // AND the name decodedFilter onto the existing where so the permission/org
+    if (filter) {
+      // AND the name filter onto the existing where so the permission/org
       // scoping above is preserved. Merging into the top-level `OR` instead
       // would overwrite that scoping and search every game globally.
       query.where = {
@@ -367,9 +365,9 @@ export class GameController {
           query.where!,
           {
             OR: [
-              { name: { search: decodedFilter.split(' ').join(' <-> ') } },
-              { name: { contains: decodedFilter, mode: 'insensitive' } },
-              { name: { startsWith: decodedFilter, mode: 'insensitive' } },
+              { name: { search: filter.split(' ').join(' <-> ') } },
+              { name: { contains: filter, mode: 'insensitive' } },
+              { name: { startsWith: filter, mode: 'insensitive' } },
             ],
           },
         ],
