@@ -1,6 +1,6 @@
 # Deployment
 
-All Geekway to the West Rules Lawyer services run on **AWS ECS** and are released
+All Rules Lawyer services run on **AWS ECS** and are released
 via **GitHub Actions**. This is the canonical release guide for the apps; each
 repo's README links here and lists only its own service names.
 
@@ -24,7 +24,7 @@ Every service follows the same pipeline, triggered manually:
    SHA (immutable record) and `latest` (what the CDK-owned task definition
    references).
 4. **Deploy** — `aws ecs update-service --force-new-deployment` restarts the
-   service on the `geekway-{env}` cluster so its tasks re-pull `latest`, then waits
+   service on the `ruleslawyer-{env}` cluster so its tasks re-pull `latest`, then waits
    for the service to stabilize.
 
 The workflow no longer renders or registers a task definition — CDK owns it.
@@ -48,8 +48,8 @@ out to all three apps via reusable workflows; the others deploy independently.
 
 | Environment | ECS cluster       | Public host                  |
 | ----------- | ----------------- | ---------------------------- |
-| `nonprod`   | `geekway-nonprod` | `nonprod.library.geekway.com` |
-| `prod`      | `geekway-prod`    | `library.geekway.com`        |
+| `nonprod`   | `ruleslawyer-nonprod` | `nonprod.library.ruleslawyer.com` |
+| `prod`      | `ruleslawyer-prod`    | `library.ruleslawyer.com`        |
 
 ## Prerequisites
 
@@ -60,7 +60,7 @@ do **not** create it. Before a deploy can succeed:
   repos, task definitions). See its `DEPLOYMENT.md`.
 - The deploy credentials must target that environment's account. Auth is GitHub
   OIDC only — no static keys. The workflow assumes the per-app deploy role
-  `geekway-{env}-github-deploy-backend` that the CDK creates; the job already
+  `ruleslawyer-{env}-github-deploy-backend` that the CDK creates; the job already
   declares `permissions: id-token: write` and selects the role ARN per
   environment (`PROD_ROLE_ARN` / `NONPROD_ROLE_ARN`).
 
@@ -81,7 +81,7 @@ do **not** create it. Before a deploy can succeed:
 ## Notes
 
 - **Runtime config lives in CDK, not here.** Container env vars, secrets, and
-  CPU/memory are defined in `ruleslawyer-infra` and are the source of truth. The
+  CPU/memory are defined in `ruleslawyer-infrastructure` and are the source of truth. The
   workflow only ships a new image.
 - **Frontend config is baked at build time.** The SPAs and the Next.js dashboard
   inline their API URL and Auth0 callback/logout URLs as Docker build args (e.g.
