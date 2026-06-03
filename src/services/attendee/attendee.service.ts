@@ -163,11 +163,15 @@ export class AttendeeService {
     }
   }
 
-  async badgeTransfer(conventionId: number, badgeTransferData: {
+  async transferBadge(conventionId: number, badgeTransferData: {
     fromBadgeNumber: string;
     newBadgeFirstName: string;
     newBadgeLastName: string;
     newBadgePronouns: string;
+    newBadgeEmail: string;
+    newBadgeName: string;
+    newBadgeLegalName: string;
+    newBadgePronounsId: number | null;
   }, ctx: Context) {
     try {
       this.logger.log(
@@ -186,10 +190,9 @@ export class AttendeeService {
         data: {
           badgeFirstName: badgeTransferData.newBadgeFirstName,
           badgeLastName: badgeTransferData.newBadgeLastName,
-          legalName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
-          badgeName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
-          // New holder: drop the previous attendee's account link and email.
-          email: null,
+          legalName: badgeTransferData.newBadgeLegalName,
+          badgeName: badgeTransferData.newBadgeName,
+          email: badgeTransferData.newBadgeEmail,
           user: {
             disconnect: true,
           },
@@ -219,7 +222,7 @@ export class AttendeeService {
     }
   }
 
-  async badgeReplacement(
+  async replaceBadge(
     conventionId: number,
     badgeReplacementData: {
       fromBadgeNumber: string;

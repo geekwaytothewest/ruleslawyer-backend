@@ -68,4 +68,30 @@ export class AttendeeController {
   async getPronouns() {
     return this.attendeeService.getPronouns(this.ctx);
   }
+
+  @UseGuards(JwtAuthGuard, AttendeeGuard)
+  @ApiOkResponse({ type: AttendeeEntity })
+  @Post(':id/transferBadge')
+  async transferBadge(@Param('id') id: string) {
+    return this.attendeeService.transferBadge(Number(id), {
+      fromBadgeNumber: "",
+      newBadgeFirstName: "",
+      newBadgeLastName: "",
+      newBadgePronouns: "",
+      newBadgeEmail: "",
+      newBadgeName: "",
+      newBadgeLegalName: "",
+      newBadgePronounsId: null,
+    }, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, AttendeeGuard)
+  @ApiOkResponse({ type: AttendeeEntity })
+  @Post(':id/replaceBadge')
+  async replaceBadge(@Param('id') id: string, @Body() data: { toBadgeNumber: string, fromBadgeNumber: string }) {
+    return this.attendeeService.replaceBadge(Number(id), {
+      toBadgeNumber: data.toBadgeNumber,
+      fromBadgeNumber: data.fromBadgeNumber
+    }, this.ctx);
+  }
 }
