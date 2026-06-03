@@ -1138,4 +1138,169 @@ describe('ConventionService', () => {
       expect(service['importInProgress']).toBe(false);
     });
   });
+
+  describe('getAttendees', () => {
+    // getAttendees runs findMany + count inside a single $transaction and
+    // returns a pagination envelope; stub the transaction to resolve [rows, total].
+    function mockPage(rows: unknown[], total: number) {
+      mockCtx.prisma.$transaction.mockResolvedValue([rows, total] as never);
+    }
+
+    it('returns a pagination envelope with the default page size', async () => {
+      mockPage([{ id: 1 }], 1);
+
+      const result = await service.getAttendees(5, 50, '', 1, ctx);
+
+      expect(result).toEqual({
+        data: [{ id: 1 }],
+        total: 1,
+        page: 1,
+        pageSize: 50,
+        totalPages: 1,
+        hasMore: false,
+      });
+    });
+
+    it('scopes to the convention and orders by last then first name', async () => {
+      mockPage([], 0);
+
+      await service.getAttendees(5, 50, '', 1, ctx);
+
+      expect(mockCtx.prisma.attendee.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { conventionId: 5 },
+          orderBy: [{ badgeLastName: 'asc' }, { badgeFirstName: 'asc' }],
+          include: { pronouns: true, badgeType: true },
+          take: 50,
+          skip: 0,
+        }),
+      );
+    });
+
+    it('clamps the page size to the 500 cap', async () => {
+      mockPage([], 0);
+
+      const result = await service.getAttendees(5, 1000, '', 1, ctx);
+
+      expect(result.pageSize).toBe(500);
+      expect(mockCtx.prisma.attendee.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 500 }),
+      );
+    });
+
+    it('falls back to the cap when the limit is not a number', async () => {
+      mockPage([], 0);
+
+      const result = await service.getAttendees(5, NaN, '', 1, ctx);
+
+      expect(result.pageSize).toBe(500);
+    });
+
+    it('offsets by page: skip = (page - 1) * pageSize', async () => {
+      mockPage([], 0);
+
+      const result = await service.getAttendees(5, 50, '', 3, ctx);
+
+      expect(result.page).toBe(3);
+      expect(mockCtx.prisma.attendee.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 100 }),
+      );
+    });
+
+    it('treats a page below 1 as the first page', async () => {
+      mockPage([], 0);
+
+      const result = await service.getAttendees(5, 50, '', 0, ctx);
+
+      expect(result.page).toBe(1);
+      expect(mockCtx.prisma.attendee.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 0 }),
+      );
+    });
+
+    it('computes totalPages and hasMore from the count', async () => {
+      mockPage([{ id: 1 }], 120);
+
+      const result = await service.getAttendees(5, 50, '', 1, ctx);
+
+      expect(result.totalPages).toBe(3);
+      expect(result.hasMore).toBe(true);
+    });
+
+    it('reports no more pages on the last page', async () => {
+      mockPage([{ id: 1 }], 120);
+
+      const result = await service.getAttendees(5, 50, '', 3, ctx);
+
+      expect(result.hasMore).toBe(false);
+    });
+
+    it('leaves the where unfiltered when no filter is supplied', async () => {
+      mockPage([], 0);
+
+      await service.getAttendees(5, 50, '', 1, ctx);
+
+      expect(mockCtx.prisma.attendee.count).toHaveBeenCalledWith({
+        where: { conventionId: 5 },
+      });
+    });
+
+    it('ANDs name-search clauses onto the convention scope when filtering', async () => {
+      mockPage([], 0);
+
+      await service.getAttendees(5, 50, 'ada', 1, ctx);
+
+      const call = mockCtx.prisma.attendee.findMany.mock.calls[0][0] as {
+        where: { AND: [unknown, { OR: unknown[] }] };
+      };
+      // Convention scoping is preserved as the first AND branch...
+      expect(call.where.AND[0]).toEqual({ conventionId: 5 });
+      // ...and the name filter is OR-ed across the ILIKE + full-text clauses.
+      expect(call.where.AND[1].OR).toContainEqual({
+        badgeName: { contains: 'ada', mode: 'insensitive' },
+      });
+      expect(call.where.AND[1].OR).toContainEqual({
+        badgeName: { search: 'ada' },
+      });
+      // count uses the same filtered where.
+      expect(mockCtx.prisma.attendee.count).toHaveBeenCalledWith({
+        where: call.where,
+      });
+    });
+
+    it('omits the full-text search clauses when the filter is pure punctuation', async () => {
+      mockPage([], 0);
+
+      await service.getAttendees(5, 50, '   ', 1, ctx);
+
+      // A whitespace-only filter is still truthy, so the ILIKE clauses apply,
+      // but no `search` lexeme survives tokenizing.
+      const call = mockCtx.prisma.attendee.findMany.mock.calls[0][0] as {
+        where: { AND: [unknown, { OR: { badgeName?: { search?: string } }[] }] };
+      };
+      const hasSearch = call.where.AND[1].OR.some(
+        (c) => c.badgeName != null && 'search' in c.badgeName,
+      );
+      expect(hasSearch).toBe(false);
+    });
+
+    it('tolerates a missing filter without scoping the name search', async () => {
+      mockPage([], 0);
+
+      const result = await service.getAttendees(5, 50, undefined as never, 1, ctx);
+
+      expect(result.total).toBe(0);
+      expect(mockCtx.prisma.attendee.count).toHaveBeenCalledWith({
+        where: { conventionId: 5 },
+      });
+    });
+
+    it('rejects when the transaction throws', async () => {
+      mockCtx.prisma.$transaction.mockRejectedValue(new Error('db error'));
+
+      await expect(service.getAttendees(5, 50, '', 1, ctx)).rejects.toThrow(
+        'db error',
+      );
+    });
+  });
 });

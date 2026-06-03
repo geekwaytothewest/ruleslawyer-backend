@@ -180,6 +180,29 @@ export class AttendeeService {
         )}`,
       );
 
+      let pronounData: any = {
+        connectOrCreate: {
+          create: {
+            pronouns: badgeTransferData.newBadgePronouns
+              ? badgeTransferData.newBadgePronouns
+              : 'Prefer Not To Say',
+          },
+          where: {
+            pronouns: badgeTransferData.newBadgePronouns
+              ? badgeTransferData.newBadgePronouns
+              : 'Prefer Not To Say',
+          },
+        },
+      };
+
+      if (badgeTransferData.newBadgePronounsId) {
+        pronounData = {
+          connect: {
+            id: badgeTransferData.newBadgePronounsId
+          },
+        };
+      }
+
       return await ctx.prisma.attendee.update({
         where: {
           conventionId_badgeNumber: {
@@ -193,22 +216,9 @@ export class AttendeeService {
           legalName: badgeTransferData.newBadgeLegalName,
           badgeName: badgeTransferData.newBadgeName,
           email: badgeTransferData.newBadgeEmail,
+          pronouns: pronounData,
           user: {
             disconnect: true,
-          },
-          pronouns: {
-            connectOrCreate: {
-              create: {
-                pronouns: badgeTransferData.newBadgePronouns
-                  ? badgeTransferData.newBadgePronouns
-                  : 'Prefer Not To Say',
-              },
-              where: {
-                pronouns: badgeTransferData.newBadgePronouns
-                  ? badgeTransferData.newBadgePronouns
-                  : 'Prefer Not To Say',
-              },
-            },
           },
         }
       });

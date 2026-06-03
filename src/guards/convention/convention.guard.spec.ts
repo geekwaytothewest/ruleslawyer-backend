@@ -376,7 +376,7 @@ describe('ConventionWriteGuard', () => {
     expect(await guard.canActivate(context)).toBeTruthy();
   });
 
-  it('should return true for an organization geekGuide', async () => {
+  it('should return false for an organization geekGuide', async () => {
     const context = contextFor({
       user: { user: { id: 2, superAdmin: false } },
       params: { id: 1 },
@@ -392,7 +392,7 @@ describe('ConventionWriteGuard', () => {
       users: [{ id: 1, userId: 2, geekGuide: true }],
     } as any);
 
-    expect(await guard.canActivate(context)).toBeTruthy();
+    expect(await guard.canActivate(context)).toBeFalsy();
   });
 
   it('should return false for an unrelated user', async () => {
@@ -446,6 +446,147 @@ describe('ConventionAdminGuard', () => {
 
     guard = module.get<ConventionAdminGuard>(ConventionAdminGuard);
     guard.ctx = mockCtx;
+  });
+
+  it('should return false with no user', async () => {
+    const context = contextFor({ params: { id: 1 } });
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should return true for a superAdmin', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: true } },
+      params: { id: 1 },
+    });
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return false when no convention id is present', async () => {
+    const context = contextFor({ user: { user: { id: 2, superAdmin: false } }, params: {} });
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should fall back to params.conId when params.id is absent', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { conId: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, admin: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for a convention admin', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, admin: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return false for a non-admin convention user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, admin: false, geekGuide: true }],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should return true for the organization owner', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 2,
+      users: [],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for an organization admin', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, admin: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return false for an organization geekGuide', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, geekGuide: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should return false for an unrelated user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 99, admin: true }],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 99, admin: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
   });
 
   // conId resolves from params.id, falling back to params.conId. Supply both

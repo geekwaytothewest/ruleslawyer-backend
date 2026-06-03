@@ -619,9 +619,9 @@ export class ConventionService {
     }
   }
 
-  async getAttendees(conventionId: number, ctx: Context) {
+  async getAttendees(conventionId: number, limit: number, filter: string, page: number, ctx: Context) {
     try {
-      return await ctx.prisma.attendee.findMany({
+      let query: Prisma.AttendeeFindManyArgs = {
         where: {
           conventionId: conventionId,
         },
@@ -629,7 +629,78 @@ export class ConventionService {
           pronouns: true,
           badgeType: true,
         },
-      });
+        orderBy: [{ badgeLastName: 'asc' }, { badgeFirstName: 'asc' }],
+      };
+
+      const MAX_ATTENDEE_LIMIT = 500;
+
+      // Always bound the page size. Without a `take`, "All" (or any non-numeric
+      // value) makes Prisma fetch every game with its nested copies/checkOuts,
+      // producing a payload too large for JSON.stringify to serialize
+      // (RangeError: Invalid string length). A numeric limit is clamped to the
+      // cap; "All"/invalid falls back to the cap itself.
+      const requested = Number(limit);
+      const pageSize =
+        limit && !Number.isNaN(requested)
+          ? Math.min(requested, MAX_ATTENDEE_LIMIT)
+          : MAX_ATTENDEE_LIMIT;
+
+      // 1-based page number; anything missing/invalid/below 1 means the first page.
+      const requestedPage = Number(page);
+      const currentPage =
+        page && !Number.isNaN(requestedPage) && requestedPage >= 1
+          ? Math.floor(requestedPage)
+          : 1;
+
+      query.take = pageSize;
+      query.skip = (currentPage - 1) * pageSize;
+
+      const clauses: Prisma.AttendeeWhereInput[] = [
+        { badgeName: { contains: filter, mode: 'insensitive' } },
+        { badgeLastName: { contains: filter, mode: 'insensitive' } },
+        { badgeFirstName: {contains: filter, mode: 'insensitive' }},
+        { legalName: {contains: filter, mode: 'insensitive' }},
+      ];
+
+      const search = (filter ?? '')
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter(Boolean)
+        .join(' <-> ');
+
+      if (search) {
+        clauses.unshift({ badgeName: { search } });
+        clauses.unshift({ badgeLastName: { search } });
+        clauses.unshift({ badgeFirstName: { search } });
+        clauses.unshift({ legalName: { search } });
+      }
+
+      if (filter) {
+        // AND the name filter onto the existing where so the convention
+        // scoping above is preserved. Merging into the top-level `OR` instead
+        // would overwrite that scoping and search every attendee globally.
+        query.where = {
+          AND: [
+            query.where!,
+            {
+              OR: clauses
+            },
+          ],
+        };
+      }
+
+      const [data, total] = await ctx.prisma.$transaction([
+        ctx.prisma.attendee.findMany(query),
+        ctx.prisma.attendee.count({ where: query.where }),
+      ]);
+
+      return {
+        data,
+        total,
+        page: currentPage,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+        hasMore: currentPage * pageSize < total,
+      };
     } catch (ex) {
       return Promise.reject(ex);
     }

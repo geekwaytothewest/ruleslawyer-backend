@@ -232,7 +232,7 @@ describe('AttendeeService', () => {
     });
   });
 
-  describe('badgeTransfer', () => {
+  describe('transferBadge', () => {
     it('should update the badge with the new attendee info', async () => {
       mockCtx.prisma.attendee.update.mockResolvedValue({
         id: 1,
@@ -240,13 +240,17 @@ describe('AttendeeService', () => {
         badgeLastName: 'Owner',
       } as any);
 
-      const attendee = await service.badgeTransfer(
+      const attendee = await service.transferBadge(
         1,
         {
           fromBadgeNumber: '1',
           newBadgeFirstName: 'New',
           newBadgeLastName: 'Owner',
+          newBadgeName: 'New Owner',
+          newBadgeLegalName: 'New Owner Legal',
+          newBadgeEmail: 'new@geekway.com',
           newBadgePronouns: 'they/them',
+          newBadgePronounsId: null,
         },
         ctx,
       );
@@ -263,26 +267,59 @@ describe('AttendeeService', () => {
         }),
       );
 
-      // legalName and badgeName are rebuilt from the new first/last name.
+      // The badge is overwritten with the supplied new-attendee identity.
       const call = mockCtx.prisma.attendee.update.mock.calls[0][0] as any;
-      expect(call.data.legalName).toBe('New Owner');
+      expect(call.data.badgeFirstName).toBe('New');
+      expect(call.data.badgeLastName).toBe('Owner');
+      expect(call.data.legalName).toBe('New Owner Legal');
       expect(call.data.badgeName).toBe('New Owner');
+      expect(call.data.email).toBe('new@geekway.com');
 
-      // The previous holder's account link and email are dropped.
-      expect(call.data.email).toBeNull();
+      // A free-text pronoun (no id) is upserted via connectOrCreate.
+      expect(call.data.pronouns.connectOrCreate.create.pronouns).toBe(
+        'they/them',
+      );
+
+      // The previous holder's account link is dropped.
       expect(call.data.user).toEqual({ disconnect: true });
     });
 
-    it('should default pronouns when none are provided', async () => {
+    it('connects to an existing pronoun when an id is supplied', async () => {
       mockCtx.prisma.attendee.update.mockResolvedValue({ id: 1 } as any);
 
-      await service.badgeTransfer(
+      await service.transferBadge(
         1,
         {
           fromBadgeNumber: '1',
           newBadgeFirstName: 'New',
           newBadgeLastName: 'Owner',
+          newBadgeName: 'New Owner',
+          newBadgeLegalName: 'New Owner',
+          newBadgeEmail: 'new@geekway.com',
+          newBadgePronouns: 'they/them',
+          newBadgePronounsId: 7,
+        },
+        ctx,
+      );
+
+      const call = mockCtx.prisma.attendee.update.mock.calls[0][0] as any;
+      expect(call.data.pronouns).toEqual({ connect: { id: 7 } });
+    });
+
+    it('should default pronouns when none are provided', async () => {
+      mockCtx.prisma.attendee.update.mockResolvedValue({ id: 1 } as any);
+
+      await service.transferBadge(
+        1,
+        {
+          fromBadgeNumber: '1',
+          newBadgeFirstName: 'New',
+          newBadgeLastName: 'Owner',
+          newBadgeName: 'New Owner',
+          newBadgeLegalName: 'New Owner',
+          newBadgeEmail: '',
           newBadgePronouns: '',
+          newBadgePronounsId: null,
         },
         ctx,
       );
@@ -294,7 +331,7 @@ describe('AttendeeService', () => {
     });
   });
 
-  describe('badgeReplacement', () => {
+  describe('replaceBadge', () => {
     const oldBadge = {
       id: 1,
       badgeFirstName: 'Real',
@@ -325,7 +362,7 @@ describe('AttendeeService', () => {
       mockCtx.prisma.attendee.update.mockResolvedValue({} as any);
       mockCtx.prisma.checkOut.updateMany.mockResolvedValue({ count: 0 } as any);
 
-      await service.badgeReplacement(
+      await service.replaceBadge(
         1,
         { fromBadgeNumber: '1', toBadgeNumber: '2' },
         ctx,
@@ -351,7 +388,7 @@ describe('AttendeeService', () => {
       mockCtx.prisma.copy.updateMany.mockResolvedValue({ count: 0 } as any);
       mockCtx.prisma.player.updateMany.mockResolvedValue({ count: 0 } as any);
 
-      await service.badgeReplacement(
+      await service.replaceBadge(
         1,
         { fromBadgeNumber: '1', toBadgeNumber: '2' },
         ctx,
@@ -407,7 +444,7 @@ describe('AttendeeService', () => {
       mockCtx.prisma.copy.updateMany.mockResolvedValue({ count: 0 } as any);
       mockCtx.prisma.player.updateMany.mockResolvedValue({ count: 0 } as any);
 
-      await service.badgeReplacement(
+      await service.replaceBadge(
         1,
         { fromBadgeNumber: '1', toBadgeNumber: '2' },
         ctx,
@@ -427,7 +464,7 @@ describe('AttendeeService', () => {
       mockCtx.prisma.copy.updateMany.mockResolvedValue({ count: 0 } as any);
       mockCtx.prisma.player.updateMany.mockResolvedValue({ count: 0 } as any);
 
-      await service.badgeReplacement(
+      await service.replaceBadge(
         1,
         { fromBadgeNumber: '1', toBadgeNumber: '2' },
         ctx,
@@ -446,7 +483,7 @@ describe('AttendeeService', () => {
       mockCtx.prisma.attendee.update.mockResolvedValue({} as any);
       mockCtx.prisma.checkOut.updateMany.mockResolvedValue({ count: 0 } as any);
 
-      await service.badgeReplacement(
+      await service.replaceBadge(
         1,
         { fromBadgeNumber: '1', toBadgeNumber: '2' },
         ctx,
@@ -462,7 +499,7 @@ describe('AttendeeService', () => {
         .mockResolvedValueOnce(blankBadge as any);
 
       await expect(
-        service.badgeReplacement(
+        service.replaceBadge(
           1,
           { fromBadgeNumber: '1', toBadgeNumber: '2' },
           ctx,
@@ -477,7 +514,7 @@ describe('AttendeeService', () => {
         .mockResolvedValueOnce(null);
 
       await expect(
-        service.badgeReplacement(
+        service.replaceBadge(
           1,
           { fromBadgeNumber: '1', toBadgeNumber: '2' },
           ctx,
@@ -492,7 +529,7 @@ describe('AttendeeService', () => {
         .mockResolvedValueOnce({ id: 2, badgeName: 'Someone Real' } as any);
 
       await expect(
-        service.badgeReplacement(
+        service.replaceBadge(
           1,
           { fromBadgeNumber: '1', toBadgeNumber: '2' },
           ctx,
@@ -562,26 +599,30 @@ describe('AttendeeService', () => {
       ).rejects.toThrow('db error');
     });
 
-    it('badgeTransfer rejects when the update throws', async () => {
+    it('transferBadge rejects when the update throws', async () => {
       mockCtx.prisma.attendee.update.mockImplementation(boom as any);
       await expect(
-        service.badgeTransfer(
+        service.transferBadge(
           1,
           {
             fromBadgeNumber: '1',
             newBadgeFirstName: 'New',
             newBadgeLastName: 'Owner',
+            newBadgeName: 'New Owner',
+            newBadgeLegalName: 'New Owner',
+            newBadgeEmail: 'new@geekway.com',
             newBadgePronouns: 'they/them',
+            newBadgePronounsId: null,
           },
           ctx,
         ),
       ).rejects.toThrow('db error');
     });
 
-    it('badgeReplacement rejects when the transaction throws', async () => {
+    it('replaceBadge rejects when the transaction throws', async () => {
       mockCtx.prisma.$transaction.mockImplementation(boom as any);
       await expect(
-        service.badgeReplacement(
+        service.replaceBadge(
           1,
           { fromBadgeNumber: '1', toBadgeNumber: '2' },
           ctx,
