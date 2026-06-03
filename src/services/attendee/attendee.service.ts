@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
-import { from } from 'rxjs';
 
 @Injectable()
 export class AttendeeService {
@@ -47,7 +46,17 @@ export class AttendeeService {
   async attendee(data: Prisma.AttendeeWhereUniqueInput, ctx: Context) {
     try {
       this.logger.log(`Getting attendee with data=${JSON.stringify(data)}`);
-      return await ctx.prisma.attendee.findUnique({ where: data });
+      return await ctx.prisma.attendee.findUnique({
+        where: data,
+        include: {
+          convention: {
+            include: {
+              organization: true,
+            },
+          },
+          user: true,
+        },
+      });
     } catch (ex) {
       this.logger.error(
         `Failed to get attendee with data=${JSON.stringify(data)}, ex=${ex}`,
@@ -154,11 +163,15 @@ export class AttendeeService {
     }
   }
 
-  async badgeTransfer(conventionId: number, badgeTransferData: {
+  async transferBadge(conventionId: number, badgeTransferData: {
     fromBadgeNumber: string;
     newBadgeFirstName: string;
     newBadgeLastName: string;
     newBadgePronouns: string;
+    newBadgeEmail: string;
+    newBadgeName: string;
+    newBadgeLegalName: string;
+    newBadgePronounsId: number | null;
   }, ctx: Context) {
     try {
       this.logger.log(
@@ -166,6 +179,29 @@ export class AttendeeService {
           badgeTransferData,
         )}`,
       );
+
+      let pronounData: any = {
+        connectOrCreate: {
+          create: {
+            pronouns: badgeTransferData.newBadgePronouns
+              ? badgeTransferData.newBadgePronouns
+              : 'Prefer Not To Say',
+          },
+          where: {
+            pronouns: badgeTransferData.newBadgePronouns
+              ? badgeTransferData.newBadgePronouns
+              : 'Prefer Not To Say',
+          },
+        },
+      };
+
+      if (badgeTransferData.newBadgePronounsId) {
+        pronounData = {
+          connect: {
+            id: badgeTransferData.newBadgePronounsId
+          },
+        };
+      }
 
       return await ctx.prisma.attendee.update({
         where: {
@@ -177,21 +213,12 @@ export class AttendeeService {
         data: {
           badgeFirstName: badgeTransferData.newBadgeFirstName,
           badgeLastName: badgeTransferData.newBadgeLastName,
-          legalName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
-          badgeName: badgeTransferData.newBadgeFirstName + ' ' + badgeTransferData.newBadgeLastName,
-          pronouns: {
-            connectOrCreate: {
-              create: {
-                pronouns: badgeTransferData.newBadgePronouns
-                  ? badgeTransferData.newBadgePronouns
-                  : 'Prefer Not To Say',
-              },
-              where: {
-                pronouns: badgeTransferData.newBadgePronouns
-                  ? badgeTransferData.newBadgePronouns
-                  : 'Prefer Not To Say',
-              },
-            },
+          legalName: badgeTransferData.newBadgeLegalName,
+          badgeName: badgeTransferData.newBadgeName,
+          email: badgeTransferData.newBadgeEmail,
+          pronouns: pronounData,
+          user: {
+            disconnect: true,
           },
         }
       });
@@ -205,7 +232,7 @@ export class AttendeeService {
     }
   }
 
-  async badgeReplacement(
+  async replaceBadge(
     conventionId: number,
     badgeReplacementData: {
       fromBadgeNumber: string;
@@ -244,7 +271,7 @@ export class AttendeeService {
         }
 
         if (!newBadge) {
-          throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
+          throw new Error(`Attendee with badge number ${badgeReplacementData.toBadgeNumber} not found for convention ${conventionId}`);
         }
 
         if (!newBadge.badgeName.startsWith('Attendee Blank') && !newBadge.badgeName.startsWith('Blank Vendor')) {
@@ -262,7 +289,11 @@ export class AttendeeService {
             badgeLastName: oldBadge.badgeLastName + ' (Lost Badge)',
             badgeName: oldBadge.badgeName + ' (Lost Badge)',
             eligibleForPrizes: false,
-            lostBadge: true
+            lostBadge: true,
+            // Identity now lives on the replacement badge; clear it here so the
+            // person isn't split across two records.
+            userId: null,
+            email: null,
           }
         });
 
@@ -278,11 +309,13 @@ export class AttendeeService {
             badgeLastName: oldBadge.badgeLastName,
             legalName: oldBadge.legalName,
             badgeName: oldBadge.badgeName,
-            pronouns: {
-              connect: {
-                id: Number(oldBadge.pronounsId)
-              }
-            }
+            email: oldBadge.email,
+            user: oldBadge.userId
+              ? { connect: { id: oldBadge.userId } }
+              : { disconnect: true },
+            pronouns: oldBadge.pronounsId
+              ? { connect: { id: oldBadge.pronounsId } }
+              : { disconnect: true },
           }
         });
 
@@ -294,12 +327,46 @@ export class AttendeeService {
             attendeeId: newBadge?.id,
           }
         });
+
+        await prisma.copy.updateMany({
+          where: {
+            winnerId: oldBadge.id,
+          },
+          data: {
+            winnerId: newBadge.id,
+          }
+        });
+
+        await prisma.player.updateMany({
+          where: {
+            attendeeId: oldBadge.id,
+          },
+          data: {
+            attendeeId: newBadge.id,
+          }
+        });
       });
     } catch (ex) {
       this.logger.error(
         `Failed to update badge replacement for conventionId=${conventionId}, badgeReplacementData=${JSON.stringify(
           badgeReplacementData,
         )}, ex=${ex}`,
+      );
+      return Promise.reject(ex);
+    }
+  }
+
+  async getPronouns(ctx: Context) {
+    try {
+      this.logger.log(`Getting pronouns`);
+      return await ctx.prisma.pronouns.findMany({
+        orderBy: {
+          pronouns: 'asc',
+        },
+      });
+    } catch (ex) {
+      this.logger.error(
+        `Failed to get pronouns, ex=${ex}`,
       );
       return Promise.reject(ex);
     }

@@ -62,7 +62,7 @@ export class OrganizationWriteGuard implements CanActivate {
 
     if (
       org?.users?.filter(
-        (u) => u.userId === user.id && (u.admin || u.geekGuide),
+        (u) => u.userId === user.id && (u.admin),
       ).length > 0
     ) {
       return true;

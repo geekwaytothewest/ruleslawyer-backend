@@ -62,6 +62,10 @@ const routes = [
     path: '/api/permissions',
     module: PermissionsModule,
   },
+  {
+    path: '/api/attendee',
+    module: AttendeeModule,
+  }
 ];
 
 @Module({

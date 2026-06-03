@@ -53,7 +53,7 @@ export class ConventionWriteGuard implements CanActivate {
       this.ctx,
     );
 
-    if (con?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
+    if (con?.users?.filter((u) => u.userId === user.id && (u.admin)).length > 0) {
       return true;
     }
 
@@ -75,7 +75,7 @@ export class ConventionWriteGuard implements CanActivate {
       return true;
     }
 
-    if (org?.users?.filter((u) => u.userId === user.id && (u.admin || u.geekGuide)).length > 0) {
+    if (org?.users?.filter((u) => u.userId === user.id && (u.admin)).length > 0) {
       return true;
     }
 

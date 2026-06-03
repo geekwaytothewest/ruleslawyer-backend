@@ -1750,7 +1750,7 @@ export class LegacyController {
     @Body() body: LegacyBadgeTransferDto,
   ) {
     this.logger.log(`Transferring badge ${body.fromBadgeNumber} to ${body.newBadgeFirstName} ${body.newBadgeLastName} for conId=${conId}`);
-    return this.attendeeService.badgeTransfer(
+    return this.attendeeService.transferBadge(
       Number(conId),
       body,
       this.ctx
@@ -1766,7 +1766,7 @@ export class LegacyController {
     @Body() body: LegacyBadgeReplacementDto,
   ) {
     this.logger.log(`Replacing badge from ${body.fromBadgeNumber} to ${body.toBadgeNumber} for conId=${conId}`);
-    return this.attendeeService.badgeReplacement(
+    return this.attendeeService.replaceBadge(
       Number(conId),
       body,
       this.ctx
