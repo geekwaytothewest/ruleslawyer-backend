@@ -366,4 +366,72 @@ describe('OrganizationGuard', () => {
       });
     },
   );
+
+  describe('admin guard access', () => {
+    it('returns false with no user', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({ params: { id: 1 } }),
+      });
+      expect(await adminGuard.canActivate(context)).toBeFalsy();
+    });
+
+    it('returns true for a superAdmin', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({ user: { user: { id: 9, superAdmin: true } }, params: { id: 1 } }),
+      });
+      expect(await adminGuard.canActivate(context)).toBeTruthy();
+    });
+
+    it('returns false when no org id can be resolved', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({ user: { user: { id: 2, superAdmin: false } }, params: {} }),
+      });
+      expect(await adminGuard.canActivate(context)).toBeFalsy();
+    });
+
+    it('returns true for the organization owner', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({ user: { user: { id: 2, superAdmin: false } }, params: { id: 1 } }),
+      });
+      mockCtx.prisma.organization.findUnique.mockResolvedValue({
+        id: 1, ownerId: 2, name: 'Geekway', users: [],
+      } as never);
+      expect(await adminGuard.canActivate(context)).toBeTruthy();
+    });
+
+    it('returns true for an organization admin', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({ user: { user: { id: 2, superAdmin: false } }, params: { id: 1 } }),
+      });
+      mockCtx.prisma.organization.findUnique.mockResolvedValue({
+        id: 1, ownerId: 99, name: 'Geekway', users: [{ id: 1, userId: 2, admin: true }],
+      } as never);
+      expect(await adminGuard.canActivate(context)).toBeTruthy();
+    });
+
+    it('returns false for a non-admin (geekGuide) org member', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({ user: { user: { id: 2, superAdmin: false } }, params: { id: 1 } }),
+      });
+      mockCtx.prisma.organization.findUnique.mockResolvedValue({
+        id: 1, ownerId: 99, name: 'Geekway',
+        users: [{ id: 1, userId: 2, admin: false, geekGuide: true }],
+      } as never);
+      expect(await adminGuard.canActivate(context)).toBeFalsy();
+    });
+
+    it('resolves the org id from body.organizationId as a last resort', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({
+          user: { user: { id: 2, superAdmin: false } },
+          params: {},
+          body: { organizationId: 1 },
+        }),
+      });
+      mockCtx.prisma.organization.findUnique.mockResolvedValue({
+        id: 1, ownerId: 2, name: 'Geekway', users: [],
+      } as never);
+      expect(await adminGuard.canActivate(context)).toBeTruthy();
+    });
+  });
 });

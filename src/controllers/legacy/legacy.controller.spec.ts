@@ -2465,7 +2465,11 @@ describe('LegacyController', () => {
         fromBadgeNumber: '101',
         newBadgeFirstName: 'Ada',
         newBadgeLastName: 'Lovelace',
+        newBadgeName: 'Ada Lovelace',
+        newBadgeLegalName: 'Ada Lovelace',
+        newBadgeEmail: 'ada@geekway.com',
         newBadgePronouns: 'she/her',
+        newBadgePronounsId: null,
       });
 
       expect(result.id).toBe(1);
@@ -2475,7 +2479,7 @@ describe('LegacyController', () => {
   describe('badgeReplacement', () => {
     it('should delegate to the attendee service', async () => {
       const spy = jest
-        .spyOn(controller['attendeeService'], 'badgeReplacement')
+        .spyOn(controller['attendeeService'], 'replaceBadge')
         .mockResolvedValue(undefined as any);
 
       await controller.badgeReplacement(1, {

@@ -19,7 +19,6 @@ export function gameNameSearchClauses(
 ): Prisma.GameWhereInput[] {
   const clauses: Prisma.GameWhereInput[] = [
     { name: { contains: filter, mode: 'insensitive' } },
-    { name: { startsWith: filter, mode: 'insensitive' } },
   ];
 
   const search = filter
