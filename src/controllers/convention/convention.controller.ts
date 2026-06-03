@@ -13,6 +13,7 @@ import {
   Delete,
   UsePipes,
   ValidationPipe,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -30,6 +31,7 @@ import { CreateConventionDto } from './dto/create-convention.dto';
 import { UpdateConventionDto } from './dto/update-convention.dto';
 import { ImportAttendeesDto } from './dto/import-attendees.dto';
 import { CreateAttendeeDto } from './dto/create-attendee.dto';
+import { PaginatedAttendeesDto } from './dto/paginated-attendees.dto';
 import { CreateCollectionDto } from '../collection/dto/create-collection.dto';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
@@ -101,10 +103,14 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
-  @ApiOkResponse({ type: AttendeeEntity, isArray: true })
+  @ApiOkResponse({ type: PaginatedAttendeesDto })
   @Get(':id/attendees')
-  async getAttendees(@Param('id') id: number) {
-    return this.conventionService.getAttendees(Number(id), this.ctx);
+  async getAttendees(
+    @Param('id') id: number,
+    @Query('limit') limit: string,
+    @Query('filter') filter: string,
+    @Query('page') page: string,) {
+      return this.conventionService.getAttendees(Number(id), Number(limit), filter, Number(page), this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
@@ -213,5 +219,40 @@ export class ConventionController {
       colId,
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @ApiOkResponse({ type: AttendeeEntity })
+  @Put(':id/transferBadge')
+  async transferBadge(@Param('id') id: string, @Body() data: {
+    fromBadgeNumber: string,
+    newBadgeFirstName: string,
+    newBadgeLastName: string,
+    newBadgePronouns: string,
+    newBadgeEmail: string,
+    newBadgeLegalName: string,
+    newBadgePronounsId: number
+    newBadgeName: string,
+  }) {
+    return this.attendeeService.transferBadge(Number(id), {
+      fromBadgeNumber: data.fromBadgeNumber,
+      newBadgeFirstName: data.newBadgeFirstName,
+      newBadgeLastName: data.newBadgeLastName,
+      newBadgePronouns: data.newBadgePronouns,
+      newBadgeEmail: data.newBadgeEmail,
+      newBadgeName: data.newBadgeName,
+      newBadgeLegalName: data.newBadgeLegalName,
+      newBadgePronounsId: data.newBadgePronounsId,
+    }, this.ctx);
+  }
+
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @ApiOkResponse({ type: AttendeeEntity })
+  @Put(':id/replaceBadge')
+  async replaceBadge(@Param('id') id: string, @Body() data: { toBadgeNumber: string, fromBadgeNumber: string }) {
+    return this.attendeeService.replaceBadge(Number(id), {
+      toBadgeNumber: data.toBadgeNumber,
+      fromBadgeNumber: data.fromBadgeNumber
+    }, this.ctx);
   }
 }
