@@ -618,4 +618,20 @@ export class ConventionService {
       return Promise.reject(ex);
     }
   }
+
+  async getAttendees(conventionId: number, ctx: Context) {
+    try {
+      return await ctx.prisma.attendee.findMany({
+        where: {
+          conventionId: conventionId,
+        },
+        include: {
+          pronouns: true,
+          badgeType: true,
+        },
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
 }

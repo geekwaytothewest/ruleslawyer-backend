@@ -100,6 +100,13 @@ export class ConventionController {
     return con;
   }
 
+  @UseGuards(JwtAuthGuard, ConventionWriteGuard)
+  @ApiOkResponse({ type: AttendeeEntity, isArray: true })
+  @Get(':id/attendees')
+  async getAttendees(@Param('id') id: number) {
+    return this.conventionService.getAttendees(Number(id), this.ctx);
+  }
+
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @ApiOkResponse({ type: ConventionEntity })
@@ -178,23 +185,6 @@ export class ConventionController {
   })
   async exportBadgeFile(@Param('id') id: number) {
     return await this.conventionService.exportBadgeFile(Number(id), this.ctx);
-  }
-
-  @UseGuards(JwtAuthGuard, CollectionWriteGuard)
-  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-  @ApiOkResponse({ type: CollectionEntity })
-  @Post(':id/collection')
-  async createCollection(
-    @Param('id') id: number,
-    @Body() collection: CreateCollectionDto,
-  ) {
-    return await this.collectionService.createCollection(
-      id,
-      undefined,
-      collection.name,
-      collection.allowWinning,
-      this.ctx,
-    );
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard, CollectionWriteGuard)

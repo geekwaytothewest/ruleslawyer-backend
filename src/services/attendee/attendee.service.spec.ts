@@ -262,6 +262,15 @@ describe('AttendeeService', () => {
           },
         }),
       );
+
+      // legalName and badgeName are rebuilt from the new first/last name.
+      const call = mockCtx.prisma.attendee.update.mock.calls[0][0] as any;
+      expect(call.data.legalName).toBe('New Owner');
+      expect(call.data.badgeName).toBe('New Owner');
+
+      // The previous holder's account link and email are dropped.
+      expect(call.data.email).toBeNull();
+      expect(call.data.user).toEqual({ disconnect: true });
     });
 
     it('should default pronouns when none are provided', async () => {
@@ -293,6 +302,8 @@ describe('AttendeeService', () => {
       legalName: 'Real Attendee',
       badgeName: 'Real Attendee',
       pronounsId: 5,
+      userId: 42,
+      email: 'real@geekway.com',
     };
 
     const blankBadge = {
@@ -328,6 +339,120 @@ describe('AttendeeService', () => {
           data: { attendeeId: blankBadge.id },
         }),
       );
+    });
+
+    it('marks the old badge lost and copies the identity onto the blank badge', async () => {
+      runTransaction();
+      mockCtx.prisma.attendee.findUnique
+        .mockResolvedValueOnce(oldBadge as any)
+        .mockResolvedValueOnce(blankBadge as any);
+      mockCtx.prisma.attendee.update.mockResolvedValue({} as any);
+      mockCtx.prisma.checkOut.updateMany.mockResolvedValue({ count: 0 } as any);
+      mockCtx.prisma.copy.updateMany.mockResolvedValue({ count: 0 } as any);
+      mockCtx.prisma.player.updateMany.mockResolvedValue({ count: 0 } as any);
+
+      await service.badgeReplacement(
+        1,
+        { fromBadgeNumber: '1', toBadgeNumber: '2' },
+        ctx,
+      );
+
+      // First update retires the old badge and strips its identity.
+      const oldUpdate = mockCtx.prisma.attendee.update.mock.calls[0][0] as any;
+      expect(oldUpdate.where.conventionId_badgeNumber.badgeNumber).toBe('1');
+      expect(oldUpdate.data).toEqual(
+        expect.objectContaining({
+          lostBadge: true,
+          eligibleForPrizes: false,
+          badgeName: 'Real Attendee (Lost Badge)',
+          badgeLastName: 'Attendee (Lost Badge)',
+          userId: null,
+          email: null,
+        }),
+      );
+
+      // Second update moves the real identity onto the blank badge.
+      const newUpdate = mockCtx.prisma.attendee.update.mock.calls[1][0] as any;
+      expect(newUpdate.where.conventionId_badgeNumber.badgeNumber).toBe('2');
+      expect(newUpdate.data).toEqual(
+        expect.objectContaining({
+          badgeFirstName: 'Real',
+          badgeLastName: 'Attendee',
+          legalName: 'Real Attendee',
+          badgeName: 'Real Attendee',
+          email: 'real@geekway.com',
+          user: { connect: { id: 42 } },
+          pronouns: { connect: { id: 5 } },
+        }),
+      );
+
+      // Won copies and game-session players follow the person to the new badge.
+      expect(mockCtx.prisma.copy.updateMany).toHaveBeenCalledWith({
+        where: { winnerId: oldBadge.id },
+        data: { winnerId: blankBadge.id },
+      });
+      expect(mockCtx.prisma.player.updateMany).toHaveBeenCalledWith({
+        where: { attendeeId: oldBadge.id },
+        data: { attendeeId: blankBadge.id },
+      });
+    });
+
+    it('disconnects the user on the new badge when the old badge had no account', async () => {
+      runTransaction();
+      mockCtx.prisma.attendee.findUnique
+        .mockResolvedValueOnce({ ...oldBadge, userId: null } as any)
+        .mockResolvedValueOnce(blankBadge as any);
+      mockCtx.prisma.attendee.update.mockResolvedValue({} as any);
+      mockCtx.prisma.checkOut.updateMany.mockResolvedValue({ count: 0 } as any);
+      mockCtx.prisma.copy.updateMany.mockResolvedValue({ count: 0 } as any);
+      mockCtx.prisma.player.updateMany.mockResolvedValue({ count: 0 } as any);
+
+      await service.badgeReplacement(
+        1,
+        { fromBadgeNumber: '1', toBadgeNumber: '2' },
+        ctx,
+      );
+
+      const newUpdate = mockCtx.prisma.attendee.update.mock.calls[1][0] as any;
+      expect(newUpdate.data.user).toEqual({ disconnect: true });
+    });
+
+    it('disconnects pronouns on the new badge when the old badge had none', async () => {
+      runTransaction();
+      mockCtx.prisma.attendee.findUnique
+        .mockResolvedValueOnce({ ...oldBadge, pronounsId: null } as any)
+        .mockResolvedValueOnce(blankBadge as any);
+      mockCtx.prisma.attendee.update.mockResolvedValue({} as any);
+      mockCtx.prisma.checkOut.updateMany.mockResolvedValue({ count: 0 } as any);
+      mockCtx.prisma.copy.updateMany.mockResolvedValue({ count: 0 } as any);
+      mockCtx.prisma.player.updateMany.mockResolvedValue({ count: 0 } as any);
+
+      await service.badgeReplacement(
+        1,
+        { fromBadgeNumber: '1', toBadgeNumber: '2' },
+        ctx,
+      );
+
+      // Must not coerce a null pronounsId into connect: { id: 0 }.
+      const newUpdate = mockCtx.prisma.attendee.update.mock.calls[1][0] as any;
+      expect(newUpdate.data.pronouns).toEqual({ disconnect: true });
+    });
+
+    it('accepts a "Blank Vendor" badge as a replacement target', async () => {
+      runTransaction();
+      mockCtx.prisma.attendee.findUnique
+        .mockResolvedValueOnce(oldBadge as any)
+        .mockResolvedValueOnce({ id: 2, badgeName: 'Blank Vendor 2' } as any);
+      mockCtx.prisma.attendee.update.mockResolvedValue({} as any);
+      mockCtx.prisma.checkOut.updateMany.mockResolvedValue({ count: 0 } as any);
+
+      await service.badgeReplacement(
+        1,
+        { fromBadgeNumber: '1', toBadgeNumber: '2' },
+        ctx,
+      );
+
+      expect(mockCtx.prisma.attendee.update).toHaveBeenCalledTimes(2);
     });
 
     it('should reject when the old badge is not found', async () => {
