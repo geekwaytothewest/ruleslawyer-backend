@@ -208,4 +208,109 @@ describe('UserConventionPermissionsService', () => {
       ).rejects.toThrow('bad data');
     });
   });
+
+  describe('resolveConventions', () => {
+    const DAY = 24 * 60 * 60 * 1000;
+
+    // A convention relative to "now", overridable per case.
+    function con(over: Record<string, unknown> = {}) {
+      const now = Date.now();
+      return {
+        id: 1,
+        organizationId: 7,
+        name: 'Geekway',
+        annual: '1st Annual',
+        cancelled: false,
+        startDate: new Date(now - DAY),
+        endDate: new Date(now + DAY),
+        ...over,
+      };
+    }
+
+    function mockPerms(conventions: (ReturnType<typeof con> | null)[]) {
+      mockCtx.prisma.userConventionPermissions.findMany.mockResolvedValue(
+        conventions.map((convention) => ({ convention })) as never,
+      );
+    }
+
+    it('picks an in-progress convention as current', async () => {
+      mockPerms([con({ id: 10 })]);
+
+      const result = await service.resolveConventions(2, ctx);
+
+      expect(result.current).toEqual({ organizationId: 7, conventionId: 10 });
+      expect(result.conventions).toHaveLength(1);
+    });
+
+    it('prefers the most recently started among several active conventions', async () => {
+      const now = Date.now();
+      mockPerms([
+        con({ id: 1, startDate: new Date(now - 10 * DAY), endDate: new Date(now + DAY) }),
+        con({ id: 2, startDate: new Date(now - 2 * DAY), endDate: new Date(now + DAY) }),
+      ]);
+
+      const result = await service.resolveConventions(2, ctx);
+
+      expect(result.current?.conventionId).toBe(2);
+    });
+
+    it('falls back to the soonest upcoming convention when none are active', async () => {
+      const now = Date.now();
+      mockPerms([
+        con({ id: 3, startDate: new Date(now + 2 * DAY), endDate: new Date(now + 5 * DAY) }),
+        con({ id: 4, startDate: new Date(now + 10 * DAY), endDate: new Date(now + 15 * DAY) }),
+      ]);
+
+      const result = await service.resolveConventions(2, ctx);
+
+      expect(result.current?.conventionId).toBe(3);
+    });
+
+    it('returns no current convention when all are ended or cancelled', async () => {
+      const now = Date.now();
+      mockPerms([
+        con({ id: 5, startDate: new Date(now - 10 * DAY), endDate: new Date(now - DAY) }),
+        con({ id: 6, cancelled: true }),
+      ]);
+
+      const result = await service.resolveConventions(2, ctx);
+
+      expect(result.current).toBeNull();
+      // The picker list still carries every convention the user belongs to.
+      expect(result.conventions).toHaveLength(2);
+    });
+
+    it('picks the most recently started active convention regardless of input order', async () => {
+      const now = Date.now();
+      mockPerms([
+        con({ id: 2, startDate: new Date(now - 2 * DAY), endDate: new Date(now + DAY) }),
+        con({ id: 1, startDate: new Date(now - 10 * DAY), endDate: new Date(now + DAY) }),
+      ]);
+
+      const result = await service.resolveConventions(2, ctx);
+
+      expect(result.current?.conventionId).toBe(2);
+    });
+
+    it('picks the soonest upcoming convention regardless of input order', async () => {
+      const now = Date.now();
+      mockPerms([
+        con({ id: 4, startDate: new Date(now + 10 * DAY), endDate: new Date(now + 15 * DAY) }),
+        con({ id: 3, startDate: new Date(now + 2 * DAY), endDate: new Date(now + 5 * DAY) }),
+      ]);
+
+      const result = await service.resolveConventions(2, ctx);
+
+      expect(result.current?.conventionId).toBe(3);
+    });
+
+    it('drops permissions whose convention relation is missing', async () => {
+      mockPerms([null, con({ id: 7 })]);
+
+      const result = await service.resolveConventions(2, ctx);
+
+      expect(result.conventions).toHaveLength(1);
+      expect(result.conventions[0].conventionId).toBe(7);
+    });
+  });
 });

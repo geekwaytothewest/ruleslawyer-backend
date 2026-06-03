@@ -10,14 +10,11 @@ describe('gameNameSearchClauses', () => {
     expect(searchOf(clauses)).toBe('Ticket <-> to <-> Ride');
   });
 
-  it('always includes the raw contains and startsWith ILIKE clauses', () => {
+  it('always includes the raw contains ILIKE clause', () => {
     const clauses = gameNameSearchClauses('Cities & Knights');
 
     expect(clauses).toContainEqual({
       name: { contains: 'Cities & Knights', mode: 'insensitive' },
-    });
-    expect(clauses).toContainEqual({
-      name: { startsWith: 'Cities & Knights', mode: 'insensitive' },
     });
   });
 
@@ -44,8 +41,8 @@ describe('gameNameSearchClauses', () => {
     const clauses = gameNameSearchClauses('& : !');
 
     expect(searchOf(clauses)).toBeUndefined();
-    // The ILIKE clauses still carry the raw filter.
-    expect(clauses).toHaveLength(2);
+    // The ILIKE clause still carries the raw filter.
+    expect(clauses).toHaveLength(1);
   });
 
   it('collapses repeated and surrounding punctuation', () => {

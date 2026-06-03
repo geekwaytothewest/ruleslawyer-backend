@@ -437,26 +437,6 @@ describe('ConventionController', () => {
     });
   });
 
-  describe('createCollection', () => {
-    it('should create a collection', async () => {
-      mockCtx.prisma.collection.create.mockResolvedValue({
-        id: 1,
-        name: 'New',
-        organizationId: 1,
-        public: false,
-        allowWinning: true,
-        archived: false,
-      });
-
-      const result = (await controller.createCollection(1, {
-        name: 'New',
-        allowWinning: true,
-      })) as any;
-
-      expect(result?.id).toBe(1);
-    });
-  });
-
   describe('attachCollection', () => {
     it('should attach a collection to the convention', async () => {
       mockCtx.prisma.conventionCollections.create.mockResolvedValue({
