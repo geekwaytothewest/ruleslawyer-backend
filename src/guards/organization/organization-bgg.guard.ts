@@ -1,5 +1,10 @@
 //jwt-auth.guard.ts
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { Context } from '../../services/prisma/context';
@@ -43,10 +48,16 @@ export class OrganizationBggGuard implements CanActivate {
         this.ctx,
       );
 
-    if (organization?.enableBggSupport) {
+    if (!organization) {
+      return false;
+    }
+
+    if (organization.enableBggSupport) {
       return true;
     }
 
-    return false;
+    throw new ForbiddenException(
+      'BGG support is not enabled for this organization.',
+    );
   }
 }

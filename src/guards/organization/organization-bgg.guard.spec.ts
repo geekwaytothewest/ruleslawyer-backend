@@ -53,7 +53,7 @@ describe('OrganizationBggGuard', () => {
     });
   });
 
-  it('should return false when org has BGG support disabled', async () => {
+  it('should throw a descriptive ForbiddenException when org has BGG support disabled', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
         params: { orgId: 1 },
@@ -67,7 +67,9 @@ describe('OrganizationBggGuard', () => {
       enableBggSupport: false,
     } as never);
 
-    expect(await guard.canActivate(context)).toBeFalsy();
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      'BGG support is not enabled for this organization.',
+    );
   });
 
   it('should return false when the org does not exist', async () => {
