@@ -46,8 +46,9 @@ describe('JwtStrategy', () => {
       expect(payload.user.email).toBe('test@geekway.com');
     });
 
-    it('should do the needful again', async () => {
+    it('promotes the first user (empty table) to super admin', async () => {
       mockCtx.prisma.user.findUnique.mockResolvedValue(null);
+      mockCtx.prisma.user.count.mockResolvedValue(0);
 
       mockCtx.prisma.user.create.mockResolvedValue({
         id: 1,
@@ -74,8 +75,9 @@ describe('JwtStrategy', () => {
       expect(payloadReturn.user.superAdmin).toBeTruthy();
     });
 
-    it('should do the needful yet again', async () => {
+    it('does not promote a new user when the table is not empty', async () => {
       mockCtx.prisma.user.findUnique.mockResolvedValue(null);
+      mockCtx.prisma.user.count.mockResolvedValue(1);
       mockCtx.prisma.user.create.mockResolvedValue({
         id: 2,
         email: 'test@geekway.com',
@@ -90,6 +92,8 @@ describe('JwtStrategy', () => {
       });
 
       expect(payload.user.email).toBe('test@geekway.com');
+      expect(payload.user.superAdmin).toBeFalsy();
+      expect(mockCtx.prisma.user.update).not.toHaveBeenCalled();
     });
   });
 });

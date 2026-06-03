@@ -48,8 +48,19 @@ missing email is rejected with `UnauthorizedException`) and then:
 2. If no user exists, it **creates one** using `user_email` / `user_name` from
    the token. This means any successfully authenticated Auth0 identity is
    auto-provisioned a local account on first request.
-3. **Bootstrap super admin:** if the newly created user has `id === 1` (i.e. the
-   very first user in the system), they are promoted to `superAdmin`.
+3. **Bootstrap super admin:** if the users table was empty immediately before
+   this user was created (i.e. they are the very first user in the system), they
+   are promoted to `superAdmin`. Emptiness is determined by counting existing
+   users (`UserService.getUserCount`).
+
+> **Caveat — an emptied users table is a self-promoting state.** Because the rule
+> fires whenever the table is empty (not only on genuine first install), if every
+> user is ever deleted, the *next* identity to sign in is auto-promoted to
+> `superAdmin`. This is intended "first boot" behavior, but it means wiping all
+> users effectively hands super admin to whoever authenticates next. A stricter,
+> config-driven alternative — promoting only emails named in a
+> `SUPER_ADMIN_EMAILS` environment variable — was considered and deliberately
+> deferred; the count-based rule is the current behavior.
 
 The resolved DB user is attached to the token payload as `payload.user`, and the
 whole payload becomes `request.user`. So inside guards the DB user is reached
@@ -60,6 +71,32 @@ via `request.user.user` (note the double `.user`).
 [src/guards/auth/auth.guard.ts](src/guards/auth/auth.guard.ts) wraps the `gwJwt`
 strategy. It short-circuits `OPTIONS` requests (CORS preflight) to `true`;
 everything else must carry a valid token.
+
+### 401 vs 403
+
+The two failure modes map to distinct status codes, and which guard rejected the
+request decides which one the client sees:
+
+- **401 Unauthorized — authentication failed.** Raised by `JwtAuthGuard` /
+  `JwtStrategy`, i.e. the request never established *who* the caller is. Causes:
+  a missing or malformed `Authorization` header, a bad signature, the wrong
+  `audience`/`issuer`, an expired token, or a token whose payload has no
+  `user_email`. Under the hood Passport's `AuthGuard` throws
+  `UnauthorizedException`. Because `JwtAuthGuard` is listed first on every
+  protected route, an unauthenticated request fails here and never reaches the
+  authorization guards.
+- **403 Forbidden — authenticated but not allowed.** Raised by the authorization
+  guards (everything after `JwtAuthGuard`). The caller's identity is known, but
+  they lack the required ownership or role for the resource. NestJS converts a
+  guard whose `canActivate` returns `false` into a `ForbiddenException`, so every
+  "→ `false`" path in the guards below surfaces as a 403.
+
+One precondition guard is an exception to the "reject ⇒ 403" rule: `UploadGuard`
+throws `BadRequestException` (**400**) when the body isn't `multipart/form-data`.
+`OrganizationBggGuard` also rejects with a **403**, but throws an explicit
+`ForbiddenException('BGG support is not enabled for this organization.')` so a
+disabled-feature rejection is distinguishable from a missing-role one (rather than
+a bare `Forbidden`); a missing/unknown org id still returns plain `false`.
 
 ### `@User()` decorator
 
@@ -90,7 +127,7 @@ three boolean flags:
 | Flag        | Meaning |
 |-------------|---------|
 | `admin`     | Full control of the organization and everything under it. |
-| `geekGuide` | Operational role (read/write convention data, check-outs, prize entries). |
+| `geekGuide` | Operational role (read convention data, handle check-outs and checkin-ins of library games, and allows using the prize entries). |
 | `readOnly`  | Read access to the organization and its collections. |
 
 Separately, `Organization.ownerId` points to the owning `User`. The owner is
@@ -104,7 +141,7 @@ boolean flags:
 | Flag        | Meaning |
 |-------------|---------|
 | `admin`     | Full control of the convention. |
-| `geekGuide` | Operational role within the convention. |
+| `geekGuide` | Operational role within the convention. Same as the Organization role of the same name, but for a specific convention. |
 | `attendee`  | Limited access (read, prize entry). |
 
 `createConvention`
@@ -138,8 +175,8 @@ fallbacks like `conId`, `orgId`, `colId`, `copyId`, or the request body).
 | Guard | File | Allows when (after super-admin bypass) |
 |-------|------|----------------------------------------|
 | `OrganizationReadGuard` | [organization/organization-read.guard.ts](src/guards/organization/organization-read.guard.ts) | Caller is org owner, or has org `admin`, `geekGuide`, or `readOnly`. |
-| `OrganizationWriteGuard` | [organization/organization-write.guard.ts](src/guards/organization/organization-write.guard.ts) | Caller is org owner, or has org `admin` or `geekGuide`. |
-| `OrganizationAdminGuard` | [organization/organization-admin.guard.ts](src/guards/organization/organization-admin.guard.ts) | Caller is org owner, or has org `admin`. Stricter than the write guard — excludes `geekGuide`. Used for org-management actions (creating conventions, convention types, collections, copies, importing/deleting collections). |
+| `OrganizationWriteGuard` | [organization/organization-write.guard.ts](src/guards/organization/organization-write.guard.ts) | Caller is org owner, or has org `admin`. **Does not** accept `geekGuide` — the code only checks `admin`, so this guard is currently identical to `OrganizationAdminGuard`. |
+| `OrganizationAdminGuard` | [organization/organization-admin.guard.ts](src/guards/organization/organization-admin.guard.ts) | Caller is org owner, or has org `admin`. Used for org-management actions (creating conventions, convention types, collections, copies, importing/deleting collections). |
 
 All three resolve the org id from `params.id` → `params.orgId` → `body.organizationId`.
 
@@ -148,8 +185,8 @@ All three resolve the org id from `params.id` → `params.orgId` → `body.organ
 | Guard | File | Allows when (after super-admin bypass) |
 |-------|------|----------------------------------------|
 | `ConventionReadGuard` | [convention/convention-read.guard.ts](src/guards/convention/convention-read.guard.ts) | Convention role `admin`/`geekGuide`/`attendee`, **or** org owner, **or** org `admin`/`geekGuide`. |
-| `ConventionWriteGuard` | [convention/convention-write.guard.ts](src/guards/convention/convention-write.guard.ts) | Convention role `admin`, **or** org owner, **or** org `admin`/`geekGuide`. |
-| `ConventionAdminGuard` | [convention/convention-admin.guard.ts](src/guards/convention/convention-admin.guard.ts) | Convention role `admin`, **or** org owner, **or** org `admin`. Stricter than the write guard — the org fallback excludes `geekGuide`. Used for convention-management actions (update, attendee import/create, badge-file export). |
+| `ConventionWriteGuard` | [convention/convention-write.guard.ts](src/guards/convention/convention-write.guard.ts) | Convention role `admin`, **or** org owner, **or** org `admin`. The org fallback only checks `admin` (not `geekGuide`), so this guard is currently identical to `ConventionAdminGuard`. |
+| `ConventionAdminGuard` | [convention/convention-admin.guard.ts](src/guards/convention/convention-admin.guard.ts) | Convention role `admin`, **or** org owner, **or** org `admin`. Used for convention-management actions (update, attendee import/create, badge-file export). |
 
 All three resolve the convention id from `params.id` → `params.conId`.
 
@@ -170,6 +207,20 @@ owner or org `admin`.
 | `GameGuard` | [game/game.guard.ts](src/guards/game/game.guard.ts) | A `Game` (`params.id`/`params.gameId`). |
 | `CopyGuard` | [copy/copy.guard.ts](src/guards/copy/copy.guard.ts) | A `Copy`, looked up by `params.id`/`params.copyId` or by `orgId` + `oldBarcodeLabel`. Rejects if the copy's collection is `archived`. |
 
+### Attendee guard
+
+`AttendeeGuard` ([attendee/attendee.guard.ts](src/guards/attendee/attendee.guard.ts))
+loads an `Attendee` by `params.id`, then walks attendee → convention → org. It is
+used for the attendee read/update endpoints
+([src/controllers/attendee/attendee.controller.ts](src/controllers/attendee/attendee.controller.ts)).
+
+| Guard | File | Allows when |
+|-------|------|-------------|
+| `AttendeeGuard` | [attendee/attendee.guard.ts](src/guards/attendee/attendee.guard.ts) | The attendee record exists **and** the caller is: super admin; **or** the attendee themselves (`attendee.userId === user.id`); **or** convention `admin`/`geekGuide`; **or** org owner; **or** org `admin`/`geekGuide`. |
+
+Note: the attendee is loaded **before** the super-admin check, so a request for a
+non-existent attendee id is rejected (`false`) even for a super admin.
+
 ### Convention-operations guards (geek-guide scoped)
 
 Used for floor operations during a convention. They verify the convention
@@ -177,7 +228,7 @@ belongs to the org in the route, then check convention/org roles.
 
 | Guard | File | Allows when (after super-admin bypass) |
 |-------|------|----------------------------------------|
-| `CheckOutGuard` | [check-out/check-out.guard.ts](src/guards/check-out/check-out.guard.ts) | For the play-and-win collection: convention `admin`/`geekGuide`. Otherwise: org owner, or org `admin`/`geekGuide`. Requires `orgId`/`id` + `conId`. |
+| `CheckOutGuard` | [check-out/check-out.guard.ts](src/guards/check-out/check-out.guard.ts) | Convention `admin`/`geekGuide`, or org owner, or org `admin`/`geekGuide`. Requires `orgId`/`id` + `conId`, and verifies the convention belongs to that org. |
 | `PrizeEntryGuard` | [prize-entry/prize-entry.guard.ts](src/guards/prize-entry/prize-entry.guard.ts) | Convention `admin`/`geekGuide`/`attendee`, or org owner, or org `admin`/`geekGuide`. |
 
 ### Permission-management guards
@@ -202,23 +253,41 @@ Because guards are AND-ed together, a permission update route like
 requires the caller to be an org admin/owner (or super admin) **and** to be
 acting on someone other than themselves.
 
-### Upload guard
+### Precondition guards (not authorization)
 
-`UploadGuard` ([upload/upload.guard.ts](src/guards/upload/upload.guard.ts)) is
-not an authorization check — it rejects non-`multipart/form-data` requests for
-file-upload endpoints.
+These guards gate routes on a precondition rather than the caller's identity or
+role. They carry **no** super-admin bypass — the condition holds for everyone,
+super admin included — and are always paired with the real authorization guards
+on the route.
+
+`OrganizationBggGuard` ([organization/organization-bgg.guard.ts](src/guards/organization/organization-bgg.guard.ts))
+is a feature-flag gate for the BoardGameGeek integration. It resolves the org id
+from `params.orgId` → `body.organizationId`, loads the `Organization`, and allows
+the request only if `organization.enableBggSupport` is true. A missing org id or
+unknown org returns `false` (generic 403); an org that exists with the flag
+disabled throws `ForbiddenException('BGG support is not enabled for this
+organization.')`. It does **not** look at the caller at all. The BGG endpoints
+([src/controllers/game/game.controller.ts](src/controllers/game/game.controller.ts))
+stack it ahead of `GameGuard` / `OrganizationWriteGuard`, e.g.
+`@UseGuards(JwtAuthGuard, OrganizationBggGuard, GameGuard)`, so the feature must be
+enabled **and** the caller must be authorized.
+
+`UploadGuard` ([upload/upload.guard.ts](src/guards/upload/upload.guard.ts))
+rejects non-`multipart/form-data` requests for file-upload endpoints.
 
 ## How a request is authorized (end to end)
 
 1. The request arrives with an `Authorization: Bearer <jwt>` header.
 2. `JwtAuthGuard` runs the `gwJwt` strategy: the token is validated against
    Auth0, the matching `User` is loaded (or created), and attached as
-   `request.user.user`.
+   `request.user.user`. If the token is missing or invalid the request is
+   rejected here with **401** and the later guards never run.
 3. The next guard(s) in the route's `@UseGuards(...)` list run in order:
    - Super admin → allowed immediately.
    - Otherwise the guard loads the target resource, walks up to its convention
      and/or organization, and checks ownership and role flags.
-   - If any guard returns `false`, the request is rejected (403).
+   - If any guard returns `false`, the request is rejected with **403** (see
+     [401 vs 403](#401-vs-403)).
 4. If all guards pass, the controller handler runs. Handlers may further scope
    results to the caller — e.g. `ConventionService.conventions(user, ctx)` only
    returns conventions whose org or convention membership includes the user.
@@ -228,8 +297,9 @@ file-upload endpoints.
 - **Auto-provisioning:** any valid Auth0 token mints a local `User` on first
   use. Access is then governed entirely by the role rows that get assigned to
   that user.
-- **First-user bootstrap:** the user with `id === 1` becomes super admin
-  automatically. There is no other code path that grants `superAdmin`.
+- **First-user bootstrap:** the first user created in an empty users table
+  becomes super admin automatically. There is no other code path that grants
+  `superAdmin`.
 - **Owner ≈ org admin:** `Organization.ownerId` is checked directly in the
   guards and is treated as equivalent to an org admin everywhere.
 - **`request.user.user`:** the double nesting (Passport payload `.user`, then
