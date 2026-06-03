@@ -48,6 +48,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
     );
 
     if (!user) {
+      // Bootstrap: the very first user to sign in becomes super admin. Check
+      // for an empty table rather than `id === 1` — autoincrement ids can skip 1
+      // after rolled-back inserts, deletes, or a restore, which would otherwise
+      // leave the system with no super admin (or unable to ever re-bootstrap).
+      const isFirstUser =
+        (await this.userService.getUserCount(this.ctx)) === 0;
+
       user = await this.userService.createUser(
         {
           email: payload.user_email,
@@ -56,7 +63,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
         this.ctx,
       );
 
-      if (user.id === 1) {
+      if (isFirstUser) {
         user = await this.userService.updateUser(
           {
             where: {
