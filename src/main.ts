@@ -6,12 +6,18 @@ import {
 } from '@nestjs/platform-fastify';
 import multipart from '@fastify/multipart';
 import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
-import * as fastify from 'fastify';
+import Fastify from 'fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 
 async function bootstrap() {
-  const fastifyInstance = fastify({ logger: true });
+  // When we build the Fastify instance ourselves (to attach the /api/status
+  // log-silencing hook below) and hand it to FastifyAdapter, NestJS does NOT
+  // inject its default `routerOptions`. Fastify 5 only populates routerOptions
+  // defaults when the key is present, so without this the adapter's sanitizeUrl
+  // dereferences `initialConfig.routerOptions` (undefined) and every request
+  // throws "Cannot read properties of undefined (reading 'ignoreDuplicateSlashes')".
+  const fastifyInstance = Fastify({ logger: true, routerOptions: {} });
   fastifyInstance.addHook('onRoute', (opts) => {
     if (opts.path === '/api/status') {
       opts.logLevel = 'silent';
