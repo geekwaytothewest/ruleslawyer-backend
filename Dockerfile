@@ -6,13 +6,15 @@ COPY . .
 
 RUN npm install --legacy-peer-deps
 
-RUN npm run build
-
-# Generate the Prisma client at build time so it's baked into node_modules
-# (copied to the runtime stage below). This keeps it out of the container
-# entrypoint, where running it on every boot delayed app.listen and tripped the
-# ECS/ALB health checks before the server came up.
+# Generate the Prisma client BEFORE the build: `nest build` type-checks against
+# `@prisma/client`, whose model/`Prisma` types only exist after generation.
+# (npm install doesn't auto-generate here — allow-scripts blocks the postinstall.)
+# Generating at build time also bakes the client into node_modules for the
+# runtime stage, instead of on every boot where it delayed app.listen and tripped
+# the ECS/ALB health checks before the server came up.
 RUN npx prisma generate
+
+RUN npm run build
 
 FROM node:lts-alpine
 

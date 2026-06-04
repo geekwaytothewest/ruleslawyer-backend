@@ -9,6 +9,7 @@
     "seed": "node dist/prisma/seed.js"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "nest build",
     "build:debug": "nest build -p tsconfig.debug.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -50,7 +51,6 @@
     "csv": "^6.5.1",
     "dotenv": "^17.4.2",
     "fast-xml-parser": "^5.8.0",
-    "fastify-multipart": "^5.4.0",
     "jwks-rsa": "^4.0.1",
     "nestjs-cls": "^6.2.1",
     "nestjs-http-promise": "^4.0.0",
@@ -118,9 +118,12 @@
       "main.ts"
     ]
   },
+  "overrides": {
+    "@prisma/query-plan-executor": "7.8.0"
+  },
   "allowScripts": {
     "@nestjs/core@11.1.24": true,
-    "@prisma/client@6.19.3": true,
+    "@prisma/client@7.8.0": true,
     "@scarf/scarf@1.4.0": true,
     "puppeteer@24.43.1": true,
     "prisma@7.8.0": true,
