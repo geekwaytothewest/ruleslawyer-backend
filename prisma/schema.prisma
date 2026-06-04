@@ -3,12 +3,14 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  previewFeatures = ["fullTextSearchPostgres"]
 }
 
 datasource db {
+  // Prisma 7 no longer accepts `url` in the schema; the connection string now
+  // lives in prisma.config.ts (for the CLI/migrate) and is supplied to
+  // PrismaClient at runtime via the pg driver adapter in PrismaService.
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 /// An application account. Users log in to manage organizations and conventions;
