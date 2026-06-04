@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@fastify/multipart": "^9.0.3",
-    "@fastify/static": "^8.3.0",
+    "@fastify/static": "^9.1.3",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.1.0",
     "@nestjs/core": "^11.1.0",
@@ -57,7 +57,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "stringify": "^5.2.0",
+    "stringify": "^2.2.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -110,5 +110,13 @@
     "coveragePathIgnorePatterns": [
       "main.ts"
     ]
+  },
+  "allowScripts": {
+    "@nestjs/core@11.1.24": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "@scarf/scarf@1.4.0": true,
+    "prisma@6.19.3": true,
+    "puppeteer@24.43.1": true
   }
 }
