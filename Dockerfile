@@ -4,7 +4,12 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN npm install --legacy-peer-deps
+# Install the lockfile EXACTLY (not a re-resolve). `npm install` can drift the
+# transitive tree — notably it re-hoisted @prisma/dev's older query-plan-executor
+# over the 7.8.0 the runtime needs, which imports @prisma/client-runtime-utils/dist
+# (gone in 7.8.0) and crashed at query time. The lockfile pins the correct tree;
+# `npm ci` reproduces it bit-for-bit. The package.json `overrides` enforce it too.
+RUN npm ci
 
 # Generate the Prisma client BEFORE the build: `nest build` type-checks against
 # `@prisma/client`, whose model/`Prisma` types only exist after generation.
