@@ -11,6 +11,12 @@
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
+    "types": ["node", "jest"],
+    // TypeScript 6 turns the `strict` family on by default. This project only
+    // opts into specific checks (strictNullChecks below), so pin strict off to
+    // keep the prior semantics — otherwise strictPropertyInitialization and
+    // useUnknownInCatchVariables start failing existing DTOs and catch blocks.
+    "strict": false,
     "strictNullChecks": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
