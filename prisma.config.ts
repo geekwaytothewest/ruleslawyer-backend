@@ -12,7 +12,7 @@ import { defineConfig, env } from 'prisma/config';
 export default defineConfig({
   schema: path.join('prisma', 'schema.prisma'),
   datasource: {
-    url: env('DATABASE_URL'),
+    url: env('DATABASE_URL') ?  env('DATABASE_URL') : "",
   },
   migrations: {
     // Previously declared as `prisma.seed` in package.json (removed in the
