@@ -27,6 +27,11 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/prisma ./prisma/
+COPY --from=builder /usr/src/app/prisma.config.ts ./
+
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["npm", "run", "start:migrate:prod"]
