@@ -9,6 +9,7 @@
     "seed": "node dist/prisma/seed.js"
   },
   "scripts": {
+    "postinstall": "DATABASE_URL=none prisma generate",
     "build": "nest build",
     "build:debug": "nest build -p tsconfig.debug.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -28,68 +29,71 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@fastify/multipart": "^9.0.3",
+    "@fastify/multipart": "^10.0.0",
     "@fastify/static": "^9.1.3",
-    "@nestjs/axios": "^4.0.0",
-    "@nestjs/common": "^11.1.0",
-    "@nestjs/core": "^11.1.0",
-    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/axios": "^4.0.1",
+    "@nestjs/common": "^11.1.24",
+    "@nestjs/core": "^11.1.24",
+    "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.1.0",
-    "@nestjs/platform-fastify": "^11.1.0",
+    "@nestjs/platform-express": "^11.1.24",
+    "@nestjs/platform-fastify": "^11.1.24",
     "@nestjs/swagger": "^11.4.4",
-    "@prisma/client": "^6.19.3",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "@types/adm-zip": "^0.5.8",
     "adm-zip": "^0.5.17",
-    "ajv": "^8.17.1",
-    "axios": "^1.9.0",
+    "ajv": "^8.20.0",
+    "axios": "^1.17.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
-    "cloc": "^2.4.0-cloc",
-    "csv": "^6.3.11",
-    "dotenv": "^16.5.0",
+    "cloc": "^2.6.0-cloc",
+    "csv": "^6.5.1",
+    "dotenv": "^17.4.2",
     "fast-xml-parser": "^5.8.0",
-    "fastify-multipart": "^5.4.0",
-    "jwks-rsa": "^3.2.0",
-    "nestjs-cls": "^5.4.3",
+    "jwks-rsa": "^4.0.1",
+    "nestjs-cls": "^6.2.1",
     "nestjs-http-promise": "^4.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "pg": "^8.21.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "stringify": "^2.2.0",
-    "uuid": "^11.1.0"
+    "stringify": "^5.2.0",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
-    "@golevelup/ts-jest": "^0.7.0",
-    "@mermaid-js/mermaid-cli": "^11.4.2",
-    "@nestjs/cli": "^11.0.7",
-    "@nestjs/schematics": "^11.0.5",
-    "@nestjs/testing": "^11.1.0",
-    "@types/express": "^5.0.1",
-    "@types/jest": "^29.5.14",
-    "@types/multer": "^1.4.12",
-    "@types/node": "^22.15.17",
-    "@types/supertest": "^6.0.3",
-    "@typescript-eslint/eslint-plugin": "^8.32.0",
-    "@typescript-eslint/parser": "^8.32.0",
+    "@golevelup/ts-jest": "^3.0.0",
+    "@mermaid-js/mermaid-cli": "^11.15.0",
+    "@nestjs/cli": "^11.0.21",
+    "@nestjs/schematics": "^11.1.0",
+    "@nestjs/testing": "^11.1.24",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.9.1",
+    "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.60.1",
+    "@typescript-eslint/parser": "^8.60.1",
     "axios-mock-adapter": "^2.1.0",
     "cd": "^0.3.3",
-    "eslint": "^9.26.0",
-    "eslint-config-prettier": "^10.1.3",
-    "eslint-plugin-prettier": "^5.4.0",
-    "jest": "^29.7.0",
-    "jest-mock-extended": "^3.0.7",
-    "prettier": "^3.5.3",
-    "prisma": "^6.19.3",
-    "prisma-erd-generator": "^2.0.4",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "jest": "^30.4.2",
+    "jest-mock-extended": "^4.0.1",
+    "npm-check-updates": "^22.2.2",
+    "prettier": "^3.8.3",
+    "prisma": "^7.8.0",
+    "prisma-erd-generator": "^2.4.3",
     "source-map-support": "^0.5.21",
-    "supertest": "^7.1.0",
-    "ts-jest": "^29.3.2",
-    "ts-loader": "^9.5.2",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.11",
+    "ts-loader": "^9.6.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.8.3"
+    "typescript": "^6.0.3"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -102,6 +106,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(jose|uuid)/)"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
@@ -111,12 +118,16 @@
       "main.ts"
     ]
   },
+  "overrides": {
+    "@prisma/query-plan-executor": "7.8.0"
+  },
   "allowScripts": {
     "@nestjs/core@11.1.24": true,
-    "@prisma/client@6.19.3": true,
-    "@prisma/engines@6.19.3": true,
+    "@prisma/client@7.8.0": true,
     "@scarf/scarf@1.4.0": true,
-    "prisma@6.19.3": true,
-    "puppeteer@24.43.1": true
+    "puppeteer@24.43.1": true,
+    "prisma@7.8.0": true,
+    "unrs-resolver@1.12.2": true,
+    "@prisma/engines@7.8.0": true
   }
 }
