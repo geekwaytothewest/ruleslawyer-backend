@@ -48,8 +48,8 @@ out to all three apps via reusable workflows; the others deploy independently.
 
 | Environment | ECS cluster       | Public host                  |
 | ----------- | ----------------- | ---------------------------- |
-| `nonprod`   | `ruleslawyer-nonprod` | `nonprod.library.ruleslawyer.com` |
-| `prod`      | `ruleslawyer-prod`    | `library.ruleslawyer.com`        |
+| `nonprod`   | `ruleslawyer-nonprod` | `nonprod.library.ruleslawyer.net` |
+| `prod`      | `ruleslawyer-prod`    | `library.ruleslawyer.net`        |
 
 ## Prerequisites
 
