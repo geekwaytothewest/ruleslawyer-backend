@@ -9,7 +9,7 @@
     "seed": "node dist/prisma/seed.js"
   },
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "DATABASE_URL=none prisma generate",
     "build": "nest build",
     "build:debug": "nest build -p tsconfig.debug.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
