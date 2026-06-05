@@ -219,11 +219,13 @@ export class CollectionService {
           name: name,
           organizationId: Number(orgId),
           allowWinning: allowWinning,
-          conventions: {
-            connect: {
-              id: conId
-            }
-          }
+          ...(conId !== undefined && {
+            conventions: {
+              connect: {
+                id: conId,
+              },
+            },
+          }),
         },
       });
     } catch (ex) {
