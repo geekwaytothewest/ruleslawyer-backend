@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "Backend",
+  "name": "RulesLawyer Backend",
   "type": "collection",
   "ignore": [
     "node_modules",
