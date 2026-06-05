@@ -24,7 +24,7 @@ authenticates through Auth0. The pieces you interact with on the floor:
 
 In production these frontends are served behind CloudFront at the convention's
 public host; routes and hosts are listed in [`../DEPLOYMENT.md`](../DEPLOYMENT.md)
-(prod: `library.ruleslawyer.com`, nonprod: `nonprod.library.ruleslawyer.com`).
+(prod: `library.ruleslawyer.net`, nonprod: `nonprod.library.ruleslawyer.net`).
 
 ## Stations and hardware
 
