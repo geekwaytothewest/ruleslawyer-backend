@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Game, Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
 
 // Response shape for the Game scalar fields. `implements Game` makes the
 // compiler fail if this drifts from the Prisma model, so the Swagger schema
@@ -23,7 +22,12 @@ export class GameEntity implements Omit<Game, 'coverArt'> {
   /** BoardGameGeek version id; when set, overrides where cover art is sourced. */
   bggVersionId: number | null;
   bggRank: number | null;
-  bggRating: Decimal | null;
+  // Explicit @ApiProperty so the Swagger CLI plugin doesn't introspect the
+  // Prisma.Decimal type — that emits `require("@prisma/client-runtime-utils/dist")`
+  // into the OpenAPI metadata factory, a subpath Prisma 7 doesn't export, which
+  // crashes SwaggerModule.createDocument at boot. (weight below does the same.)
+  @ApiProperty({ type: String, nullable: true, example: '7.5' })
+  bggRating: Prisma.Decimal | null;
   /** Timestamp of the last successful BoardGameGeek sync. */
   lastBGGSync: Date | null;
   name: string;
