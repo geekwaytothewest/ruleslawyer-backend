@@ -17,7 +17,7 @@ RUN npm ci
 # Generating at build time also bakes the client into node_modules for the
 # runtime stage, instead of on every boot where it delayed app.listen and tripped
 # the ECS/ALB health checks before the server came up.
-RUN npx prisma generate
+RUN DATABSE_URL=none npx prisma generate
 
 RUN npm run build
 
