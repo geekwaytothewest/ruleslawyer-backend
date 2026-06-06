@@ -21,6 +21,7 @@ import {
 } from '@prisma/client';
 import { OrganizationEntity } from '../../common/entities/organization.entity';
 import { ConventionEntity } from '../../common/entities/convention.entity';
+import { ConventionWithTypeEntity } from '../../common/entities/convention-with-type.entity';
 import { ConventionTypeEntity } from '../../common/entities/convention-type.entity';
 import { CollectionEntity } from '../../common/entities/collection.entity';
 import { CopyEntity } from '../../common/entities/copy.entity';
@@ -274,7 +275,7 @@ export class OrganizationController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
-  @ApiOkResponse({ type: ConventionEntity, isArray: true })
+  @ApiOkResponse({ type: ConventionWithTypeEntity, isArray: true })
   @Get(':id/conventions')
   async getConventions(@Param('id') id: number): Promise<Convention[] | void> {
     return this.conventionService.conventionsByOrg(Number(id), this.ctx);

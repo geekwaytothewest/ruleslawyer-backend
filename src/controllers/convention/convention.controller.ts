@@ -24,6 +24,7 @@ import {
 import { Convention } from '@prisma/client';
 import { ConventionEntity } from '../../common/entities/convention.entity';
 import { ConventionWithCollectionsEntity } from '../../common/entities/convention-with-collections.entity';
+import { ConventionWithTypeEntity } from '../../common/entities/convention-with-type.entity';
 import { AttendeeEntity } from '../../common/entities/attendee.entity';
 import { CollectionEntity } from '../../common/entities/collection.entity';
 import { ConventionCollectionsEntity } from '../../common/entities/convention-collections.entity';
@@ -74,7 +75,7 @@ export class ConventionController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ type: ConventionEntity, isArray: true })
+  @ApiOkResponse({ type: ConventionWithTypeEntity, isArray: true })
   @Get()
   async getConventions(@User() user: any) {
     return this.conventionService.conventions(user, this.ctx);

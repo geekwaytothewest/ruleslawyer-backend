@@ -89,6 +89,7 @@ const routes = [
     AttendeeModule,
     LegacyModule,
     PermissionsModule,
+    ConventionTypeModule,
     ClsModule.forRoot({
       global: true,
       middleware: {

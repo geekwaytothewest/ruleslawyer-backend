@@ -50,6 +50,7 @@ export class ConventionService {
       return await ctx.prisma.convention.findUnique({
         where: conventionWhereUniqueInput,
         include: {
+          type: true,
           collections: {
             include: {
               collection: {
@@ -500,6 +501,9 @@ export class ConventionService {
         where: {
           organizationId: organizationId,
         },
+        include: {
+          type: true,
+        },
         orderBy: {
           startDate: 'desc',
         },
@@ -537,6 +541,9 @@ export class ConventionService {
                 },
               ],
             },
+        include: {
+          type: true,
+        },
         orderBy: {
           startDate: 'desc',
         },

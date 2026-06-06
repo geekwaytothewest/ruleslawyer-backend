@@ -909,6 +909,7 @@ describe('ConventionService', () => {
       expect(result.length).toBe(1);
       expect(mockCtx.prisma.convention.findMany).toHaveBeenCalledWith({
         where: { organizationId: 1 },
+        include: { type: true },
         orderBy: { startDate: 'desc' },
       });
     });
@@ -923,6 +924,7 @@ describe('ConventionService', () => {
       expect(result.length).toBe(1);
       const args = mockCtx.prisma.convention.findMany.mock.calls[0][0] as any;
       expect(args.where.OR).toHaveLength(2);
+      expect(args.include).toEqual({ type: true });
       expect(args.orderBy).toEqual({ startDate: 'desc' });
     });
 
@@ -940,6 +942,7 @@ describe('ConventionService', () => {
       expect(result.length).toBe(2);
       const args = mockCtx.prisma.convention.findMany.mock.calls[0][0] as any;
       expect(args.where).toBeUndefined();
+      expect(args.include).toEqual({ type: true });
       expect(args.orderBy).toEqual({ startDate: 'desc' });
     });
   });
