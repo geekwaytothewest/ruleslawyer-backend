@@ -94,6 +94,9 @@ describe('ConventionService', () => {
       );
 
       expect(convention?.id).toBe(1);
+      const args = mockCtx.prisma.convention.findUnique.mock
+        .calls[0][0] as any;
+      expect(args.include.type).toBe(true);
     });
   });
 
