@@ -20,6 +20,7 @@ import { ClsModule } from 'nestjs-cls';
 import { FastifyRequest } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { PermissionsModule } from './modules/permissions/permissions.module';
+import { ConventionTypeModule } from './modules/convention-type/convention-type.module';
 
 const routes = [
   {
@@ -41,6 +42,10 @@ const routes = [
   {
     path: '/api/userConPerm',
     module: UserConventionPermissionsModule,
+  },
+  {
+    path: '/api/conventionType',
+    module: ConventionTypeModule,
   },
   {
     path: '/api/game',
@@ -84,6 +89,7 @@ const routes = [
     AttendeeModule,
     LegacyModule,
     PermissionsModule,
+    ConventionTypeModule,
     ClsModule.forRoot({
       global: true,
       middleware: {

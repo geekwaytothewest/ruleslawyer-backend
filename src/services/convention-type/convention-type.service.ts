@@ -11,6 +11,21 @@ export class ConventionTypeService {
     return ctx.prisma.conventionType.create({ data: data });
   }
 
+  async updateConventionType(
+    id: number,
+    data: Prisma.ConventionTypeUpdateInput,
+    ctx: Context,
+  ): Promise<ConventionType | null> {
+    try {
+      return await ctx.prisma.conventionType.update({
+        where: { id: id },
+        data: data,
+      });
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+  }
+
   async conventionType(
     conventionTypeWhereUniqueInput: Prisma.ConventionTypeWhereUniqueInput,
     ctx: Context,
