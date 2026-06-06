@@ -37,7 +37,7 @@ import { CreateCollectionDto } from '../collection/dto/create-collection.dto';
 import { OrganizationService } from '../../services/organization/organization.service';
 import { ConventionService } from '../../services/convention/convention.service';
 import { JwtAuthGuard } from '../../guards/auth/auth.guard';
-import { OrganizationWriteGuard } from '../../guards/organization/organization-write.guard';
+import { ConventionTypeGuard } from '../../guards/convention-type/convention-type.guard';
 import { OrganizationReadGuard } from '../../guards/organization/organization-read.guard';
 import { Context } from '../../services/prisma/context';
 import { PrismaService } from '../../services/prisma/prisma.service';
@@ -264,9 +264,9 @@ export class OrganizationController {
     return this.conventionTypeService.createConventionType(data, this.ctx);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ConventionTypeGuard)
   @ApiOkResponse({ type: ConventionTypeEntity, isArray: true })
-  @Get(':id/conventionType')
+  @Get(':id/conventionTypes')
   async getConventionTypes(
     @Param('id') id: number,
   ): Promise<ConventionType[] | void> {
