@@ -13,6 +13,17 @@ import { stringify } from 'csv-stringify';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { parse } from 'csv-parse';
 
+// Convention type fields safe to embed in convention responses: every scalar
+// except the logo/logoSquare Bytes blobs, which would bloat every list payload.
+const conventionTypeSelect: Prisma.ConventionTypeSelect = {
+  id: true,
+  name: true,
+  description: true,
+  icon: true,
+  content: true,
+  organizationId: true,
+};
+
 @Injectable()
 export class ConventionService {
   private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(
@@ -50,7 +61,7 @@ export class ConventionService {
       return await ctx.prisma.convention.findUnique({
         where: conventionWhereUniqueInput,
         include: {
-          type: true,
+          type: { select: conventionTypeSelect },
           collections: {
             include: {
               collection: {
@@ -245,7 +256,7 @@ export class ConventionService {
             id: Number(conventionId),
           },
           include: {
-            type: true,
+            type: { select: conventionTypeSelect },
           },
         });
 
@@ -502,7 +513,7 @@ export class ConventionService {
           organizationId: organizationId,
         },
         include: {
-          type: true,
+          type: { select: conventionTypeSelect },
         },
         orderBy: {
           startDate: 'desc',
@@ -542,7 +553,7 @@ export class ConventionService {
               ],
             },
         include: {
-          type: true,
+          type: { select: conventionTypeSelect },
         },
         orderBy: {
           startDate: 'desc',

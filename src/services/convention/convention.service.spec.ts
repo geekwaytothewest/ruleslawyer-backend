@@ -4,6 +4,19 @@ import { ConventionService } from './convention.service';
 import { MockContext, Context, createMockContext } from '../prisma/context';
 import { ConventionModule } from '../../modules/convention/convention.module';
 
+// The convention reads embed the type relation via a scalar select (no Bytes
+// logo/logoSquare blobs); mirror that shape here.
+const expectedTypeInclude = {
+  select: {
+    id: true,
+    name: true,
+    description: true,
+    icon: true,
+    content: true,
+    organizationId: true,
+  },
+};
+
 describe('ConventionService', () => {
   let service: ConventionService;
   let mockCtx: MockContext;
@@ -96,7 +109,7 @@ describe('ConventionService', () => {
       expect(convention?.id).toBe(1);
       const args = mockCtx.prisma.convention.findUnique.mock
         .calls[0][0] as any;
-      expect(args.include.type).toBe(true);
+      expect(args.include.type).toEqual(expectedTypeInclude);
     });
   });
 
@@ -912,7 +925,7 @@ describe('ConventionService', () => {
       expect(result.length).toBe(1);
       expect(mockCtx.prisma.convention.findMany).toHaveBeenCalledWith({
         where: { organizationId: 1 },
-        include: { type: true },
+        include: { type: expectedTypeInclude },
         orderBy: { startDate: 'desc' },
       });
     });
@@ -927,7 +940,7 @@ describe('ConventionService', () => {
       expect(result.length).toBe(1);
       const args = mockCtx.prisma.convention.findMany.mock.calls[0][0] as any;
       expect(args.where.OR).toHaveLength(2);
-      expect(args.include).toEqual({ type: true });
+      expect(args.include).toEqual({ type: expectedTypeInclude });
       expect(args.orderBy).toEqual({ startDate: 'desc' });
     });
 
@@ -945,7 +958,7 @@ describe('ConventionService', () => {
       expect(result.length).toBe(2);
       const args = mockCtx.prisma.convention.findMany.mock.calls[0][0] as any;
       expect(args.where).toBeUndefined();
-      expect(args.include).toEqual({ type: true });
+      expect(args.include).toEqual({ type: expectedTypeInclude });
       expect(args.orderBy).toEqual({ startDate: 'desc' });
     });
   });

@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ConventionEntity } from './convention.entity';
 import { ConventionCollectionsEntity } from './convention-collections.entity';
 import { CollectionWithRelationsEntity } from './collection-with-relations.entity';
-import { ConventionTypeEntity } from './convention-type.entity';
+import { ConventionTypeSummaryEntity } from './convention-type-summary.entity';
 
 // A ConventionCollections join row with its resolved collection, as returned by
 // convention() (collections -> collection -> _count).
@@ -17,6 +17,6 @@ export class ConventionWithCollectionsEntity extends ConventionEntity {
   @ApiProperty({ type: () => ConventionCollectionEntity, isArray: true })
   collections: ConventionCollectionEntity[];
 
-  @ApiProperty({ type: () => ConventionTypeEntity })
-  type: ConventionTypeEntity;
+  @ApiProperty({ type: () => ConventionTypeSummaryEntity })
+  type: ConventionTypeSummaryEntity;
 }
