@@ -122,7 +122,7 @@ export class ConventionService {
    * IPC / proxy idle timeouts). Progress is visible in the server logs. A
    * second import while one is already running is rejected with 409.
    */
-  startImportAttendees(userData, conventionId, ctx: Context) {
+  startSyncTabletopEventsAttendees(userData, conventionId, ctx: Context) {
     if (this.importInProgress) {
       throw new ConflictException(
         'An attendee import is already running; wait for it to finish (watch the server logs).',
@@ -133,7 +133,7 @@ export class ConventionService {
     this.logger.log('Attendee import (TTE) started in the background.');
 
     // Fire-and-forget: do NOT await. Errors are logged; the flag always clears.
-    void this.importAttendees(userData, conventionId, ctx)
+    void this.syncTabletopEventsAttendees(userData, conventionId, ctx)
       .catch((error: any) =>
         this.logger.error(
           `Background attendee import (TTE) failed: ${error?.message ?? error}`,
@@ -246,7 +246,7 @@ export class ConventionService {
     });
   }
 
-  async importAttendees(userData, conventionId, ctx) {
+  async syncTabletopEventsAttendees(userData, conventionId, ctx) {
     return new Promise(async (resolve, reject) => {
       try {
         this.logger.log(`Importing attendees for conventionId=${conventionId}`);

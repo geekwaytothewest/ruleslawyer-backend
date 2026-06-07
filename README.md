@@ -8,7 +8,7 @@ Built with [NestJS](https://nestjs.com/) (Fastify) + [Prisma](https://www.prisma
 
 - Docker / Docker Compose
 - Auth0 tenant (for auth)
-- Node.js 20+ (only needed to run tests and tooling locally; the app itself runs in Docker)
+- Node.js 24 (pinned via [`.nvmrc`](.nvmrc); only needed to run tests and tooling locally — the app itself runs in Docker)
 
 ## Installation
 
@@ -111,7 +111,7 @@ npm run test:cov
 
 ## Deployment
 
-Deployed to AWS ECS via the **Build and Deploy** GitHub Action (manual `workflow_dispatch`; choose `nonprod` or `prod`). It builds the Docker image, pushes it to the `ruleslawyer-backend` ECR repo, and updates the `ruleslawyer-backend` ECS service on the `geekway-{env}` cluster using `.aws/taskdefinition-{env}.json`.
+Deployed to AWS ECS via the **Build and Deploy** GitHub Action (manual `workflow_dispatch`; choose `nonprod` or `prod`). It builds the Docker image, pushes it (tagged `:<sha>` and `:latest`) to the `ruleslawyer-backend` ECR repo, then forces a new deployment of the `ruleslawyer-backend` ECS service on the `geekway-{env}` cluster (`aws ecs update-service --force-new-deployment`). The task definition is owned by the infra CDK (see [DEPLOYMENT.md](DEPLOYMENT.md)), not this repo.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the full process, prerequisites, and the per-service reference for all repos.
 

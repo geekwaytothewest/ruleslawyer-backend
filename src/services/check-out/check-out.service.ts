@@ -103,7 +103,11 @@ export class CheckOutService {
     }
   }
 
-  async getCheckOutsByCollectionId(conId: number, collId: number, ctx: Context) {
+  async getCheckOutsByCollectionId(
+    conId: number | undefined,
+    collId: number,
+    ctx: Context,
+  ) {
     this.logger.log(`Getting checkouts for conId=${conId}`);
     try {
       return await ctx.prisma.checkOut.findMany({

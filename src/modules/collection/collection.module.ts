@@ -8,6 +8,7 @@ import { CollectionReadGuard } from '../../guards/collection/collection-read.gua
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { ConventionModule } from '../convention/convention.module';
 import { OrganizationModule } from '../organization/organization.module';
+import { CheckOutModule } from '../check-out/check-out.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { OrganizationModule } from '../organization/organization.module';
     AttendeeModule,
     forwardRef(() => ConventionModule),
     forwardRef(() => OrganizationModule),
+    CheckOutModule,
   ],
   controllers: [CollectionController],
   providers: [

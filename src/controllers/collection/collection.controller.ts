@@ -10,8 +10,15 @@ import {
   Query,
   UsePipes,
   ValidationPipe,
+  HttpCode,
+  Req
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiAcceptedResponse,
+} from '@nestjs/swagger';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { CollectionEntity } from '../../common/entities/collection.entity';
 import { CollectionWithRelationsEntity } from '../../common/entities/collection-with-relations.entity';
@@ -22,6 +29,9 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { Context } from '../../services/prisma/context';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
+import { CheckOutService } from '../../services/check-out/check-out.service';
+import { stringify } from 'csv-stringify/sync';
+import fastify = require('fastify');
 
 @ApiTags('collections')
 @ApiBearerAuth('jwt')
@@ -31,6 +41,7 @@ export class CollectionController {
 
   constructor(
     private readonly collectionService: CollectionService,
+    private readonly checkOutService: CheckOutService,
     private readonly prismaService: PrismaService,
     private readonly attendeeService: AttendeeService,
   ) {
@@ -140,5 +151,70 @@ export class CollectionController {
       Number(colId),
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @ApiOkResponse({
+    description: 'CSV text of plays plus the collection name.',
+    schema: {
+      type: 'object',
+      properties: {
+        csvText: { type: 'string', example: 'Wingspan,A123,Jane Doe,...' },
+        collectionName: { type: 'string', example: 'Main Library' },
+      },
+    },
+  })
+  @Get(':id/exportPlays')
+  async exportPlaysByCollectionId(@Param('id') collId: number) {
+    const checkOuts = await this.checkOutService.getCheckOutsByCollectionId(
+      undefined,
+      Number(collId),
+      this.ctx,
+    );
+
+    const collName = checkOuts[0].copy?.collection.name;
+
+    const csv = stringify([
+      ['Game', 'Barcode', 'Badge Name', 'Checked Out', 'Checked In'],
+      ...checkOuts.map((co) => {
+        return [
+          co.copy?.game.name,
+          co.copy?.barcodeLabel,
+          co.attendee.badgeName,
+          co.checkOut.toISOString(),
+          co.checkIn?.toISOString() ?? '',
+        ];
+      }),
+    ]);
+
+    return {
+      csvText: csv,
+      collectionName: collName,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @HttpCode(202)
+  @ApiAcceptedResponse({
+    description:
+      'Import started in the background; progress is in the server logs.',
+  })
+  @Put(':id/importCopies')
+  async importCopies(
+    @Req() request: fastify.FastifyRequest,
+    @Param('id') id: number,
+  ) {
+    const file = await request.file();
+    const buffer = await file?.toBuffer();
+
+    if (buffer === undefined) {
+      return Promise.reject('missing file');
+    }
+
+    const collection = await this.collectionService.collection(id, this.ctx);
+
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.collectionService.uploadCopies(collection.organizationId, id, buffer, this.ctx);
   }
 }

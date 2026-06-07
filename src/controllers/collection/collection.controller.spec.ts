@@ -171,4 +171,33 @@ describe('CollectionController', () => {
       expect(spy).toHaveBeenCalledWith(1, ctx);
     });
   });
+
+  describe('importCopies', () => {
+    it('rejects when the file is missing', async () => {
+      const req = { file: () => null } as any;
+
+      await expect(controller.importCopies(req, 1)).rejects.toBe(
+        'missing file',
+      );
+    });
+
+    it('launches the upload in the background and returns "started"', async () => {
+      const buffer = Buffer.from('Wingspan,A123\n');
+      const req = {
+        file: () => ({ toBuffer: () => buffer }),
+      } as any;
+
+      jest
+        .spyOn(collectionService, 'collection')
+        .mockResolvedValue({ id: 1, organizationId: 7 } as any);
+      const uploadSpy = jest
+        .spyOn(collectionService, 'uploadCopies')
+        .mockResolvedValue({ status: 'started', message: 'go' } as any);
+
+      const result = await controller.importCopies(req, 1);
+
+      expect(result).toEqual({ status: 'started', message: 'go' });
+      expect(uploadSpy).toHaveBeenCalledWith(7, 1, buffer, ctx);
+    });
+  });
 });
