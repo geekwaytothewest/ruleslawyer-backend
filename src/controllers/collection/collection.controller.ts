@@ -22,6 +22,8 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { Context } from '../../services/prisma/context';
 import { AttendeeService } from '../../services/attendee/attendee.service';
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
+import { CheckOutService } from '../../services/check-out/check-out.service';
+import { stringify } from 'csv-stringify/sync';
 
 @ApiTags('collections')
 @ApiBearerAuth('jwt')
@@ -31,6 +33,7 @@ export class CollectionController {
 
   constructor(
     private readonly collectionService: CollectionService,
+    private readonly checkOutService: CheckOutService,
     private readonly prismaService: PrismaService,
     private readonly attendeeService: AttendeeService,
   ) {
@@ -140,5 +143,47 @@ export class CollectionController {
       Number(colId),
       this.ctx,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionReadGuard)
+  @ApiOkResponse({
+    description: 'CSV text of plays plus the collection name.',
+    schema: {
+      type: 'object',
+      properties: {
+        csvText: { type: 'string', example: 'Wingspan,A123,Jane Doe,...' },
+        collectionName: { type: 'string', example: 'Main Library' },
+      },
+    },
+  })
+  @Get(':id/exportPlays')
+  async exportPlaysByCollectionId(
+    @Param('id') collId: number,
+  ) {
+    const checkOuts = await this.checkOutService.getCheckOutsByCollectionId(
+      undefined,
+      Number(collId),
+      this.ctx,
+    );
+
+    const collName = checkOuts[0].copy?.collection.name;
+
+    const csv = stringify([
+      ['Game', 'Barcode', 'Badge Name', 'Checked Out', 'Checked In'],
+      ...checkOuts.map((co) => {
+        return [
+          co.copy?.game.name,
+          co.copy?.barcodeLabel,
+          co.attendee.badgeName,
+          co.checkOut.toISOString(),
+          co.checkIn?.toISOString() ?? '',
+        ];
+      }),
+    ]);
+
+    return {
+      csvText: csv,
+      collectionName: collName,
+    };
   }
 }
