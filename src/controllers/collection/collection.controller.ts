@@ -10,8 +10,15 @@ import {
   Query,
   UsePipes,
   ValidationPipe,
+  HttpCode,
+  Req
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiAcceptedResponse,
+} from '@nestjs/swagger';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { CollectionEntity } from '../../common/entities/collection.entity';
 import { CollectionWithRelationsEntity } from '../../common/entities/collection-with-relations.entity';
@@ -24,6 +31,7 @@ import { AttendeeService } from '../../services/attendee/attendee.service';
 import { CollectionWriteGuard } from '../../guards/collection/collection-write.guard';
 import { CheckOutService } from '../../services/check-out/check-out.service';
 import { stringify } from 'csv-stringify/sync';
+import fastify = require('fastify');
 
 @ApiTags('collections')
 @ApiBearerAuth('jwt')
@@ -157,9 +165,7 @@ export class CollectionController {
     },
   })
   @Get(':id/exportPlays')
-  async exportPlaysByCollectionId(
-    @Param('id') collId: number,
-  ) {
+  async exportPlaysByCollectionId(@Param('id') collId: number) {
     const checkOuts = await this.checkOutService.getCheckOutsByCollectionId(
       undefined,
       Number(collId),
@@ -185,5 +191,30 @@ export class CollectionController {
       csvText: csv,
       collectionName: collName,
     };
+  }
+
+  @UseGuards(JwtAuthGuard, CollectionWriteGuard)
+  @HttpCode(202)
+  @ApiAcceptedResponse({
+    description:
+      'Import started in the background; progress is in the server logs.',
+  })
+  @Put(':id/importCopies')
+  async importCopies(
+    @Req() request: fastify.FastifyRequest,
+    @Param('id') id: number,
+  ) {
+    const file = await request.file();
+    const buffer = await file?.toBuffer();
+
+    if (buffer === undefined) {
+      return Promise.reject('missing file');
+    }
+
+    const collection = await this.collectionService.collection(id, this.ctx);
+
+    // Long-running: launch in the background and return 202 immediately so the
+    // client (and any proxy) isn't holding a request open for minutes.
+    return this.collectionService.uploadCopies(collection.organizationId, id, buffer, this.ctx);
   }
 }
