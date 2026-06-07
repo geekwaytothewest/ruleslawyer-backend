@@ -316,7 +316,7 @@ describe('CollectionGuard', () => {
         {
           id: 1,
           userId: 2,
-          admin: true,
+          admin: false,
         },
       ],
     };
@@ -356,7 +356,7 @@ describe('CollectionGuard', () => {
         {
           id: 1,
           userId: 2,
-          admin: true,
+          admin: false,
         },
       ],
     };
@@ -511,6 +511,33 @@ describe('CollectionGuard', () => {
     const authed = await writeGuard.canActivate(context);
 
     expect(authed).toBeTruthy();
+  });
+
+  it('write guard resolves the collection from params.id (not just colId)', async () => {
+    const context = createMock<ExecutionContext>({
+      getArgByIndex: () => ({
+        user: { user: { id: 2, superAdmin: false } },
+        params: { id: 1 },
+      }),
+    });
+
+    const collectionSpy = mockCtx.prisma.collection.findUnique.mockResolvedValue({
+      id: 1,
+      organizationId: 1,
+      archived: false,
+    } as any);
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 2,
+      users: [],
+    } as any);
+
+    const authed = await writeGuard.canActivate(context);
+
+    expect(authed).toBeTruthy();
+    expect(collectionSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1 } }),
+    );
   });
 
   it('read guard returns false when the collection has no organizationId', async () => {
