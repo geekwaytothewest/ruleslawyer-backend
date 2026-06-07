@@ -186,7 +186,7 @@ describe('ConventionController', () => {
     });
   });
 
-  describe('importAttendees', () => {
+  describe('syncTabletopEventsAttendees', () => {
     it('should import attendees', async () => {
       const convention = {
         id: 1,
@@ -219,7 +219,7 @@ describe('ConventionController', () => {
       mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(convention);
 
       const startSpy = jest
-        .spyOn(controller['conventionService'], 'startImportAttendees')
+        .spyOn(controller['conventionService'], 'startSyncTabletopEventsAttendees')
         .mockReturnValue({ status: 'started', message: 'go' });
 
       const userData = {
@@ -230,7 +230,7 @@ describe('ConventionController', () => {
 
       // Launches in the background and returns "started" immediately rather
       // than holding the request open until the import finishes.
-      const result = await controller.importAttendees(1, userData);
+      const result = await controller.syncTabletopEventsAttendees(1, userData);
 
       expect(result.status).toBe('started');
       expect(startSpy).toHaveBeenCalledWith(userData, 1, controller['ctx']);

@@ -163,7 +163,7 @@ describe('ConventionService', () => {
     });
   });
 
-  describe('importAttendees', () => {
+  describe('syncTabletopEventsAttendees', () => {
     it('should fail with missing tte id', async () => {
       mockCtx.prisma.attendee.deleteMany.mockResolvedValueOnce({ count: 10 });
       mockCtx.prisma.convention.findUnique.mockResolvedValueOnce({
@@ -185,7 +185,7 @@ describe('ConventionService', () => {
       });
 
       expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           {
             userName: '',
             password: '',
@@ -222,7 +222,7 @@ describe('ConventionService', () => {
         .mockResolvedValueOnce(null);
 
       expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           {
             userName: '',
             password: '',
@@ -263,7 +263,7 @@ describe('ConventionService', () => {
         .mockResolvedValueOnce([]);
 
       expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           {
             userName: '',
             password: '',
@@ -306,7 +306,7 @@ describe('ConventionService', () => {
       jest.spyOn(service['tteService'], 'getBadges').mockResolvedValue([]);
 
       expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           {
             userName: '',
             password: '',
@@ -372,7 +372,7 @@ describe('ConventionService', () => {
       ]);
 
       expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           {
             userName: '',
             password: '',
@@ -439,7 +439,7 @@ describe('ConventionService', () => {
       ]);
 
       expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           {
             userName: '',
             password: '',
@@ -512,7 +512,7 @@ describe('ConventionService', () => {
         .mockResolvedValue(undefined as any);
 
       await expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           { userName: '', password: '', apiKey: '' },
           1,
           ctx,
@@ -589,7 +589,7 @@ describe('ConventionService', () => {
         .mockResolvedValue(undefined as any);
 
       await expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           { userName: '', password: '', apiKey: '' },
           1,
           ctx,
@@ -640,7 +640,7 @@ describe('ConventionService', () => {
         .mockResolvedValue(undefined as any);
 
       await expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           {
             userName: '',
             password: '',
@@ -691,7 +691,7 @@ describe('ConventionService', () => {
         .mockResolvedValue(undefined as any);
 
       await expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           { userName: '', password: '', apiKey: '' },
           1,
           ctx,
@@ -705,7 +705,7 @@ describe('ConventionService', () => {
       );
 
       await expect(
-        service.importAttendees(
+        service.syncTabletopEventsAttendees(
           { userName: '', password: '', apiKey: '' },
           1,
           ctx,
@@ -714,14 +714,14 @@ describe('ConventionService', () => {
     });
   });
 
-  describe('startImportAttendees', () => {
+  describe('startSyncTabletopEventsAttendees', () => {
     it('launches the import in the background and returns "started"', () => {
       const spy = jest
-        .spyOn(service, 'importAttendees')
+        .spyOn(service, 'syncTabletopEventsAttendees')
         .mockResolvedValue(1 as any);
 
       const userData = { userName: '', password: '', apiKey: '' };
-      const result = service.startImportAttendees(userData, 1, ctx);
+      const result = service.startSyncTabletopEventsAttendees(userData, 1, ctx);
 
       expect(result.status).toBe('started');
       expect(spy).toHaveBeenCalledWith(userData, 1, ctx);
@@ -730,13 +730,13 @@ describe('ConventionService', () => {
     it('rejects a second concurrent import with 409', () => {
       // First launch never settles, so the in-flight flag stays set.
       jest
-        .spyOn(service, 'importAttendees')
+        .spyOn(service, 'syncTabletopEventsAttendees')
         .mockReturnValue(new Promise(() => {}) as any);
 
-      service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+      service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
 
       expect(() =>
-        service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx),
+        service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx),
       ).toThrow(ConflictException);
     });
   });
@@ -756,12 +756,12 @@ describe('ConventionService', () => {
 
     it('rejects a concurrent import (shared with TTE) with 409', () => {
       jest
-        .spyOn(service, 'importAttendees')
+        .spyOn(service, 'syncTabletopEventsAttendees')
         .mockReturnValue(new Promise(() => {}) as any);
       const csvSpy = jest.spyOn(service, 'importAttendeesCSV');
 
       // A TTE import is already in flight...
-      service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+      service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
 
       // ...so a CSV import is refused and never launched.
       expect(() =>
@@ -1122,14 +1122,14 @@ describe('ConventionService', () => {
       ).rejects.toBeDefined();
     });
 
-    it('startImportAttendees logs and clears the flag when the background import fails', async () => {
+    it('startSyncTabletopEventsAttendees logs and clears the flag when the background import fails', async () => {
       // Reject with a non-Error so the `error?.message ?? error` fallback runs.
       jest
-        .spyOn(service, 'importAttendees')
+        .spyOn(service, 'syncTabletopEventsAttendees')
         .mockRejectedValue('background boom');
       const errorSpy = jest.spyOn(service['logger'], 'error');
 
-      service.startImportAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+      service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
 
       // Let the fire-and-forget promise settle.
       await new Promise((r) => setImmediate(r));

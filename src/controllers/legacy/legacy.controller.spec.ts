@@ -2598,7 +2598,7 @@ describe('LegacyController', () => {
   describe('syncTabletopEvents', () => {
     it('launches the import in the background and returns "started"', async () => {
       const spy = jest
-        .spyOn(controller['conventionService'], 'startImportAttendees')
+        .spyOn(controller['conventionService'], 'startSyncTabletopEventsAttendees')
         .mockReturnValue({ status: 'started', message: 'go' });
 
       const userData = {
