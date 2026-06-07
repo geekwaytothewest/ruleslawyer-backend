@@ -1,4 +1,4 @@
-FROM node:lts-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -21,7 +21,7 @@ RUN DATABASE_URL=none npx prisma generate
 
 RUN npm run build
 
-FROM node:lts-alpine
+FROM node:24-alpine
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
