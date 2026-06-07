@@ -1674,7 +1674,7 @@ export class LegacyController {
     );
     // Long-running: launch in the background and return 202 immediately so the
     // client (and any proxy) isn't holding a request open for minutes.
-    return this.conventionService.startImportAttendees(
+    return this.conventionService.startSyncTabletopEventsAttendees(
       userData,
       Number(conId),
       this.ctx,

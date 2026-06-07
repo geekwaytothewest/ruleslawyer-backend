@@ -156,15 +156,15 @@ export class ConventionController {
   @ApiAcceptedResponse({
     description: 'Import started in the background; progress is in the server logs.',
   })
-  @Post(':id/importAttendees')
+  @Post(':id/syncTabletopEventsAttendees')
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-  async importAttendees(
+  async syncTabletopEventsAttendees(
     @Param('id') id: number,
     @Body() userData: ImportAttendeesDto,
   ) {
     // Long-running: launch in the background and return 202 immediately so the
     // client (and any proxy) isn't holding a request open for minutes.
-    return this.conventionService.startImportAttendees(userData, id, this.ctx);
+    return this.conventionService.startSyncTabletopEventsAttendees(userData, id, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
