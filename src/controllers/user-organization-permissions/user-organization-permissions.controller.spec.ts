@@ -179,6 +179,7 @@ describe('UserOrganizationPermissionsController', () => {
         organizationId: 1,
         admin: true,
         geekGuide: false,
+        kiosk: false,
         readOnly: false,
       });
 
