@@ -11,6 +11,8 @@ export class UserConventionPermissionsEntity
   admin: boolean;
   /** "Geek Guide" role — staff/volunteer for this convention. */
   geekGuide: boolean;
+  /** Access to the convention's kiosk interface. */
+  kiosk: boolean;
   /** Standard attendee-level access. */
   attendee: boolean;
 }
