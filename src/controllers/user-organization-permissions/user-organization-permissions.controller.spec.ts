@@ -166,6 +166,7 @@ describe('UserOrganizationPermissionsController', () => {
         organizationId: 1,
         admin: true,
         geekGuide: false,
+        kiosk: false,
         readOnly: false,
       };
 
@@ -199,6 +200,7 @@ describe('UserOrganizationPermissionsController', () => {
         email: 'existing@example.com',
         admin: true,
         geekGuide: false,
+        kiosk: true,
         readOnly: true,
       });
 
@@ -215,6 +217,7 @@ describe('UserOrganizationPermissionsController', () => {
           organizationId: 10,
           admin: true,
           geekGuide: false,
+          kiosk: true,
           readOnly: true,
         },
       });
@@ -234,6 +237,7 @@ describe('UserOrganizationPermissionsController', () => {
         email: 'new@example.com',
         admin: false,
         geekGuide: true,
+        kiosk: false,
         readOnly: false,
       });
 
@@ -249,6 +253,7 @@ describe('UserOrganizationPermissionsController', () => {
           organizationId: 10,
           admin: false,
           geekGuide: true,
+          kiosk: false,
           readOnly: false,
         },
       });
@@ -265,6 +270,7 @@ describe('UserOrganizationPermissionsController', () => {
           email: 'existing@example.com',
           admin: true,
           geekGuide: false,
+          kiosk: false,
           readOnly: true,
         }),
       ).rejects.toThrow('db error');

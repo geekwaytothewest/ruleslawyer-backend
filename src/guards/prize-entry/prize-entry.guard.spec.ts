@@ -163,6 +163,41 @@ describe('PrizeEntryGuard', () => {
       expect(await guard.canActivate(context)).toBeTruthy();
     });
 
+    it('should return true for a convention kiosk user', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({
+          user: { user: { id: 5, superAdmin: false } },
+          params: { id: 1, conId: 1 },
+        }),
+      });
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue({
+        ...convention,
+        users: [{ id: 1, userId: 5, kiosk: true }],
+      });
+
+      expect(await guard.canActivate(context)).toBeTruthy();
+    });
+
+    it('should return true if user is an org kiosk user', async () => {
+      const context = createMock<ExecutionContext>({
+        getArgByIndex: () => ({
+          user: { user: { id: 8, superAdmin: false } },
+          params: { orgId: 1, conId: 1 },
+        }),
+      });
+
+      mockCtx.prisma.convention.findUnique.mockResolvedValue(convention);
+      mockCtx.prisma.organization.findUnique.mockResolvedValue({
+        id: 1,
+        ownerId: 1,
+        name: 'Geekway to the Test',
+        users: [{ id: 1, userId: 8, kiosk: true }],
+      } as any);
+
+      expect(await guard.canActivate(context)).toBeTruthy();
+    });
+
     it('should return false if user has no permissions anywhere', async () => {
       const context = createMock<ExecutionContext>({
         getArgByIndex: () => ({

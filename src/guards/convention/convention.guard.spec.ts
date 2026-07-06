@@ -120,6 +120,20 @@ describe('ConventionReadGuard', () => {
     expect(await guard.canActivate(context)).toBeTruthy();
   });
 
+  it('should return true for a convention kiosk user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, kiosk: true }],
+    });
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
   it('should return true for a convention admin', async () => {
     const context = contextFor({
       user: { user: { id: 2, superAdmin: false } },
@@ -186,6 +200,25 @@ describe('ConventionReadGuard', () => {
       id: 1,
       ownerId: 99,
       users: [{ id: 1, userId: 2, geekGuide: true }],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeTruthy();
+  });
+
+  it('should return true for an organization kiosk user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, kiosk: true }],
     } as any);
 
     expect(await guard.canActivate(context)).toBeTruthy();
@@ -333,6 +366,25 @@ describe('ConventionWriteGuard', () => {
       id: 1,
       ownerId: 99,
       users: [],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should return false for a convention kiosk user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, kiosk: true }],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, kiosk: true }],
     } as any);
 
     expect(await guard.canActivate(context)).toBeFalsy();
@@ -508,6 +560,25 @@ describe('ConventionAdminGuard', () => {
       id: 1,
       ownerId: 99,
       users: [],
+    } as any);
+
+    expect(await guard.canActivate(context)).toBeFalsy();
+  });
+
+  it('should return false for a convention kiosk user', async () => {
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: { id: 1 },
+    });
+
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      ...baseCon,
+      users: [{ id: 1, userId: 2, kiosk: true }],
+    });
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 1,
+      ownerId: 99,
+      users: [{ id: 1, userId: 2, kiosk: true }],
     } as any);
 
     expect(await guard.canActivate(context)).toBeFalsy();
