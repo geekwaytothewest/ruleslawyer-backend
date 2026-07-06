@@ -118,6 +118,7 @@ describe('UserConventionPermissionsController', () => {
         conventionId: 1,
         admin: true,
         geekGuide: false,
+        kiosk: false,
         attendee: false,
       });
 
