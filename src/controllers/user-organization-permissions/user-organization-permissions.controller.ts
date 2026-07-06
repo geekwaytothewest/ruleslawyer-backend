@@ -91,6 +91,7 @@ export class UserOrganizationPermissionsController {
         },
         admin: permissionData.admin,
         geekGuide: permissionData.geekGuide,
+        kiosk: permissionData.kiosk,
         readOnly: permissionData.readOnly,
       },
       this.ctx,
@@ -130,6 +131,7 @@ export class UserOrganizationPermissionsController {
       {
         admin: permissionData.admin,
         geekGuide: permissionData.geekGuide,
+        kiosk: permissionData.kiosk,
         readOnly: permissionData.readOnly,
       },
       this.ctx,

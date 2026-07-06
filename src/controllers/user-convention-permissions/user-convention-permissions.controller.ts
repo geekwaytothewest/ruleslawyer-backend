@@ -116,6 +116,7 @@ export class UserConventionPermissionsController {
         },
         admin: permissionData.admin,
         geekGuide: permissionData.geekGuide,
+        kiosk: permissionData.kiosk,
         attendee: permissionData.attendee,
       },
       this.ctx,
