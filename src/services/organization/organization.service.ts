@@ -96,6 +96,7 @@ export class OrganizationService {
     permissions: {
       admin: boolean;
       geekGuide: boolean;
+      kiosk: boolean;
       readOnly: boolean;
     },
     ctx: Context,
@@ -119,6 +120,7 @@ export class OrganizationService {
           organizationId: Number(organizationId),
           admin: permissions.admin,
           geekGuide: permissions.geekGuide,
+          kiosk: permissions.kiosk,
           readOnly: permissions.readOnly,
         },
       });

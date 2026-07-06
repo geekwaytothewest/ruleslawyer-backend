@@ -161,6 +161,7 @@ export class UserConventionPermissionsController {
         {
           admin: body.admin,
           geekGuide: body.geekGuide,
+          kiosk: body.kiosk,
           attendee: body.attendee,
         },
         this.ctx,

@@ -150,6 +150,7 @@ export class UserOrganizationPermissionsController {
       {
         admin: body.admin,
         geekGuide: body.geekGuide,
+        kiosk: body.kiosk,
         readOnly: body.readOnly,
       },
       this.ctx,
