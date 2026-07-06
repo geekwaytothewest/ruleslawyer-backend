@@ -7,6 +7,7 @@ export class UpdateConventionPermissionDto extends PartialType(
   PickType(CreateConventionPermissionDto, [
     'admin',
     'geekGuide',
+    'kiosk',
     'attendee',
   ] as const),
 ) {}
