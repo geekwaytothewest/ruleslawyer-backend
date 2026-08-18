@@ -45,6 +45,38 @@ function validateDumpUrl(url: string): void {
   }
 }
 
+const ALLOWED_IMAGE_HOSTS = new Set([
+  'images.bggnn.com',
+  'cdn.bggnn.com',
+  'cf.bggcdn.com',
+  'boardgamegeek.com',
+  'www.boardgamegeek.com',
+]);
+
+/**
+ * Validates an image URL to prevent SSRF attacks.
+ * Only allows HTTPS to known BGG CDN hosts.
+ */
+function validateImageUrl(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Invalid image URL: unable to parse URL');
+  }
+
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Invalid image URL: only HTTPS URLs are allowed');
+  }
+
+  if (!ALLOWED_IMAGE_HOSTS.has(parsed.hostname)) {
+    throw new Error(
+      `Invalid image URL: host "${parsed.hostname}" is not permitted. ` +
+        'Only BGG CDN hosts are accepted.',
+    );
+  }
+}
+
 /**
  * Normalizes a game name for fuzzy matching against the BGG rank dump:
  * lowercases, strips diacritics and punctuation, drops articles, and collapses
@@ -430,6 +462,9 @@ export class BoardGameGeekService {
     maxRetries = 2,
     timeoutMs = 10000,
   ): Promise<Buffer | null> {
+    // SSRF protection: validate URL before making the request
+    validateImageUrl(url);
+
     for (let attempt = 0; ; attempt++) {
       try {
         const response = await this.httpService.get(url, {
