@@ -275,80 +275,77 @@ export class BoardGameGeekService {
 
   async getBoardGameByBGGId(
     bggId: number,
-  ) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        this.logger.log(
-          `Getting boardgame with bggId=${bggId} from BoardGameGeek API...`,
+  ): Promise<any> {
+    this.logger.log(
+      `Getting boardgame with bggId=${bggId} from BoardGameGeek API...`,
+    );
+
+    if (!process.env.BOARDGAMEGEEK_API_TOKEN) {
+      this.logger.error('BOARDGAMEGEEK_API_TOKEN is not set.');
+      throw new Error('BOARDGAMEGEEK_API_TOKEN is not set.');
+    }
+
+    try {
+      const game = await this.getWithRetry(
+        // No type filter (see batch method): expansions are excluded by
+        // `&type=boardgame`, but a lookup by known id should still resolve them.
+        this.bggApiUrl + `thing?id=${bggId}&stats=1&versions=1`,
+        { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+      );
+
+      const parsed = this.xmlParser.parse(game.data);
+      const items = parsed.items?.item ?? [];
+
+      if (items.length === 0) {
+        this.logger.warn(
+          `No boardgame found with bggId=${bggId} from BoardGameGeek API.`,
         );
-
-        if (!process.env.BOARDGAMEGEEK_API_TOKEN) {
-          this.logger.error('BOARDGAMEGEEK_API_TOKEN is not set.');
-          return reject(new Error('BOARDGAMEGEEK_API_TOKEN is not set.'));
-        }
-
-        const game = await this.getWithRetry(
-          // No type filter (see batch method): expansions are excluded by
-          // `&type=boardgame`, but a lookup by known id should still resolve them.
-          this.bggApiUrl + `thing?id=${bggId}&stats=1&versions=1`,
-          { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
-        );
-
-        const parsed = this.xmlParser.parse(game.data);
-        const items = parsed.items?.item ?? [];
-
-        if (items.length === 0) {
-          this.logger.warn(
-            `No boardgame found with bggId=${bggId} from BoardGameGeek API.`,
-          );
-          return resolve(null);
-        } else {
-          this.logger.log(
-            `Successfully retrieved boardgame with bggId=${bggId} from BoardGameGeek API.`,
-          );
-
-          return resolve(items[0]);
-        }
-      } catch (error: any) {
-        this.logger.error(
-          `Error retrieving boardgame with bggId=${bggId} from BoardGameGeek API: ${error.message}`,
-        );
-        return reject(error);
+        return null;
       }
-    });
+
+      this.logger.log(
+        `Successfully retrieved boardgame with bggId=${bggId} from BoardGameGeek API.`,
+      );
+
+      return items[0];
+    } catch (error: any) {
+      this.logger.error(
+        `Error retrieving boardgame with bggId=${bggId} from BoardGameGeek API: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
   async getBoardGameIdByName(
     name: string,
   ): Promise<number | null> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        this.logger.log(
-          `Getting boardgame with name=url${name} from BoardGameGeek API...`,
-        );
-        const game = await this.getWithRetry(
-          this.bggApiUrl + `search?query=${encodeURIComponent(name)}`,
-          { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
-        );
+    this.logger.log(
+      `Getting boardgame with name=${name} from BoardGameGeek API...`,
+    );
 
-        const parsed = this.xmlParser.parse(game.data);
-        const items = parsed.items?.item ?? [];
+    try {
+      const game = await this.getWithRetry(
+        this.bggApiUrl + `search?query=${encodeURIComponent(name)}`,
+        { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+      );
 
-        if (items.length === 0) {
-          this.logger.warn(
-            `No boardgame found with name=${name} from BoardGameGeek API.`,
-          );
-          return resolve(null);
-        }
+      const parsed = this.xmlParser.parse(game.data);
+      const items = parsed.items?.item ?? [];
 
-        resolve(parseInt(items[0]['@_id']));
-      } catch (error: any) {
-        this.logger.error(
-          `Error retrieving boardgame with name=${name} from BoardGameGeek API: ${error.message}`,
+      if (items.length === 0) {
+        this.logger.warn(
+          `No boardgame found with name=${name} from BoardGameGeek API.`,
         );
-        reject(error);
+        return null;
       }
-    });
+
+      return parseInt(items[0]['@_id']);
+    } catch (error: any) {
+      this.logger.error(
+        `Error retrieving boardgame with name=${name} from BoardGameGeek API: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
   /**
