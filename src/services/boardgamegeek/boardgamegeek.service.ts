@@ -12,6 +12,39 @@ export interface RankDumpEntry {
   rating: number | null;
 }
 
+const ALLOWED_DUMP_HOSTS = new Set([
+  'geek-export-stats.s3.amazonaws.com',
+  'boardgamegeek.com',
+  'www.boardgamegeek.com',
+]);
+
+const MAX_DUMP_SIZE = 5 * 1024 * 1024; // 5 MB
+
+/**
+ * Validates a rank dump URL to prevent SSRF attacks.
+ * Only allows HTTPS to known, expected hosts.
+ */
+function validateDumpUrl(url: string): void {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Invalid dump URL: unable to parse URL');
+  }
+
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Invalid dump URL: only HTTPS URLs are allowed');
+  }
+
+  if (!ALLOWED_DUMP_HOSTS.has(parsed.hostname)) {
+    throw new Error(
+      `Invalid dump URL: host "${parsed.hostname}" is not permitted. ` +
+        'Only BGG-issued signed URLs are accepted.',
+    );
+  }
+}
+
 /**
  * Normalizes a game name for fuzzy matching against the BGG rank dump:
  * lowercases, strips diacritics and punctuation, drops articles, and collapses
@@ -296,6 +329,9 @@ export class BoardGameGeekService {
   ): Promise<Map<string, RankDumpEntry[]>> {
     this.logger.log('Downloading BoardGameGeek rank data dump...');
 
+    // SSRF protection: validate URL before making the request
+    validateDumpUrl(dumpUrl);
+
     const expiredHint =
       'The signed dump URL is likely invalid or expired (these links are short-lived) — ' +
       'fetch a fresh one from boardgamegeek.com/data_dumps/bg_ranks.';
@@ -310,6 +346,13 @@ export class BoardGameGeekService {
       const status = error?.response?.status;
       throw new Error(
         `Failed to download the BGG rank dump${status ? ` (HTTP ${status})` : ''}: ${error.message}. ${expiredHint}`,
+      );
+    }
+
+    // Reject oversized dumps to prevent resource exhaustion (5 MB limit).
+    if (buffer.length > MAX_DUMP_SIZE) {
+      throw new Error(
+        `BGG rank dump exceeds maximum allowed size (${buffer.length} bytes, limit is ${MAX_DUMP_SIZE} bytes).`,
       );
     }
 
