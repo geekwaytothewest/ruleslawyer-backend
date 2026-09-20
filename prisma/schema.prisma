@@ -108,6 +108,8 @@ model UserOrganizationPermissions {
   admin          Boolean
   /// "Geek Guide" role — staff/volunteer helping run library operations.
   geekGuide      Boolean
+  /// Access to the convention's kiosk interface.
+  kiosk        Boolean        @default(false)
   /// View-only access.
   readOnly       Boolean
 
@@ -126,6 +128,8 @@ model UserConventionPermissions {
   admin        Boolean
   /// "Geek Guide" role — staff/volunteer for this convention.
   geekGuide    Boolean
+  /// Access to the convention's kiosk interface.
+  kiosk        Boolean        @default(false)
   /// Standard attendee-level access.
   attendee     Boolean
 

@@ -105,6 +105,7 @@ describe('UserConventionPermissionsController', () => {
         conventionId: 1,
         admin: true,
         geekGuide: false,
+        kiosk: false,
         attendee: false,
       };
 
@@ -117,6 +118,7 @@ describe('UserConventionPermissionsController', () => {
         conventionId: 1,
         admin: true,
         geekGuide: false,
+        kiosk: false,
         attendee: false,
       });
 
@@ -138,6 +140,7 @@ describe('UserConventionPermissionsController', () => {
         email: 'existing@example.com',
         admin: true,
         geekGuide: false,
+        kiosk: true,
         attendee: true,
       });
 
@@ -154,6 +157,7 @@ describe('UserConventionPermissionsController', () => {
           conventionId: 3,
           admin: true,
           geekGuide: false,
+          kiosk: true,
           attendee: true,
         },
       });
@@ -173,6 +177,7 @@ describe('UserConventionPermissionsController', () => {
         email: 'new@example.com',
         admin: false,
         geekGuide: true,
+        kiosk: false,
         attendee: false,
       });
 
@@ -188,6 +193,7 @@ describe('UserConventionPermissionsController', () => {
           conventionId: 3,
           admin: false,
           geekGuide: true,
+          kiosk: false,
           attendee: false,
         },
       });
@@ -204,6 +210,7 @@ describe('UserConventionPermissionsController', () => {
           email: 'existing@example.com',
           admin: true,
           geekGuide: false,
+          kiosk: false,
           attendee: true,
         }),
       ).rejects.toThrow('db error');
