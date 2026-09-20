@@ -51,6 +51,59 @@ describe('CopyController', () => {
 
       expect(copy?.winnable).toBeTruthy();
     });
+
+    it('sends collectionId to prisma as a relation connect', async () => {
+      mockCtx.prisma.copy.update.mockResolvedValue({
+        id: 1,
+        gameId: 1,
+        dateAdded: new Date(),
+        comments: null,
+        dateRetired: null,
+        winnable: true,
+        winnerId: null,
+        coverArtOverride: null,
+        bggVersionOverride: null,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        collectionId: 2,
+        organizationId: 1,
+      });
+
+      await controller.updateCopy(1, { collectionId: 2, winnable: true });
+
+      expect(mockCtx.prisma.copy.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            winnable: true,
+            collection: { connect: { id: 2 } },
+          },
+        }),
+      );
+    });
+
+    it('leaves the collection alone when collectionId is omitted', async () => {
+      mockCtx.prisma.copy.update.mockResolvedValue({
+        id: 1,
+        gameId: 1,
+        dateAdded: new Date(),
+        comments: null,
+        dateRetired: null,
+        winnable: false,
+        winnerId: null,
+        coverArtOverride: null,
+        bggVersionOverride: null,
+        barcode: '*00001*',
+        barcodeLabel: '1',
+        collectionId: 1,
+        organizationId: 1,
+      });
+
+      await controller.updateCopy(1, { winnable: false });
+
+      expect(mockCtx.prisma.copy.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { winnable: false } }),
+      );
+    });
   });
 
   describe('getCopy', () => {

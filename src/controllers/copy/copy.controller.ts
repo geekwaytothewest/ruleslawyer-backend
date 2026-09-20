@@ -68,12 +68,19 @@ export class CopyController {
     @Param('id') id: number,
     @Body() copy: UpdateCopyDto,
   ) {
+    const { collectionId, ...rest } = copy;
+
     return await this.copyService.updateCopy(
       {
         where: {
           id: Number(id),
         },
-        data: copy,
+        data: {
+          ...rest,
+          ...(collectionId !== undefined && {
+            collection: { connect: { id: Number(collectionId) } },
+          }),
+        },
       },
       this.ctx,
     );

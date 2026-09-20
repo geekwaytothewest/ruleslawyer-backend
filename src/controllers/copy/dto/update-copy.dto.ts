@@ -45,4 +45,12 @@ export class UpdateCopyDto {
   @IsOptional()
   @IsInt()
   bggVersionOverride?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Moves the copy to this collection. The barcode and barcode label must be unused in the target collection.',
+  })
+  @IsOptional()
+  @IsInt()
+  collectionId?: number;
 }

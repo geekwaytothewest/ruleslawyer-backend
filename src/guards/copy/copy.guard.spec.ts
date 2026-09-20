@@ -335,6 +335,129 @@ describe('CopyGuard', () => {
     );
   });
 
+  describe('collectionId in the request body', () => {
+    // The guard runs before the ValidationPipe, so these bodies are raw.
+    const contextWithBody = (body: any, superAdmin = true) =>
+      createMock<ExecutionContext>({
+        getArgByIndex: () => ({
+          user: { user: { id: 9, superAdmin } },
+          params: { id: 1 },
+          body,
+        }),
+      });
+
+    const sourceCopy = {
+      id: 1,
+      organizationId: 1,
+      collectionId: 1,
+      collection: { id: 1, archived: false },
+    } as any;
+
+    it('allows a move within the same organization', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 2,
+        organizationId: 1,
+        archived: false,
+      } as any);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 2,
+      }));
+
+      expect(authed).toBeTruthy();
+    });
+
+    it('blocks a move into another organization', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 2,
+        organizationId: 99,
+        archived: false,
+      } as any);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 2,
+      }));
+
+      expect(authed).toBeFalsy();
+    });
+
+    it('blocks a cross-org move even for a super admin', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 2,
+        organizationId: 99,
+        archived: false,
+      } as any);
+
+      const authed = await guard.canActivate(
+        contextWithBody({ collectionId: 2 }, true),
+      );
+
+      expect(authed).toBeFalsy();
+    });
+
+    it('blocks a move into an archived collection', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 2,
+        organizationId: 1,
+        archived: true,
+      } as any);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 2,
+      }));
+
+      expect(authed).toBeFalsy();
+    });
+
+    it('blocks a move into a collection that does not exist', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue(null);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 2,
+      }));
+
+      expect(authed).toBeFalsy();
+    });
+
+    it('rejects a non-numeric collectionId without querying', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 'not-a-number',
+      }));
+
+      expect(authed).toBeFalsy();
+      expect(mockCtx.prisma.collection.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('skips the lookup when collectionId matches the current collection', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 1,
+      }));
+
+      expect(authed).toBeTruthy();
+      expect(mockCtx.prisma.collection.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('skips the lookup when the body carries no collectionId', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+
+      const authed = await guard.canActivate(contextWithBody({
+        winnable: true,
+      }));
+
+      expect(authed).toBeTruthy();
+      expect(mockCtx.prisma.collection.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
   it('should return false after everything', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({
