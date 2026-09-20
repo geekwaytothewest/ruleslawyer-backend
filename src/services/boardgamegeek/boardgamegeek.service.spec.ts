@@ -214,7 +214,7 @@ describe('BoardGameGeekService', () => {
     it('returns a buffer of the fetched image and sends a timeout', async () => {
       http.get.mockResolvedValue({ data: Buffer.from('imgbytes') });
 
-      const image = await service.getImage('https://img');
+      const image = await service.getImage('https://cf.bggcdn.com/img');
 
       expect(image).toBeInstanceOf(Buffer);
       expect(image?.toString()).toBe('imgbytes');
@@ -229,7 +229,7 @@ describe('BoardGameGeekService', () => {
         .mockRejectedValueOnce(new Error('socket hang up'))
         .mockResolvedValueOnce({ data: Buffer.from('imgbytes') });
 
-      const image = await service.getImage('https://img');
+      const image = await service.getImage('https://cf.bggcdn.com/img');
 
       expect(image?.toString()).toBe('imgbytes');
       expect(http.get).toHaveBeenCalledTimes(2);
@@ -240,7 +240,7 @@ describe('BoardGameGeekService', () => {
         .mockRejectedValueOnce(rateLimited({ 'retry-after': '1' }))
         .mockResolvedValueOnce({ data: Buffer.from('imgbytes') });
 
-      const image = await service.getImage('https://img');
+      const image = await service.getImage('https://cf.bggcdn.com/img');
 
       expect(image?.toString()).toBe('imgbytes');
       expect(http.get).toHaveBeenCalledTimes(2);
@@ -250,7 +250,7 @@ describe('BoardGameGeekService', () => {
     it('returns null after exhausting retries', async () => {
       http.get.mockRejectedValue(new Error('boom'));
 
-      const image = await service.getImage('https://img');
+      const image = await service.getImage('https://cf.bggcdn.com/img');
 
       expect(image).toBeNull();
       // initial attempt + 2 retries
@@ -262,10 +262,28 @@ describe('BoardGameGeekService', () => {
       notFound.response = { status: 404, headers: {} };
       http.get.mockRejectedValue(notFound);
 
-      const image = await service.getImage('https://img');
+      const image = await service.getImage('https://cf.bggcdn.com/img');
 
       expect(image).toBeNull();
       expect(http.get).toHaveBeenCalledTimes(1);
+    });
+
+    it('throws when the host is not in the allowed list', async () => {
+      await expect(service.getImage('https://evil.com/img')).rejects.toThrow(
+        /Invalid image URL: host "evil.com" is not permitted/,
+      );
+    });
+
+    it('throws when the protocol is not HTTPS', async () => {
+      await expect(service.getImage('http://cf.bggcdn.com/img')).rejects.toThrow(
+        /Invalid image URL: only HTTPS URLs are allowed/,
+      );
+    });
+
+    it('throws when the image URL cannot be parsed', async () => {
+      await expect(service.getImage('not a url')).rejects.toThrow(
+        /Invalid image URL: unable to parse URL/,
+      );
     });
   });
 
@@ -299,6 +317,24 @@ describe('BoardGameGeekService', () => {
       return zip.toBuffer();
     };
 
+    it('throws when the dump URL cannot be parsed', async () => {
+      await expect(service.getRankDumpIndex('not a url')).rejects.toThrow(
+        /Invalid dump URL: unable to parse URL/,
+      );
+    });
+
+    it('throws when the dump URL uses a non-HTTPS protocol', async () => {
+      await expect(
+        service.getRankDumpIndex('http://geek-export-stats.s3.amazonaws.com/dump.zip'),
+      ).rejects.toThrow(/Invalid dump URL: only HTTPS URLs are allowed/);
+    });
+
+    it('throws when the dump URL host is not in the allowed list', async () => {
+      await expect(
+        service.getRankDumpIndex('https://evil.com/dump.zip'),
+      ).rejects.toThrow(/Invalid dump URL: host "evil.com" is not permitted/);
+    });
+
     it('builds a normalized name index from the dump CSV', async () => {
       const csv =
         'id,name,yearpublished,rank,bayesaverage\n' +
@@ -307,7 +343,9 @@ describe('BoardGameGeekService', () => {
         '0,BadRow,,,\n'; // id=0 should be skipped
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
-      const index = await service.getRankDumpIndex('https://signed-url');
+      const index = await service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
+      );
 
       expect(index.get('catan')).toEqual([
         { id: 13, year: 1995, rank: 512, rating: 7.2 },
@@ -325,7 +363,9 @@ describe('BoardGameGeekService', () => {
         '999,Hive,2018,0,2.3\n';
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
-      const index = await service.getRankDumpIndex('https://signed-url');
+      const index = await service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
+      );
       const hive = index.get('hive');
 
       expect(hive).toHaveLength(2);
@@ -341,7 +381,9 @@ describe('BoardGameGeekService', () => {
         '77,   ,2000,100,6.9\n'; // whitespace-only name normalizes to empty -> skipped
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
-      const index = await service.getRankDumpIndex('https://signed-url');
+      const index = await service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
+      );
 
       expect(index.get('catan')).toEqual([{ id: 13, year: 1995, rank: 512, rating: 6.9 }]);
       // The whitespace-named row produced no key.
@@ -352,7 +394,9 @@ describe('BoardGameGeekService', () => {
       const csv = 'id,name,yearpublished,rank,bayesaverage\n' + '55,Untimed Game,,300,5.9\n';
       http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
 
-      const index = await service.getRankDumpIndex('https://signed-url');
+      const index = await service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
+      );
 
       expect(index.get('untimed game')).toEqual([
         { id: 55, year: null, rank: 300, rating: 5.9 },
@@ -364,7 +408,9 @@ describe('BoardGameGeekService', () => {
       http.get.mockRejectedValue(new Error('socket hang up'));
 
       await expect(
-        service.getRankDumpIndex('https://signed-url'),
+        service.getRankDumpIndex(
+          'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
+        ),
       ).rejects.toThrow(/Failed to download the BGG rank dump:.*socket hang up/s);
     });
 
@@ -375,7 +421,9 @@ describe('BoardGameGeekService', () => {
       http.get.mockResolvedValue({ data: corrupt, status: 200, headers: {} });
 
       await expect(
-        service.getRankDumpIndex('https://corrupt'),
+        service.getRankDumpIndex(
+          'https://geek-export-stats.s3.amazonaws.com/corrupt.zip',
+        ),
       ).rejects.toThrow(/zip/i);
     });
 
@@ -385,7 +433,9 @@ describe('BoardGameGeekService', () => {
         status: 200,
         headers: {},
       });
-      await expect(service.getRankDumpIndex('https://signed-url')).rejects.toThrow(
+      await expect(service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/no-csv.zip',
+      )).rejects.toThrow(
         /No CSV file found/,
       );
     });
@@ -395,7 +445,9 @@ describe('BoardGameGeekService', () => {
       err.response = { status: 403 };
       http.get.mockRejectedValue(err);
 
-      await expect(service.getRankDumpIndex('https://expired')).rejects.toThrow(
+      await expect(service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/expired.zip',
+      )).rejects.toThrow(
         /Failed to download the BGG rank dump \(HTTP 403\).*expired/s,
       );
     });
@@ -407,9 +459,20 @@ describe('BoardGameGeekService', () => {
         headers: {},
       });
 
-      await expect(service.getRankDumpIndex('https://not-a-zip')).rejects.toThrow(
+      await expect(service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/not-a-zip.zip',
+      )).rejects.toThrow(
         /did not return a zip/,
       );
+    });
+
+    it('throws when the dump exceeds the 5 MB size limit', async () => {
+      const oversized = Buffer.alloc(5 * 1024 * 1024 + 1, 0x50); // 5MB+1, starts with "PK"
+      http.get.mockResolvedValue({ data: oversized, status: 200, headers: {} });
+
+      await expect(service.getRankDumpIndex(
+        'https://geek-export-stats.s3.amazonaws.com/oversized.zip',
+      )).rejects.toThrow(/exceeds maximum allowed size/);
     });
   });
 });

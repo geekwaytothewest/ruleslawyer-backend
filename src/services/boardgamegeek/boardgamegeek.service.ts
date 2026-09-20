@@ -12,6 +12,71 @@ export interface RankDumpEntry {
   rating: number | null;
 }
 
+const ALLOWED_DUMP_HOSTS = new Set([
+  'geek-export-stats.s3.amazonaws.com',
+  'boardgamegeek.com',
+  'www.boardgamegeek.com',
+]);
+
+const MAX_DUMP_SIZE = 5 * 1024 * 1024; // 5 MB
+
+/**
+ * Validates a rank dump URL to prevent SSRF attacks.
+ * Only allows HTTPS to known, expected hosts.
+ */
+function validateDumpUrl(url: string): void {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Invalid dump URL: unable to parse URL');
+  }
+
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Invalid dump URL: only HTTPS URLs are allowed');
+  }
+
+  if (!ALLOWED_DUMP_HOSTS.has(parsed.hostname)) {
+    throw new Error(
+      `Invalid dump URL: host "${parsed.hostname}" is not permitted. ` +
+        'Only BGG-issued signed URLs are accepted.',
+    );
+  }
+}
+
+const ALLOWED_IMAGE_HOSTS = new Set([
+  'images.bggnn.com',
+  'cdn.bggnn.com',
+  'cf.bggcdn.com',
+  'boardgamegeek.com',
+  'www.boardgamegeek.com',
+]);
+
+/**
+ * Validates an image URL to prevent SSRF attacks.
+ * Only allows HTTPS to known BGG CDN hosts.
+ */
+function validateImageUrl(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Invalid image URL: unable to parse URL');
+  }
+
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Invalid image URL: only HTTPS URLs are allowed');
+  }
+
+  if (!ALLOWED_IMAGE_HOSTS.has(parsed.hostname)) {
+    throw new Error(
+      `Invalid image URL: host "${parsed.hostname}" is not permitted. ` +
+        'Only BGG CDN hosts are accepted.',
+    );
+  }
+}
+
 /**
  * Normalizes a game name for fuzzy matching against the BGG rank dump:
  * lowercases, strips diacritics and punctuation, drops articles, and collapses
@@ -210,80 +275,77 @@ export class BoardGameGeekService {
 
   async getBoardGameByBGGId(
     bggId: number,
-  ) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        this.logger.log(
-          `Getting boardgame with bggId=${bggId} from BoardGameGeek API...`,
+  ): Promise<any> {
+    this.logger.log(
+      `Getting boardgame with bggId=${bggId} from BoardGameGeek API...`,
+    );
+
+    if (!process.env.BOARDGAMEGEEK_API_TOKEN) {
+      this.logger.error('BOARDGAMEGEEK_API_TOKEN is not set.');
+      throw new Error('BOARDGAMEGEEK_API_TOKEN is not set.');
+    }
+
+    try {
+      const game = await this.getWithRetry(
+        // No type filter (see batch method): expansions are excluded by
+        // `&type=boardgame`, but a lookup by known id should still resolve them.
+        this.bggApiUrl + `thing?id=${bggId}&stats=1&versions=1`,
+        { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+      );
+
+      const parsed = this.xmlParser.parse(game.data);
+      const items = parsed.items?.item ?? [];
+
+      if (items.length === 0) {
+        this.logger.warn(
+          `No boardgame found with bggId=${bggId} from BoardGameGeek API.`,
         );
-
-        if (!process.env.BOARDGAMEGEEK_API_TOKEN) {
-          this.logger.error('BOARDGAMEGEEK_API_TOKEN is not set.');
-          return reject(new Error('BOARDGAMEGEEK_API_TOKEN is not set.'));
-        }
-
-        const game = await this.getWithRetry(
-          // No type filter (see batch method): expansions are excluded by
-          // `&type=boardgame`, but a lookup by known id should still resolve them.
-          this.bggApiUrl + `thing?id=${bggId}&stats=1&versions=1`,
-          { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
-        );
-
-        const parsed = this.xmlParser.parse(game.data);
-        const items = parsed.items?.item ?? [];
-
-        if (items.length === 0) {
-          this.logger.warn(
-            `No boardgame found with bggId=${bggId} from BoardGameGeek API.`,
-          );
-          return resolve(null);
-        } else {
-          this.logger.log(
-            `Successfully retrieved boardgame with bggId=${bggId} from BoardGameGeek API.`,
-          );
-
-          return resolve(items[0]);
-        }
-      } catch (error: any) {
-        this.logger.error(
-          `Error retrieving boardgame with bggId=${bggId} from BoardGameGeek API: ${error.message}`,
-        );
-        return reject(error);
+        return null;
       }
-    });
+
+      this.logger.log(
+        `Successfully retrieved boardgame with bggId=${bggId} from BoardGameGeek API.`,
+      );
+
+      return items[0];
+    } catch (error: any) {
+      this.logger.error(
+        `Error retrieving boardgame with bggId=${bggId} from BoardGameGeek API: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
   async getBoardGameIdByName(
     name: string,
   ): Promise<number | null> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        this.logger.log(
-          `Getting boardgame with name=url${name} from BoardGameGeek API...`,
-        );
-        const game = await this.getWithRetry(
-          this.bggApiUrl + `search?query=${encodeURIComponent(name)}`,
-          { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
-        );
+    this.logger.log(
+      `Getting boardgame with name=${name} from BoardGameGeek API...`,
+    );
 
-        const parsed = this.xmlParser.parse(game.data);
-        const items = parsed.items?.item ?? [];
+    try {
+      const game = await this.getWithRetry(
+        this.bggApiUrl + `search?query=${encodeURIComponent(name)}`,
+        { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+      );
 
-        if (items.length === 0) {
-          this.logger.warn(
-            `No boardgame found with name=${name} from BoardGameGeek API.`,
-          );
-          return resolve(null);
-        }
+      const parsed = this.xmlParser.parse(game.data);
+      const items = parsed.items?.item ?? [];
 
-        resolve(parseInt(items[0]['@_id']));
-      } catch (error: any) {
-        this.logger.error(
-          `Error retrieving boardgame with name=${name} from BoardGameGeek API: ${error.message}`,
+      if (items.length === 0) {
+        this.logger.warn(
+          `No boardgame found with name=${name} from BoardGameGeek API.`,
         );
-        reject(error);
+        return null;
       }
-    });
+
+      return parseInt(items[0]['@_id']);
+    } catch (error: any) {
+      this.logger.error(
+        `Error retrieving boardgame with name=${name} from BoardGameGeek API: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
   /**
@@ -295,6 +357,9 @@ export class BoardGameGeekService {
     dumpUrl: string,
   ): Promise<Map<string, RankDumpEntry[]>> {
     this.logger.log('Downloading BoardGameGeek rank data dump...');
+
+    // SSRF protection: validate URL before making the request
+    validateDumpUrl(dumpUrl);
 
     const expiredHint =
       'The signed dump URL is likely invalid or expired (these links are short-lived) — ' +
@@ -310,6 +375,13 @@ export class BoardGameGeekService {
       const status = error?.response?.status;
       throw new Error(
         `Failed to download the BGG rank dump${status ? ` (HTTP ${status})` : ''}: ${error.message}. ${expiredHint}`,
+      );
+    }
+
+    // Reject oversized dumps to prevent resource exhaustion (5 MB limit).
+    if (buffer.length > MAX_DUMP_SIZE) {
+      throw new Error(
+        `BGG rank dump exceeds maximum allowed size (${buffer.length} bytes, limit is ${MAX_DUMP_SIZE} bytes).`,
       );
     }
 
@@ -387,6 +459,9 @@ export class BoardGameGeekService {
     maxRetries = 2,
     timeoutMs = 10000,
   ): Promise<Buffer | null> {
+    // SSRF protection: validate URL before making the request
+    validateImageUrl(url);
+
     for (let attempt = 0; ; attempt++) {
       try {
         const response = await this.httpService.get(url, {
