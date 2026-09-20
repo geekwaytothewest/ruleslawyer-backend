@@ -72,6 +72,39 @@ export class CopyGuard implements CanActivate {
       return false;
     }
 
+    // A copy denormalizes organizationId alongside collectionId, so connecting
+    // it to another org's collection leaves the row pointing at two different
+    // orgs. That's a data-integrity break rather than a permission question, so
+    // it's checked ahead of the superAdmin short-circuit. Guards run before the
+    // ValidationPipe, so this reads the raw body the client actually sent.
+    const requestedCollectionId = context.getArgByIndex(0).body?.collectionId;
+
+    if (requestedCollectionId !== undefined && requestedCollectionId !== null) {
+      const targetCollectionId = Number(requestedCollectionId);
+
+      if (Number.isNaN(targetCollectionId)) {
+        return false;
+      }
+
+      if (targetCollectionId !== copy.collectionId) {
+        const targetCollection = await this.ctx.prisma.collection.findUnique({
+          where: { id: targetCollectionId },
+        });
+
+        if (!targetCollection) {
+          return false;
+        }
+
+        if (targetCollection.archived) {
+          return false;
+        }
+
+        if (targetCollection.organizationId !== copy.organizationId) {
+          return false;
+        }
+      }
+    }
+
     if (user.superAdmin) {
       return true;
     }
