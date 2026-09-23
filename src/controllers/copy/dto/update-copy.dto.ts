@@ -48,9 +48,17 @@ export class UpdateCopyDto {
 
   @ApiPropertyOptional({
     description:
-      'Moves the copy to this collection. The barcode and barcode label must be unused in the target collection.',
+      'Moves the copy to this collection. The collection must belong to the same organization as the copy and must not be archived, and the barcode and barcode label must be unused in the target collection.',
   })
   @IsOptional()
   @IsInt()
   collectionId?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Reassigns the copy to this game. The game must belong to the same organization as the copy.',
+  })
+  @IsOptional()
+  @IsInt()
+  gameId?: number;
 }

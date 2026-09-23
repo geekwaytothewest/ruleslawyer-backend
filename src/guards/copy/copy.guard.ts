@@ -105,6 +105,34 @@ export class CopyGuard implements CanActivate {
       }
     }
 
+    // Game carries organizationId too, so the same reasoning applies to
+    // reassigning a copy to a different game.
+    const requestedGameId = context.getArgByIndex(0).body?.gameId;
+
+    if (requestedGameId !== undefined && requestedGameId !== null) {
+      const targetGameId = Number(requestedGameId);
+
+      if (Number.isNaN(targetGameId)) {
+        return false;
+      }
+
+      if (targetGameId !== copy.gameId) {
+        // coverArt is omitted globally in PrismaService, so this does not pull
+        // the game's image bytes.
+        const targetGame = await this.ctx.prisma.game.findUnique({
+          where: { id: targetGameId },
+        });
+
+        if (!targetGame) {
+          return false;
+        }
+
+        if (targetGame.organizationId !== copy.organizationId) {
+          return false;
+        }
+      }
+    }
+
     if (user.superAdmin) {
       return true;
     }
