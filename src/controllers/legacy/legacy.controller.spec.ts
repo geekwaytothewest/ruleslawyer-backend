@@ -1702,18 +1702,23 @@ describe('LegacyController', () => {
 
       mockCtx.prisma.copy.findUnique.mockResolvedValue(copy);
 
+      // Fixed, ordered timestamps: the controller reports checkIn - checkOut,
+      // so two bare `new Date()` calls here can only yield 0 or a negative
+      // length depending on whether the millisecond ticks between them.
       mockCtx.prisma.checkOut.update.mockResolvedValue({
         id: 1,
         copyId: 1,
         attendeeId: 1,
-        checkIn: new Date(),
-        checkOut: new Date(),
+        checkOut: new Date('2026-01-01T10:00:00.000Z'),
+        checkIn: new Date('2026-01-01T10:30:00.000Z'),
         submitted: false,
       });
 
       const bigResponse = await controller.checkinCopy(1, 1, '1');
 
       expect(bigResponse?.Result.Length.Days).toBe(0);
+      expect(bigResponse?.Result.Length.Hours).toBe(0);
+      expect(bigResponse?.Result.Length.Minutes).toBe(30);
     });
 
     it('should not break', async () => {

@@ -62,6 +62,33 @@ import { User } from '../../modules/authz/user.decorator';
 import { stringify } from 'csv-stringify/sync';
 import { CollectionReadGuard } from '../../guards/collection/collection-read.guard';
 
+/**
+ * Splits a checkout duration in milliseconds into days/hours/minutes/seconds.
+ *
+ * Negative input is clamped to zero. A checkout can measure negative when the
+ * row's checkIn lands at or before its checkOut (clock skew between writers, or
+ * a check-in recorded in the same millisecond), and Math.floor on a negative
+ * would otherwise report a -1ms checkout as "-1 days, 23:59:59".
+ */
+function splitCheckoutLength(lengthMs: number): {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+} {
+  let diff = Math.max(0, lengthMs);
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  diff -= days * (1000 * 60 * 60 * 24);
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  diff -= hours * 1000 * 60 * 60;
+  const minutes = Math.floor(diff / (1000 * 60));
+  diff -= minutes * 1000 * 60;
+  const seconds = Math.floor(diff / 1000);
+
+  return { days, hours, minutes, seconds };
+}
+
 @ApiTags('legacy')
 @ApiBearerAuth('jwt')
 @Controller()
@@ -122,15 +149,8 @@ export class LegacyController {
                   : new Date().getTime()) - currentCheckout.checkOut.getTime();
             }
 
-            const days = Math.floor(
-              currentCheckoutLength / (1000 * 60 * 60 * 24),
-            );
-            let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            diff -= hours * 1000 * 60 * 60;
-            const minutes = Math.floor(diff / (1000 * 60));
-            diff -= minutes * 1000 * 60;
-            const seconds = Math.floor(diff / 1000);
+            const { days, hours, minutes, seconds } =
+              splitCheckoutLength(currentCheckoutLength);
 
             return {
               ID: cp.barcodeLabel,
@@ -471,13 +491,8 @@ export class LegacyController {
             c.checkOut.getTime();
         }
 
-        const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
-        let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        diff -= hours * 1000 * 60 * 60;
-        const minutes = Math.floor(diff / (1000 * 60));
-        diff -= minutes * 1000 * 60;
-        const seconds = Math.floor(diff / 1000);
+        const { days, hours, minutes, seconds } =
+          splitCheckoutLength(currentCheckoutLength);
 
         return {
           Attendee: {
@@ -556,13 +571,8 @@ export class LegacyController {
             c.checkOut.getTime();
         }
 
-        const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
-        let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        diff -= hours * 1000 * 60 * 60;
-        const minutes = Math.floor(diff / (1000 * 60));
-        diff -= minutes * 1000 * 60;
-        const seconds = Math.floor(diff / 1000);
+        const { days, hours, minutes, seconds } =
+          splitCheckoutLength(currentCheckoutLength);
 
         return {
           Attendee: {
@@ -706,13 +716,8 @@ export class LegacyController {
       );
     }
 
-    const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
-    let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    diff -= hours * 1000 * 60 * 60;
-    const minutes = Math.floor(diff / (1000 * 60));
-    diff -= minutes * 1000 * 60;
-    const seconds = Math.floor(diff / 1000);
+    const { days, hours, minutes, seconds } =
+      splitCheckoutLength(currentCheckoutLength);
 
     if (currentCheckout) {
       this.logger.log(`Current checkout exists, returning current checkout`);
@@ -831,13 +836,8 @@ export class LegacyController {
               : new Date().getTime()) - currentCheckout.checkOut?.getTime();
         }
 
-        const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
-        let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        diff -= hours * 1000 * 60 * 60;
-        const minutes = Math.floor(diff / (1000 * 60));
-        diff -= minutes * 1000 * 60;
-        const seconds = Math.floor(diff / 1000);
+        const { days, hours, minutes, seconds } =
+          splitCheckoutLength(currentCheckoutLength);
 
         return {
           Collection: {
@@ -1160,13 +1160,8 @@ export class LegacyController {
       }
     }
 
-    const days = Math.floor(currentCheckoutLength / (1000 * 60 * 60 * 24));
-    let diff = currentCheckoutLength - days * (1000 * 60 * 60 * 24);
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    diff -= hours * 1000 * 60 * 60;
-    const minutes = Math.floor(diff / (1000 * 60));
-    diff -= minutes * 1000 * 60;
-    const seconds = Math.floor(diff / 1000);
+    const { days, hours, minutes, seconds } =
+      splitCheckoutLength(currentCheckoutLength);
 
     return {
       Errors: [],
