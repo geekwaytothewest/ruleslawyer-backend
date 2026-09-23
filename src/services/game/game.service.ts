@@ -1,9 +1,14 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { Game, Prisma } from '@prisma/client';
 import { Context } from '../prisma/context';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import {
   BoardGameGeekService,
+  InvalidImageUrlError,
   normalizeBggName,
 } from '../boardgamegeek/boardgamegeek.service';
 
@@ -195,9 +200,28 @@ export class GameService {
     // When deferImage is true, the (slow) thumbnail download is skipped and
     // coverArt is left untouched, so a caller can fetch images separately with
     // bounded concurrency. Otherwise behaves as before (inline download).
-    const imageResponse = !deferImage && gameData?.thumbnail
-      ? await this.boardGameGeekService.getImage(gameData.thumbnail)
-      : null;
+    // Unlike the bulk path, a caller asked for this one game, so a bad
+    // thumbnail URL fails the request — but as a 502, since the offending data
+    // came from BGG rather than from the caller.
+    let imageResponse: Buffer | null = null;
+
+    if (!deferImage && gameData?.thumbnail) {
+      try {
+        imageResponse = await this.boardGameGeekService.getImage(gameData.thumbnail);
+      } catch (error: any) {
+        if (!(error instanceof InvalidImageUrlError)) {
+          throw error;
+        }
+
+        this.logger.error(
+          `BoardGameGeek returned an unusable thumbnail URL for game id=${id}: ${error.message}`,
+        );
+
+        throw new BadGatewayException(
+          'BoardGameGeek returned a cover art URL we do not recognize; the game was not synced.',
+        );
+      }
+    }
 
     return ctx.prisma.game.update({
         where: { id: Number(id) },
@@ -242,6 +266,7 @@ export class GameService {
     queue: { id: number; thumbnail: string }[],
     isProducerDone: () => boolean,
     ctx: Context,
+    rejectedHosts: Map<string, number> = new Map(),
   ) {
     while (!isProducerDone() || queue.length > 0) {
       const job = queue.shift();
@@ -251,7 +276,25 @@ export class GameService {
         continue;
       }
 
-      const image = await this.boardGameGeekService.getImage(job.thumbnail);
+      let image: Buffer | null;
+
+      try {
+        image = await this.boardGameGeekService.getImage(job.thumbnail);
+      } catch (error: any) {
+        if (!(error instanceof InvalidImageUrlError)) {
+          throw error;
+        }
+
+        // A disallowed host means our allowlist is stale, not that this one
+        // game is broken — so it would hit every job in the queue. Tally it for
+        // the end-of-run summary and keep draining rather than killing this
+        // worker (and, since the cause is systemic, all of its siblings) and
+        // leaving the producer filling a queue nobody reads.
+        const key = error.host ?? job.thumbnail;
+        rejectedHosts.set(key, (rejectedHosts.get(key) ?? 0) + 1);
+        continue;
+      }
+
       if (image) {
         // Bump lastBGGSync alongside the image so the frontend's cover-art
         // cache-buster (which keys on lastBGGSync) changes when the bytes do.
@@ -441,6 +484,9 @@ export class GameService {
     const imageQueue: { id: number; thumbnail: string }[] = [];
     let producerDone = false;
     let coverArtWorkers: Promise<void>[] = [];
+    // Shared across the workers: host -> number of covers skipped because the
+    // URL failed the allowlist. Summarized once the run finishes.
+    const rejectedHosts = new Map<string, number>();
 
     try {
       this.logger.log(
@@ -459,7 +505,12 @@ export class GameService {
 
       const COVER_ART_CONCURRENCY = 15;
       coverArtWorkers = Array.from({ length: COVER_ART_CONCURRENCY }, () =>
-        this.drainCoverArtQueue(imageQueue, () => producerDone, ctx),
+        this.drainCoverArtQueue(
+          imageQueue,
+          () => producerDone,
+          ctx,
+          rejectedHosts,
+        ),
       );
 
       // The batch loop only needs id (for bggUpdate) and bggId (for the request
@@ -540,6 +591,15 @@ export class GameService {
       // drain. Runs on both success and error so the workers always terminate.
       producerDone = true;
       await Promise.all(coverArtWorkers);
+
+      // Loud on purpose: a rejected host is our allowlist being stale (or BGG
+      // moving CDNs), which silently costs every cover in the run.
+      for (const [host, count] of rejectedHosts) {
+        this.logger.error(
+          `Skipped ${count} cover art download(s): host "${host}" is not in the ` +
+            'allowed image host list. Update ALLOWED_IMAGE_HOSTS in boardgamegeek.service.ts.',
+        );
+      }
     }
   }
 

@@ -1,8 +1,11 @@
-import { ConflictException } from '@nestjs/common';
+import { BadGatewayException, ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { GameService } from './game.service';
-import { BoardGameGeekService } from '../boardgamegeek/boardgamegeek.service';
+import {
+  BoardGameGeekService,
+  InvalidImageUrlError,
+} from '../boardgamegeek/boardgamegeek.service';
 import { Context, MockContext, createMockContext } from '../prisma/context';
 import { Prisma } from '@prisma/client';
 
@@ -281,6 +284,19 @@ describe('GameService', () => {
       expect(data.coverArt).toBeUndefined();
       expect(data.bggId).toBe(13);
     });
+
+    it('fails the request as a 502 when BGG hands back a disallowed image host', async () => {
+      // Unlike the bulk path, a caller asked for this one game — and the bad
+      // data is upstream, so it is a bad gateway rather than a bad request.
+      bgg.getImage.mockRejectedValue(
+        new InvalidImageUrlError('nope', 'evil.com'),
+      );
+
+      await expect(service.bggUpdate(1, gameData, ctx)).rejects.toThrow(
+        BadGatewayException,
+      );
+      expect(mockCtx.prisma.game.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('bggUpdate bggVersionId cover-art override', () => {
@@ -400,6 +416,69 @@ describe('GameService', () => {
 
       expect(bgg.getImage).toHaveBeenCalledWith('late');
       expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps draining and tallies the host when a URL fails the allowlist', async () => {
+      // A stale allowlist rejects every job, so the worker must survive it —
+      // otherwise all its siblings die too and the producer fills a queue
+      // nobody reads.
+      bgg.getImage.mockRejectedValue(
+        new InvalidImageUrlError(
+          'Invalid image URL: host "cf.geekdo-images.com" is not permitted.',
+          'cf.geekdo-images.com',
+        ),
+      );
+
+      const queue = [
+        { id: 1, thumbnail: 'a' },
+        { id: 2, thumbnail: 'b' },
+      ];
+      const rejectedHosts = new Map<string, number>();
+
+      await (service as any).drainCoverArtQueue(
+        queue,
+        () => true,
+        ctx,
+        rejectedHosts,
+      );
+
+      expect(bgg.getImage).toHaveBeenCalledTimes(2);
+      expect(mockCtx.prisma.game.update).not.toHaveBeenCalled();
+      expect(rejectedHosts.get('cf.geekdo-images.com')).toBe(2);
+      expect(queue).toHaveLength(0);
+    });
+
+    it('still writes the covers whose URLs are fine', async () => {
+      bgg.getImage
+        .mockRejectedValueOnce(
+          new InvalidImageUrlError('nope', 'evil.com'),
+        )
+        .mockResolvedValueOnce(Buffer.from('x'));
+
+      const queue = [
+        { id: 1, thumbnail: 'bad' },
+        { id: 2, thumbnail: 'good' },
+      ];
+
+      await (service as any).drainCoverArtQueue(queue, () => true, ctx);
+
+      expect(mockCtx.prisma.game.update).toHaveBeenCalledTimes(1);
+      expect(mockCtx.prisma.game.update).toHaveBeenCalledWith({
+        where: { id: 2 },
+        data: { coverArt: expect.any(Buffer), lastBGGSync: expect.any(Date) },
+      });
+    });
+
+    it('rethrows errors that are not allowlist rejections', async () => {
+      bgg.getImage.mockRejectedValue(new Error('boom'));
+
+      await expect(
+        (service as any).drainCoverArtQueue(
+          [{ id: 1, thumbnail: 'a' }],
+          () => true,
+          ctx,
+        ),
+      ).rejects.toThrow('boom');
     });
   });
 
