@@ -214,7 +214,7 @@ describe('BoardGameGeekService', () => {
     it('returns a buffer of the fetched image and sends a timeout', async () => {
       http.get.mockResolvedValue({ data: Buffer.from('imgbytes') });
 
-      const image = await service.getImage('https://cf.bggcdn.com/img');
+      const image = await service.getImage('https://cf.geekdo-images.com/img');
 
       expect(image).toBeInstanceOf(Buffer);
       expect(image?.toString()).toBe('imgbytes');
@@ -229,7 +229,7 @@ describe('BoardGameGeekService', () => {
         .mockRejectedValueOnce(new Error('socket hang up'))
         .mockResolvedValueOnce({ data: Buffer.from('imgbytes') });
 
-      const image = await service.getImage('https://cf.bggcdn.com/img');
+      const image = await service.getImage('https://cf.geekdo-images.com/img');
 
       expect(image?.toString()).toBe('imgbytes');
       expect(http.get).toHaveBeenCalledTimes(2);
@@ -240,7 +240,7 @@ describe('BoardGameGeekService', () => {
         .mockRejectedValueOnce(rateLimited({ 'retry-after': '1' }))
         .mockResolvedValueOnce({ data: Buffer.from('imgbytes') });
 
-      const image = await service.getImage('https://cf.bggcdn.com/img');
+      const image = await service.getImage('https://cf.geekdo-images.com/img');
 
       expect(image?.toString()).toBe('imgbytes');
       expect(http.get).toHaveBeenCalledTimes(2);
@@ -250,7 +250,7 @@ describe('BoardGameGeekService', () => {
     it('returns null after exhausting retries', async () => {
       http.get.mockRejectedValue(new Error('boom'));
 
-      const image = await service.getImage('https://cf.bggcdn.com/img');
+      const image = await service.getImage('https://cf.geekdo-images.com/img');
 
       expect(image).toBeNull();
       // initial attempt + 2 retries
@@ -262,7 +262,7 @@ describe('BoardGameGeekService', () => {
       notFound.response = { status: 404, headers: {} };
       http.get.mockRejectedValue(notFound);
 
-      const image = await service.getImage('https://cf.bggcdn.com/img');
+      const image = await service.getImage('https://cf.geekdo-images.com/img');
 
       expect(image).toBeNull();
       expect(http.get).toHaveBeenCalledTimes(1);
@@ -275,7 +275,7 @@ describe('BoardGameGeekService', () => {
     });
 
     it('throws when the protocol is not HTTPS', async () => {
-      await expect(service.getImage('http://cf.bggcdn.com/img')).rejects.toThrow(
+      await expect(service.getImage('http://cf.geekdo-images.com/img')).rejects.toThrow(
         /Invalid image URL: only HTTPS URLs are allowed/,
       );
     });
