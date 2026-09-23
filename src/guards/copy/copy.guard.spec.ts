@@ -458,6 +458,147 @@ describe('CopyGuard', () => {
     });
   });
 
+  describe('gameId in the request body', () => {
+    // Game carries organizationId, so reassigning a copy across orgs is the
+    // same integrity break as moving it into another org's collection.
+    const contextWithBody = (body: any, superAdmin = true) =>
+      createMock<ExecutionContext>({
+        getArgByIndex: () => ({
+          user: { user: { id: 9, superAdmin } },
+          params: { id: 1 },
+          body,
+        }),
+      });
+
+    const sourceCopy = {
+      id: 1,
+      organizationId: 1,
+      collectionId: 1,
+      gameId: 1,
+      collection: { id: 1, archived: false },
+    } as any;
+
+    it('allows a reassignment within the same organization', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 7,
+        organizationId: 1,
+      } as any);
+
+      const authed = await guard.canActivate(contextWithBody({ gameId: 7 }));
+
+      expect(authed).toBeTruthy();
+    });
+
+    it('blocks a reassignment to another organization\'s game', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 7,
+        organizationId: 99,
+      } as any);
+
+      const authed = await guard.canActivate(contextWithBody({ gameId: 7 }));
+
+      expect(authed).toBeFalsy();
+    });
+
+    it('blocks a cross-org reassignment even for a super admin', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 7,
+        organizationId: 99,
+      } as any);
+
+      const authed = await guard.canActivate(
+        contextWithBody({ gameId: 7 }, true),
+      );
+
+      expect(authed).toBeFalsy();
+    });
+
+    it('blocks a reassignment to a game that does not exist', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.game.findUnique.mockResolvedValue(null);
+
+      const authed = await guard.canActivate(contextWithBody({ gameId: 7 }));
+
+      expect(authed).toBeFalsy();
+    });
+
+    it('rejects a non-numeric gameId without querying', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+
+      const authed = await guard.canActivate(contextWithBody({
+        gameId: 'not-a-number',
+      }));
+
+      expect(authed).toBeFalsy();
+      expect(mockCtx.prisma.game.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('skips the lookup when gameId matches the current game', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+
+      const authed = await guard.canActivate(contextWithBody({ gameId: 1 }));
+
+      expect(authed).toBeTruthy();
+      expect(mockCtx.prisma.game.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('skips the lookup when the body carries no gameId', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+
+      const authed = await guard.canActivate(contextWithBody({
+        winnable: true,
+      }));
+
+      expect(authed).toBeTruthy();
+      expect(mockCtx.prisma.game.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('checks both relations when collectionId and gameId are sent together', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 2,
+        organizationId: 1,
+        archived: false,
+      } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 7,
+        organizationId: 1,
+      } as any);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 2,
+        gameId: 7,
+      }));
+
+      expect(authed).toBeTruthy();
+      expect(mockCtx.prisma.collection.findUnique).toHaveBeenCalled();
+      expect(mockCtx.prisma.game.findUnique).toHaveBeenCalled();
+    });
+
+    it('blocks when the collection is in-org but the game is not', async () => {
+      mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 2,
+        organizationId: 1,
+        archived: false,
+      } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 7,
+        organizationId: 99,
+      } as any);
+
+      const authed = await guard.canActivate(contextWithBody({
+        collectionId: 2,
+        gameId: 7,
+      }));
+
+      expect(authed).toBeFalsy();
+    });
+  });
+
   it('should return false after everything', async () => {
     const context = createMock<ExecutionContext>({
       getArgByIndex: () => ({

@@ -68,7 +68,7 @@ export class CopyController {
     @Param('id') id: number,
     @Body() copy: UpdateCopyDto,
   ) {
-    const { collectionId, ...rest } = copy;
+    const { collectionId, gameId, ...rest } = copy;
 
     return await this.copyService.updateCopy(
       {
@@ -79,6 +79,9 @@ export class CopyController {
           ...rest,
           ...(collectionId !== undefined && {
             collection: { connect: { id: Number(collectionId) } },
+          }),
+          ...(gameId !== undefined && {
+            game: { connect: { id: Number(gameId) } },
           }),
         },
       },
