@@ -134,6 +134,49 @@ describe('AttendeeGuard', () => {
     expect(authed).toBe(true);
   });
 
+  it('returns true when the user is a kiosk user on the convention', async () => {
+    mockCtx.prisma.attendee.findUnique.mockResolvedValue({
+      id: 1,
+      conventionId: 10,
+      userId: 99,
+    } as any);
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      id: 10,
+      organizationId: 20,
+      users: [{ userId: 7, kiosk: true }],
+    } as any);
+
+    const authed = await guard.canActivate(
+      contextFor({ id: 7, superAdmin: false }),
+    );
+
+    expect(authed).toBe(true);
+  });
+
+  it('returns true when the user is a kiosk user on the organization', async () => {
+    mockCtx.prisma.attendee.findUnique.mockResolvedValue({
+      id: 1,
+      conventionId: 10,
+      userId: 99,
+    } as any);
+    mockCtx.prisma.convention.findUnique.mockResolvedValue({
+      id: 10,
+      organizationId: 20,
+      users: [],
+    } as any);
+    mockCtx.prisma.organization.findUnique.mockResolvedValue({
+      id: 20,
+      ownerId: 99,
+      users: [{ userId: 7, kiosk: true }],
+    } as any);
+
+    const authed = await guard.canActivate(
+      contextFor({ id: 7, superAdmin: false }),
+    );
+
+    expect(authed).toBe(true);
+  });
+
   it('returns false when the user has no relationship to the attendee', async () => {
     mockCtx.prisma.attendee.findUnique.mockResolvedValue({
       id: 1,

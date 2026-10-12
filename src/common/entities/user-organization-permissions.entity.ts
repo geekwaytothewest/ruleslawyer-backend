@@ -11,6 +11,8 @@ export class UserOrganizationPermissionsEntity
   admin: boolean;
   /** "Geek Guide" role — staff/volunteer helping run library operations. */
   geekGuide: boolean;
+  /** Access to the convention's kiosk interface. */
+  kiosk: boolean;
   /** View-only access. */
   readOnly: boolean;
 }

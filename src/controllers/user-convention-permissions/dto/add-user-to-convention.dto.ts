@@ -16,5 +16,9 @@ export class AddUserToConventionDto {
 
   @ApiProperty()
   @IsBoolean()
+  kiosk: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
   attendee: boolean;
 }

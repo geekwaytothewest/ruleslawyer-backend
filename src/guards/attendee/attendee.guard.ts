@@ -51,7 +51,7 @@ export class AttendeeGuard implements CanActivate {
     );
 
     const users = convention?.users?.filter(
-      (u) => u.userId === user.id && (u.admin || u.geekGuide),
+      (u) => u.userId === user.id && (u.admin || u.geekGuide || u.kiosk),
     );
 
     if (users && users.length > 0) {
@@ -70,7 +70,7 @@ export class AttendeeGuard implements CanActivate {
     }
 
     const orgUsers = organization?.users?.filter(
-      (u) => u.userId === user.id && (u.admin || u.geekGuide),
+      (u) => u.userId === user.id && (u.admin || u.geekGuide || u.kiosk),
     );
 
     if (orgUsers && orgUsers.length > 0) {

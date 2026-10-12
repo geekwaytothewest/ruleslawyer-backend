@@ -20,5 +20,9 @@ export class CreateOrganizationPermissionDto {
 
   @ApiProperty()
   @IsBoolean()
+  kiosk: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
   readOnly: boolean;
 }

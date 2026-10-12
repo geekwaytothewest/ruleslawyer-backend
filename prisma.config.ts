@@ -3,9 +3,13 @@
 // NOT use this — it connects through the pg driver adapter in PrismaService.
 //
 // Prisma 7 also stopped auto-loading .env, so we load it explicitly here for
-// local/CI runs of the CLI. In deployed environments DATABASE_URL is already
-// present in the process environment and dotenv is a no-op.
-import 'dotenv/config';
+// local/CI runs of the CLI. dotenv-expand resolves nested ${VAR} references
+// (e.g. DATABASE_URL is composed from POSTGRES_USER/PASSWORD/HOST) — plain
+// dotenv passes those through literally. In deployed environments DATABASE_URL
+// is already present in the process environment and this is a no-op.
+import dotenv from 'dotenv';
+import { expand } from 'dotenv-expand';
+expand(dotenv.config());
 import path from 'node:path';
 import { defineConfig, env } from 'prisma/config';
 
