@@ -10,7 +10,7 @@ import {
 } from '../../services/prisma/context';
 import { createMock } from '@golevelup/ts-jest';
 import fastify = require('fastify');
-import { ExecutionContext } from '@nestjs/common';
+import { BadRequestException, ExecutionContext } from '@nestjs/common';
 import { OrganizationModule } from '../../modules/organization/organization.module';
 
 describe('OrganizationController', () => {
@@ -196,6 +196,44 @@ describe('OrganizationController', () => {
       });
 
       expect(copy?.id).toBe(1);
+    });
+
+    it('should create a new game in the route org', async () => {
+      mockCtx.prisma.copy.upsert.mockResolvedValue({ id: 2 } as any);
+
+      const copy = await controller.createCopy(1, 1, {
+        game: { create: { name: 'Test' } },
+        winnable: false,
+        barcode: '123456789',
+        barcodeLabel: '123456789',
+        comments: '',
+      });
+
+      expect(copy?.id).toBe(2);
+      const args = mockCtx.prisma.copy.upsert.mock.calls[0][0];
+      expect(args.create.game).toEqual({
+        create: { name: 'Test', organization: { connect: { id: 1 } } },
+      });
+    });
+
+    it('should reject a game with both connect and create', async () => {
+      await expect(
+        controller.createCopy(1, 1, {
+          game: { connect: { id: 1 }, create: { name: 'Test' } },
+          barcode: '1',
+          barcodeLabel: '1',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject a game with neither connect nor create', async () => {
+      await expect(
+        controller.createCopy(1, 1, {
+          game: {},
+          barcode: '1',
+          barcodeLabel: '1',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 
