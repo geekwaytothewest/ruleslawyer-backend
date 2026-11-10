@@ -42,6 +42,7 @@ export class GameService {
             include: {
               checkOuts: true,
               game: true,
+              collection: true,
             },
             where: {
               OR: [
