@@ -211,7 +211,7 @@ model Game {
   bggVersionId     Int?
   /// Timestamp of the last successful BoardGameGeek sync.
   lastBGGSync      DateTime?
-  name             String       @unique
+  name             String
   shortDescription String?
   designer         String?
   artist           String?
@@ -232,6 +232,8 @@ model Game {
   coverArt         Bytes?
   yearPublished    Int?
   copies           Copy[]
+
+  @@unique([organizationId, name])
 }
 
 /// A physical, lendable instance of a Game in the library. Barcodes are unique
