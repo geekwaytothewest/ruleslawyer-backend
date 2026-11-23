@@ -13,7 +13,9 @@ export class UpdateCopyDto {
   @IsDateString()
   dateAdded?: string;
 
-  @ApiPropertyOptional({ description: "Human-readable label printed on the copy's barcode sticker." })
+  @ApiPropertyOptional({
+    description: "Human-readable label printed on the copy's barcode sticker.",
+  })
   @IsOptional()
   @IsString()
   barcodeLabel?: string;
@@ -23,7 +25,9 @@ export class UpdateCopyDto {
   @IsString()
   barcode?: string;
 
-  @ApiPropertyOptional({ description: 'When set, the copy has been removed from circulation.' })
+  @ApiPropertyOptional({
+    description: 'When set, the copy has been removed from circulation.',
+  })
   @IsOptional()
   @IsDateString()
   dateRetired?: string;
@@ -33,7 +37,9 @@ export class UpdateCopyDto {
   @IsString()
   comments?: string;
 
-  @ApiPropertyOptional({ description: 'Whether this copy is available to be won as a prize.' })
+  @ApiPropertyOptional({
+    description: 'Whether this copy is available to be won as a prize.',
+  })
   @IsOptional()
   @IsBoolean()
   winnable?: boolean;

@@ -50,7 +50,10 @@ describe('OrganizationPermissionsGuard', () => {
     prismaService = createMock<PrismaService>();
     permissionFindUnique = prismaService.userOrganizationPermissions
       .findUnique as unknown as jest.Mock;
-    guard = new OrganizationPermissionsGuard(organizationService, prismaService);
+    guard = new OrganizationPermissionsGuard(
+      organizationService,
+      prismaService,
+    );
   });
 
   // params.id is the permission-record id; the org is resolved from that record.

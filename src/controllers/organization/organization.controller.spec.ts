@@ -544,9 +544,22 @@ describe('OrganizationController', () => {
     it('should search games by name', async () => {
       mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
 
-      const games = await controller.searchGames('catan');
+      const games = await controller.searchGames(1, 'catan');
 
       expect(games.length).toBe(1);
+    });
+
+    it('should only search games in the requested organization', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([]);
+
+      await controller.searchGames(7, 'catan');
+
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(args.where.organizationId).toBe(7);
+      expect(args.where.name).toEqual({
+        contains: 'catan',
+        mode: 'insensitive',
+      });
     });
   });
 
@@ -554,11 +567,20 @@ describe('OrganizationController', () => {
     it('should autocomplete games by name', async () => {
       mockCtx.prisma.game.findMany.mockResolvedValue([{ id: 1 }] as any);
 
-      const games = await controller.autocompleteGames('cat');
+      const games = await controller.autocompleteGames(1, 'cat');
 
       expect(games.length).toBe(1);
       const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
       expect(args.take).toBe(10);
+    });
+
+    it('should only autocomplete games in the requested organization', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([]);
+
+      await controller.autocompleteGames(7, 'cat');
+
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      expect(args.where.organizationId).toBe(7);
     });
   });
 

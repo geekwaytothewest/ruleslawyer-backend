@@ -361,9 +361,11 @@ describe('CopyGuard', () => {
         archived: false,
       } as any);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 2,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 2,
+        }),
+      );
 
       expect(authed).toBeTruthy();
     });
@@ -376,9 +378,11 @@ describe('CopyGuard', () => {
         archived: false,
       } as any);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 2,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 2,
+        }),
+      );
 
       expect(authed).toBeFalsy();
     });
@@ -406,9 +410,11 @@ describe('CopyGuard', () => {
         archived: true,
       } as any);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 2,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 2,
+        }),
+      );
 
       expect(authed).toBeFalsy();
     });
@@ -417,9 +423,11 @@ describe('CopyGuard', () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
       mockCtx.prisma.collection.findUnique.mockResolvedValue(null);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 2,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 2,
+        }),
+      );
 
       expect(authed).toBeFalsy();
     });
@@ -427,9 +435,11 @@ describe('CopyGuard', () => {
     it('rejects a non-numeric collectionId without querying', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 'not-a-number',
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 'not-a-number',
+        }),
+      );
 
       expect(authed).toBeFalsy();
       expect(mockCtx.prisma.collection.findUnique).not.toHaveBeenCalled();
@@ -438,9 +448,11 @@ describe('CopyGuard', () => {
     it('skips the lookup when collectionId matches the current collection', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 1,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 1,
+        }),
+      );
 
       expect(authed).toBeTruthy();
       expect(mockCtx.prisma.collection.findUnique).not.toHaveBeenCalled();
@@ -449,9 +461,11 @@ describe('CopyGuard', () => {
     it('skips the lookup when the body carries no collectionId', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
 
-      const authed = await guard.canActivate(contextWithBody({
-        winnable: true,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          winnable: true,
+        }),
+      );
 
       expect(authed).toBeTruthy();
       expect(mockCtx.prisma.collection.findUnique).not.toHaveBeenCalled();
@@ -490,7 +504,7 @@ describe('CopyGuard', () => {
       expect(authed).toBeTruthy();
     });
 
-    it('blocks a reassignment to another organization\'s game', async () => {
+    it("blocks a reassignment to another organization's game", async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
       mockCtx.prisma.game.findUnique.mockResolvedValue({
         id: 7,
@@ -528,9 +542,11 @@ describe('CopyGuard', () => {
     it('rejects a non-numeric gameId without querying', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
 
-      const authed = await guard.canActivate(contextWithBody({
-        gameId: 'not-a-number',
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          gameId: 'not-a-number',
+        }),
+      );
 
       expect(authed).toBeFalsy();
       expect(mockCtx.prisma.game.findUnique).not.toHaveBeenCalled();
@@ -548,9 +564,11 @@ describe('CopyGuard', () => {
     it('skips the lookup when the body carries no gameId', async () => {
       mockCtx.prisma.copy.findUnique.mockResolvedValue(sourceCopy);
 
-      const authed = await guard.canActivate(contextWithBody({
-        winnable: true,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          winnable: true,
+        }),
+      );
 
       expect(authed).toBeTruthy();
       expect(mockCtx.prisma.game.findUnique).not.toHaveBeenCalled();
@@ -568,10 +586,12 @@ describe('CopyGuard', () => {
         organizationId: 1,
       } as any);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 2,
-        gameId: 7,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 2,
+          gameId: 7,
+        }),
+      );
 
       expect(authed).toBeTruthy();
       expect(mockCtx.prisma.collection.findUnique).toHaveBeenCalled();
@@ -590,10 +610,12 @@ describe('CopyGuard', () => {
         organizationId: 99,
       } as any);
 
-      const authed = await guard.canActivate(contextWithBody({
-        collectionId: 2,
-        gameId: 7,
-      }));
+      const authed = await guard.canActivate(
+        contextWithBody({
+          collectionId: 2,
+          gameId: 7,
+        }),
+      );
 
       expect(authed).toBeFalsy();
     });

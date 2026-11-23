@@ -10,7 +10,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     // engine used previously) and handed to the pg adapter. The adapter owns
     // its own connection pool; tune/SSL it via this PoolConfig if the deployed
     // Postgres needs it (e.g. ssl, max).
-    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+    const adapter = new PrismaPg({
+      connectionString: process.env.DATABASE_URL,
+    });
 
     // Cover-art image blobs (Game.coverArt, Copy.coverArtOverride) are large
     // Bytes columns stored inline in the database. Omitting them globally keeps

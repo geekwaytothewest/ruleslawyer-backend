@@ -7,7 +7,9 @@ export class PaginatedGamesDto {
   @ApiProperty({ type: GameWithCopiesEntity, isArray: true })
   data: GameWithCopiesEntity[];
 
-  @ApiProperty({ description: 'Total games matching the query (across all pages).' })
+  @ApiProperty({
+    description: 'Total games matching the query (across all pages).',
+  })
   total: number;
 
   @ApiProperty({ description: '1-based page number returned.' })

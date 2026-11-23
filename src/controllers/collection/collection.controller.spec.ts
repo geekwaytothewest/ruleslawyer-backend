@@ -138,9 +138,10 @@ describe('CollectionController', () => {
     });
 
     it('rejects when the collection still has copies', async () => {
-      jest
-        .spyOn(collectionService, 'collection')
-        .mockResolvedValue({ id: 1, _count: { copies: 3, conventions: 0 } } as any);
+      jest.spyOn(collectionService, 'collection').mockResolvedValue({
+        id: 1,
+        _count: { copies: 3, conventions: 0 },
+      } as any);
 
       await expect(controller.deleteCollection(1)).rejects.toBe(
         'Collection still has copies and cannot be deleted.',
@@ -148,9 +149,10 @@ describe('CollectionController', () => {
     });
 
     it('rejects when the collection still has conventions', async () => {
-      jest
-        .spyOn(collectionService, 'collection')
-        .mockResolvedValue({ id: 1, _count: { copies: 0, conventions: 2 } } as any);
+      jest.spyOn(collectionService, 'collection').mockResolvedValue({
+        id: 1,
+        _count: { copies: 0, conventions: 2 },
+      } as any);
 
       await expect(controller.deleteCollection(1)).rejects.toBe(
         'Collection still has conventions and cannot be deleted.',
@@ -158,9 +160,10 @@ describe('CollectionController', () => {
     });
 
     it('deletes when the collection is empty', async () => {
-      jest
-        .spyOn(collectionService, 'collection')
-        .mockResolvedValue({ id: 1, _count: { copies: 0, conventions: 0 } } as any);
+      jest.spyOn(collectionService, 'collection').mockResolvedValue({
+        id: 1,
+        _count: { copies: 0, conventions: 0 },
+      } as any);
       const spy = jest
         .spyOn(collectionService, 'deleteCollection')
         .mockResolvedValue({ id: 1 } as any);

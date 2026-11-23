@@ -514,7 +514,10 @@ describe('ConventionAdminGuard', () => {
   });
 
   it('should return false when no convention id is present', async () => {
-    const context = contextFor({ user: { user: { id: 2, superAdmin: false } }, params: {} });
+    const context = contextFor({
+      user: { user: { id: 2, superAdmin: false } },
+      params: {},
+    });
     expect(await guard.canActivate(context)).toBeFalsy();
   });
 

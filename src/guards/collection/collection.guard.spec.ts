@@ -521,11 +521,12 @@ describe('CollectionGuard', () => {
       }),
     });
 
-    const collectionSpy = mockCtx.prisma.collection.findUnique.mockResolvedValue({
-      id: 1,
-      organizationId: 1,
-      archived: false,
-    } as any);
+    const collectionSpy =
+      mockCtx.prisma.collection.findUnique.mockResolvedValue({
+        id: 1,
+        organizationId: 1,
+        archived: false,
+      } as any);
     mockCtx.prisma.organization.findUnique.mockResolvedValue({
       id: 1,
       ownerId: 2,

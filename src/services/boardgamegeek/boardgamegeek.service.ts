@@ -132,7 +132,10 @@ export function normalizeBggName(name: string): string {
 export class BoardGameGeekService {
   bggApiUrl = 'https://boardgamegeek.com/xmlapi2/';
 
-  private readonly xmlParser = new XMLParser({ ignoreAttributes: false, isArray: (name) => name === 'item' });
+  private readonly xmlParser = new XMLParser({
+    ignoreAttributes: false,
+    isArray: (name) => name === 'item',
+  });
 
   private readonly logger: RuleslawyerLogger = new RuleslawyerLogger(
     BoardGameGeekService.name,
@@ -180,7 +183,11 @@ export class BoardGameGeekService {
   }
 
   /** Backoff for one retry: honor Retry-After if present, else exponential. */
-  private retryDelayMs(error: any, attempt: number, baseDelayMs: number): number {
+  private retryDelayMs(
+    error: any,
+    attempt: number,
+    baseDelayMs: number,
+  ): number {
     const retryAfter = error?.response?.headers?.['retry-after'];
     if (retryAfter !== undefined) {
       const seconds = Number(retryAfter);
@@ -253,9 +260,7 @@ export class BoardGameGeekService {
     }
   }
 
-  async getBoardGameBatchByBGGIds(
-    bggIds: number[],
-  ): Promise<any[]> {
+  async getBoardGameBatchByBGGIds(bggIds: number[]): Promise<any[]> {
     if (bggIds.length === 0) {
       return [];
     }
@@ -265,7 +270,9 @@ export class BoardGameGeekService {
         `Batch request for boardgames with bggIds=${bggIds} exceeds BoardGameGeek API limit of 20 IDs per request.`,
       );
 
-      throw new Error('Batch request exceeds BoardGameGeek API limit of 20 IDs per request.');
+      throw new Error(
+        'Batch request exceeds BoardGameGeek API limit of 20 IDs per request.',
+      );
     }
 
     if (!process.env.BOARDGAMEGEEK_API_TOKEN) {
@@ -278,7 +285,11 @@ export class BoardGameGeekService {
         // No type filter: fetching by known id should return the thing whatever
         // its type (e.g. boardgameexpansion), which `&type=boardgame` excludes.
         this.bggApiUrl + `thing?id=${bggIds.join(',')}&stats=1&versions=1`,
-        { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}`,
+          },
+        },
       );
 
       const parsed = this.xmlParser.parse(response.data);
@@ -298,9 +309,7 @@ export class BoardGameGeekService {
     }
   }
 
-  async getBoardGameByBGGId(
-    bggId: number,
-  ): Promise<any> {
+  async getBoardGameByBGGId(bggId: number): Promise<any> {
     this.logger.log(
       `Getting boardgame with bggId=${bggId} from BoardGameGeek API...`,
     );
@@ -315,7 +324,11 @@ export class BoardGameGeekService {
         // No type filter (see batch method): expansions are excluded by
         // `&type=boardgame`, but a lookup by known id should still resolve them.
         this.bggApiUrl + `thing?id=${bggId}&stats=1&versions=1`,
-        { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}`,
+          },
+        },
       );
 
       const parsed = this.xmlParser.parse(game.data);
@@ -341,9 +354,7 @@ export class BoardGameGeekService {
     }
   }
 
-  async getBoardGameIdByName(
-    name: string,
-  ): Promise<number | null> {
+  async getBoardGameIdByName(name: string): Promise<number | null> {
     this.logger.log(
       `Getting boardgame with name=${name} from BoardGameGeek API...`,
     );
@@ -351,7 +362,11 @@ export class BoardGameGeekService {
     try {
       const game = await this.getWithRetry(
         this.bggApiUrl + `search?query=${encodeURIComponent(name)}`,
-        { headers: { Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}` } },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.BOARDGAMEGEEK_API_TOKEN}`,
+          },
+        },
       );
 
       const parsed = this.xmlParser.parse(game.data);
@@ -414,7 +429,10 @@ export class BoardGameGeekService {
     // (an expired-link error page, a login redirect, etc.), fail clearly rather
     // than with a cryptic adm-zip "no END header found" error.
     if (buffer.length < 4 || buffer[0] !== 0x50 || buffer[1] !== 0x4b) {
-      const preview = buffer.toString('utf8', 0, 80).replace(/\s+/g, ' ').trim();
+      const preview = buffer
+        .toString('utf8', 0, 80)
+        .replace(/\s+/g, ' ')
+        .trim();
       throw new Error(
         `BGG rank dump URL did not return a zip (got ${buffer.length} bytes starting with "${preview}"). ${expiredHint}`,
       );
@@ -434,7 +452,9 @@ export class BoardGameGeekService {
       .find((entry) => entry.entryName.toLowerCase().endsWith('.csv'));
 
     if (!csvEntry) {
-      throw new Error('No CSV file found in the BoardGameGeek rank data dump zip.');
+      throw new Error(
+        'No CSV file found in the BoardGameGeek rank data dump zip.',
+      );
     }
 
     const records: Record<string, string>[] = parse(csvEntry.getData(), {

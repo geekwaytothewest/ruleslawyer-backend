@@ -8,7 +8,9 @@ export class LegacyAttendeeDto {
   @IsString()
   badgeNumber: string;
 
-  @ApiProperty({ description: 'Full display name; split into first/last by the server.' })
+  @ApiProperty({
+    description: 'Full display name; split into first/last by the server.',
+  })
   @IsString()
   name: string;
 

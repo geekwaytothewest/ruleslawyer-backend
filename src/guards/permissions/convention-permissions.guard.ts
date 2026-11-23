@@ -24,7 +24,7 @@ export class ConventionPermissionsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let permissionId = context.getArgByIndex(0).params?.id;
+    const permissionId = context.getArgByIndex(0).params?.id;
 
     if (!user) {
       return false;
@@ -38,16 +38,17 @@ export class ConventionPermissionsGuard implements CanActivate {
       return false;
     }
 
-    const permission = await this.userConventionPermissionsService.getPermission(
-      Number(permissionId),
-      this.ctx,
-    );
+    const permission =
+      await this.userConventionPermissionsService.getPermission(
+        Number(permissionId),
+        this.ctx,
+      );
 
     if (!permission) {
       return false;
     }
 
-    let conId = permission.conventionId;
+    const conId = permission.conventionId;
 
     const con = await this.conventionService.convention(
       {
@@ -56,7 +57,7 @@ export class ConventionPermissionsGuard implements CanActivate {
       this.ctx,
     );
 
-    let orgId = con?.organizationId;
+    const orgId = con?.organizationId;
 
     const orgWithUsers = Prisma.validator<Prisma.OrganizationDefaultArgs>()({
       include: { users: true },
@@ -76,11 +77,7 @@ export class ConventionPermissionsGuard implements CanActivate {
       return true;
     }
 
-    if (
-      org?.users?.filter(
-        (u) => u.userId === user.id && (u.admin),
-      ).length > 0
-    ) {
+    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
       return true;
     }
 

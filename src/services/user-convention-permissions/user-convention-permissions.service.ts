@@ -128,7 +128,7 @@ export class UserConventionPermissionsService {
         where: where,
         include: {
           user: true,
-        }
+        },
       });
     } catch (ex) {
       return Promise.reject(ex);
@@ -136,7 +136,7 @@ export class UserConventionPermissionsService {
   }
 
   async getPermission(
-    id: Number,
+    id: number,
     ctx: Context,
   ): Promise<UserConventionPermissions | null> {
     try {
@@ -151,7 +151,7 @@ export class UserConventionPermissionsService {
   }
 
   async deletePermission(
-    id: Number,
+    id: number,
     ctx: Context,
   ): Promise<UserConventionPermissions | null> {
     try {
@@ -166,7 +166,7 @@ export class UserConventionPermissionsService {
   }
 
   async updatePermission(
-    id: Number,
+    id: number,
     data: Prisma.UserConventionPermissionsUpdateInput,
     ctx: Context,
   ) {

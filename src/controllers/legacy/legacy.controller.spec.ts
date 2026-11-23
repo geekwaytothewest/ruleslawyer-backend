@@ -877,11 +877,7 @@ describe('LegacyController', () => {
         },
       };
 
-      const bigResponse = await controller.getAttendees(
-        1,
-        '',
-        req,
-      );
+      const bigResponse = await controller.getAttendees(1, '', req);
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
     });
@@ -922,11 +918,7 @@ describe('LegacyController', () => {
         },
       };
 
-      const bigResponse = await controller.getAttendees(
-        1,
-        'asdf',
-        req,
-      );
+      const bigResponse = await controller.getAttendees(1, 'asdf', req);
 
       expect(bigResponse.Result.Attendees.length).toBe(1);
     });
@@ -2603,7 +2595,10 @@ describe('LegacyController', () => {
   describe('syncTabletopEvents', () => {
     it('launches the import in the background and returns "started"', async () => {
       const spy = jest
-        .spyOn(controller['conventionService'], 'startSyncTabletopEventsAttendees')
+        .spyOn(
+          controller['conventionService'],
+          'startSyncTabletopEventsAttendees',
+        )
         .mockReturnValue({ status: 'started', message: 'go' });
 
       const userData = {

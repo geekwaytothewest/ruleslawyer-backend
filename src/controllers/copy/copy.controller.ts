@@ -64,10 +64,7 @@ export class CopyController {
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @ApiOkResponse({ type: CopyEntity })
   @Put(':id')
-  async updateCopy(
-    @Param('id') id: number,
-    @Body() copy: UpdateCopyDto,
-  ) {
+  async updateCopy(@Param('id') id: number, @Body() copy: UpdateCopyDto) {
     const { collectionId, gameId, ...rest } = copy;
 
     return await this.copyService.updateCopy(
@@ -96,8 +93,7 @@ export class CopyController {
   // route that loads it — one image at a time.
   @ApiProduces('image/png', 'image/jpeg', 'image/gif', 'image/webp')
   @ApiOkResponse({
-    description:
-      "The copy's cover-art override image, or 404 if none is set.",
+    description: "The copy's cover-art override image, or 404 if none is set.",
   })
   @Header('Cache-Control', 'public, max-age=86400')
   @Get(':id/cover')
@@ -107,9 +103,7 @@ export class CopyController {
       this.ctx,
     );
     if (!image) {
-      throw new NotFoundException(
-        `No cover-art override set for copy ${id}.`,
-      );
+      throw new NotFoundException(`No cover-art override set for copy ${id}.`);
     }
     return new StreamableFile(image, { type: detectImageMime(image) });
   }

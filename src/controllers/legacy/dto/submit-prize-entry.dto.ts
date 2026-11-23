@@ -20,7 +20,10 @@ export class LegacyPrizeEntryPlayerDto {
   @IsString()
   name: string;
 
-  @ApiPropertyOptional({ nullable: true, description: '1-5 rating, or null if unrated.' })
+  @ApiPropertyOptional({
+    nullable: true,
+    description: '1-5 rating, or null if unrated.',
+  })
   @IsOptional()
   @IsInt()
   @Min(1)

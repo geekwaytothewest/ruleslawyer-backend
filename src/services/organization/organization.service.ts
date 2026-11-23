@@ -91,7 +91,7 @@ export class OrganizationService {
   }
 
   async addUserByEmail(
-    organizationId: Number,
+    organizationId: number,
     email: string,
     permissions: {
       admin: boolean;

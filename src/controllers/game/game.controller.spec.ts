@@ -150,6 +150,29 @@ describe('GameController', () => {
 
       expect(games.length).toBe(1);
     });
+
+    it('should scope the convention-copies branch to the requested organization', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([]);
+
+      await controller.getGames({ id: 1 }, '7');
+
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      const convention =
+        args.where.OR[1].copies.some.collection.conventions.some.convention;
+      expect(convention.AND).toContainEqual({ users: { some: { userId: 1 } } });
+      expect(convention.AND).toContainEqual({ organizationId: 7 });
+    });
+
+    it('should match no convention games when orgId is missing', async () => {
+      mockCtx.prisma.game.findMany.mockResolvedValue([]);
+
+      await controller.getGames({ id: 1 }, undefined as any);
+
+      const args = mockCtx.prisma.game.findMany.mock.calls[0][0] as any;
+      const convention =
+        args.where.OR[1].copies.some.collection.conventions.some.convention;
+      expect(convention.AND).toContainEqual({ id: { in: [] } });
+    });
   });
 
   describe('getGamesWithCopies', () => {
@@ -223,9 +246,7 @@ describe('GameController', () => {
 
   describe('getCopyCount', () => {
     it('should return the copy count for the game', async () => {
-      const spy = jest
-        .spyOn(gameService, 'gameCopyCount')
-        .mockResolvedValue(7);
+      const spy = jest.spyOn(gameService, 'gameCopyCount').mockResolvedValue(7);
 
       const result = await controller.getCopyCount(1);
 

@@ -35,7 +35,9 @@ export class ConventionTypeController {
   @UseGuards(JwtAuthGuard, ConventionTypeGuard)
   @ApiOkResponse({ type: ConventionTypeEntity })
   @Get(':id')
-  async getConventionType(@Param('id') id: string): Promise<ConventionTypeModel | null> {
+  async getConventionType(
+    @Param('id') id: string,
+  ): Promise<ConventionTypeModel | null> {
     let conventionType: ConventionTypeModel | null = null;
 
     if (!isNaN(Number(id))) {
@@ -51,24 +53,24 @@ export class ConventionTypeController {
       return Promise.reject(new NotFoundException());
     }
 
-    return conventionType
+    return conventionType;
   }
 
   @UseGuards(JwtAuthGuard, ConventionTypeGuard)
   @ApiOkResponse({ type: ConventionTypeEntity })
   @Put(':id')
   async updateConventionType(
-      @Param('id') id: string,
-      @Body() data: UpdateConventionTypeDto
-    ): Promise<ConventionTypeModel | null> {
+    @Param('id') id: string,
+    @Body() data: UpdateConventionTypeDto,
+  ): Promise<ConventionTypeModel | null> {
     let conventionType: ConventionTypeModel | null = null;
 
     if (!isNaN(Number(id))) {
       conventionType = await this.conventionTypeService.updateConventionType(
         Number(id),
         data,
-        this.ctx
-      )
+        this.ctx,
+      );
     }
 
     if (!conventionType) {

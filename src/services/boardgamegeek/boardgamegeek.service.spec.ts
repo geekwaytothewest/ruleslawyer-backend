@@ -1,9 +1,16 @@
 import AdmZip = require('adm-zip');
-import { BoardGameGeekService, normalizeBggName } from './boardgamegeek.service';
+import {
+  BoardGameGeekService,
+  normalizeBggName,
+} from './boardgamegeek.service';
 
 type MockHttp = { get: jest.Mock };
 
-const ok = (data: string, status = 200, headers: Record<string, string> = {}) => ({
+const ok = (
+  data: string,
+  status = 200,
+  headers: Record<string, string> = {},
+) => ({
   data,
   status,
   headers,
@@ -89,7 +96,9 @@ describe('BoardGameGeekService', () => {
 
     it('returns [] when the request errors', async () => {
       http.get.mockRejectedValue(new Error('network down'));
-      await expect(service.getBoardGameBatchByBGGIds([13])).resolves.toEqual([]);
+      await expect(service.getBoardGameBatchByBGGIds([13])).resolves.toEqual(
+        [],
+      );
     });
 
     it('retries a 202 (queued) response then succeeds', async () => {
@@ -275,9 +284,9 @@ describe('BoardGameGeekService', () => {
     });
 
     it('throws when the protocol is not HTTPS', async () => {
-      await expect(service.getImage('http://cf.geekdo-images.com/img')).rejects.toThrow(
-        /Invalid image URL: only HTTPS URLs are allowed/,
-      );
+      await expect(
+        service.getImage('http://cf.geekdo-images.com/img'),
+      ).rejects.toThrow(/Invalid image URL: only HTTPS URLs are allowed/);
     });
 
     it('throws when the image URL cannot be parsed', async () => {
@@ -293,7 +302,9 @@ describe('BoardGameGeekService', () => {
     });
 
     it('raises the delay after a 429 and resets on demand', async () => {
-      http.get.mockRejectedValueOnce(rateLimited()).mockResolvedValueOnce(ok('<items/>'));
+      http.get
+        .mockRejectedValueOnce(rateLimited())
+        .mockResolvedValueOnce(ok('<items/>'));
       await service.getBoardGameBatchByBGGIds([13]);
 
       expect(service.throttleDelayMs).toBeGreaterThan(2000);
@@ -325,7 +336,9 @@ describe('BoardGameGeekService', () => {
 
     it('throws when the dump URL uses a non-HTTPS protocol', async () => {
       await expect(
-        service.getRankDumpIndex('http://geek-export-stats.s3.amazonaws.com/dump.zip'),
+        service.getRankDumpIndex(
+          'http://geek-export-stats.s3.amazonaws.com/dump.zip',
+        ),
       ).rejects.toThrow(/Invalid dump URL: only HTTPS URLs are allowed/);
     });
 
@@ -341,7 +354,11 @@ describe('BoardGameGeekService', () => {
         '13,CATAN,1995,512,7.2\n' +
         '822,Carcassonne,2000,200,7.4\n' +
         '0,BadRow,,,\n'; // id=0 should be skipped
-      http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
+      http.get.mockResolvedValue({
+        data: zipWithCsv(csv),
+        status: 200,
+        headers: {},
+      });
 
       const index = await service.getRankDumpIndex(
         'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
@@ -361,7 +378,11 @@ describe('BoardGameGeekService', () => {
         'id,name,yearpublished,rank,bayesaverage\n' +
         '2655,Hive,2001,300,6.9\n' +
         '999,Hive,2018,0,2.3\n';
-      http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
+      http.get.mockResolvedValue({
+        data: zipWithCsv(csv),
+        status: 200,
+        headers: {},
+      });
 
       const index = await service.getRankDumpIndex(
         'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
@@ -379,20 +400,32 @@ describe('BoardGameGeekService', () => {
         'id,name,yearpublished,rank,bayesaverage\n' +
         '13,CATAN,1995,512,6.9\n' +
         '77,   ,2000,100,6.9\n'; // whitespace-only name normalizes to empty -> skipped
-      http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
+      http.get.mockResolvedValue({
+        data: zipWithCsv(csv),
+        status: 200,
+        headers: {},
+      });
 
       const index = await service.getRankDumpIndex(
         'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
       );
 
-      expect(index.get('catan')).toEqual([{ id: 13, year: 1995, rank: 512, rating: 6.9 }]);
+      expect(index.get('catan')).toEqual([
+        { id: 13, year: 1995, rank: 512, rating: 6.9 },
+      ]);
       // The whitespace-named row produced no key.
       expect(index.size).toBe(1);
     });
 
     it('stores a null year when yearpublished is missing', async () => {
-      const csv = 'id,name,yearpublished,rank,bayesaverage\n' + '55,Untimed Game,,300,5.9\n';
-      http.get.mockResolvedValue({ data: zipWithCsv(csv), status: 200, headers: {} });
+      const csv =
+        'id,name,yearpublished,rank,bayesaverage\n' +
+        '55,Untimed Game,,300,5.9\n';
+      http.get.mockResolvedValue({
+        data: zipWithCsv(csv),
+        status: 200,
+        headers: {},
+      });
 
       const index = await service.getRankDumpIndex(
         'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
@@ -411,7 +444,9 @@ describe('BoardGameGeekService', () => {
         service.getRankDumpIndex(
           'https://geek-export-stats.s3.amazonaws.com/boardgames_ranks.zip',
         ),
-      ).rejects.toThrow(/Failed to download the BGG rank dump:.*socket hang up/s);
+      ).rejects.toThrow(
+        /Failed to download the BGG rank dump:.*socket hang up/s,
+      );
     });
 
     it('throws a clear error when the buffer is a corrupt zip', async () => {
@@ -433,11 +468,11 @@ describe('BoardGameGeekService', () => {
         status: 200,
         headers: {},
       });
-      await expect(service.getRankDumpIndex(
-        'https://geek-export-stats.s3.amazonaws.com/no-csv.zip',
-      )).rejects.toThrow(
-        /No CSV file found/,
-      );
+      await expect(
+        service.getRankDumpIndex(
+          'https://geek-export-stats.s3.amazonaws.com/no-csv.zip',
+        ),
+      ).rejects.toThrow(/No CSV file found/);
     });
 
     it('throws a clear error when the download fails (e.g. expired URL)', async () => {
@@ -445,34 +480,40 @@ describe('BoardGameGeekService', () => {
       err.response = { status: 403 };
       http.get.mockRejectedValue(err);
 
-      await expect(service.getRankDumpIndex(
-        'https://geek-export-stats.s3.amazonaws.com/expired.zip',
-      )).rejects.toThrow(
+      await expect(
+        service.getRankDumpIndex(
+          'https://geek-export-stats.s3.amazonaws.com/expired.zip',
+        ),
+      ).rejects.toThrow(
         /Failed to download the BGG rank dump \(HTTP 403\).*expired/s,
       );
     });
 
     it('throws a clear error when the response is not a zip', async () => {
       http.get.mockResolvedValue({
-        data: Buffer.from('<?xml version="1.0"?><Error><Code>AccessDenied</Code></Error>'),
+        data: Buffer.from(
+          '<?xml version="1.0"?><Error><Code>AccessDenied</Code></Error>',
+        ),
         status: 200,
         headers: {},
       });
 
-      await expect(service.getRankDumpIndex(
-        'https://geek-export-stats.s3.amazonaws.com/not-a-zip.zip',
-      )).rejects.toThrow(
-        /did not return a zip/,
-      );
+      await expect(
+        service.getRankDumpIndex(
+          'https://geek-export-stats.s3.amazonaws.com/not-a-zip.zip',
+        ),
+      ).rejects.toThrow(/did not return a zip/);
     });
 
     it('throws when the dump exceeds the 5 MB size limit', async () => {
       const oversized = Buffer.alloc(5 * 1024 * 1024 + 1, 0x50); // 5MB+1, starts with "PK"
       http.get.mockResolvedValue({ data: oversized, status: 200, headers: {} });
 
-      await expect(service.getRankDumpIndex(
-        'https://geek-export-stats.s3.amazonaws.com/oversized.zip',
-      )).rejects.toThrow(/exceeds maximum allowed size/);
+      await expect(
+        service.getRankDumpIndex(
+          'https://geek-export-stats.s3.amazonaws.com/oversized.zip',
+        ),
+      ).rejects.toThrow(/exceeds maximum allowed size/);
     });
   });
 });

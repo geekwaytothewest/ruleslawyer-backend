@@ -20,7 +20,7 @@ export class OrganizationPermissionsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let permissionId = context.getArgByIndex(0).params?.id;
+    const permissionId = context.getArgByIndex(0).params?.id;
 
     if (!user) {
       return false;
@@ -34,11 +34,12 @@ export class OrganizationPermissionsGuard implements CanActivate {
       return false;
     }
 
-    let permission = await this.prismaService.userOrganizationPermissions.findUnique({
-      where: {
-        id: Number(permissionId),
-      },
-    });
+    const permission =
+      await this.prismaService.userOrganizationPermissions.findUnique({
+        where: {
+          id: Number(permissionId),
+        },
+      });
 
     if (!permission) {
       return false;
@@ -64,11 +65,7 @@ export class OrganizationPermissionsGuard implements CanActivate {
       return true;
     }
 
-    if (
-      org?.users?.filter(
-        (u) => u.userId === user.id && (u.admin),
-      ).length > 0
-    ) {
+    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
       return true;
     }
 

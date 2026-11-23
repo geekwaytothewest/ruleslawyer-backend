@@ -67,7 +67,12 @@ describe('TabletopeventsService', () => {
 
       jest.spyOn(service['httpService'], 'get').mockResolvedValueOnce(response);
 
-      const badge: any = await service.getBadge('conv1', 5, 'badge1', 'session');
+      const badge: any = await service.getBadge(
+        'conv1',
+        5,
+        'badge1',
+        'session',
+      );
 
       expect(badge.name).toBe('fake name');
     });

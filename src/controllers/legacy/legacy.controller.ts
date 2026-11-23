@@ -117,13 +117,19 @@ export class LegacyController {
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @ApiOkResponse({ type: LegacyResponseDto })
   @Get('org/:orgId/con/:conId/copycollections')
-  async getCopyCollections(@Param('orgId') orgId: number, @Param('conId') conId: number) {
-    this.logger.log(`Getting collections for orgId=${orgId} and conId=${conId}`);
-    const collections = await this.collectionService.collectionsByOrgAndConWithCopies(
-      Number(orgId),
-      Number(conId),
-      this.ctx,
+  async getCopyCollections(
+    @Param('orgId') orgId: number,
+    @Param('conId') conId: number,
+  ) {
+    this.logger.log(
+      `Getting collections for orgId=${orgId} and conId=${conId}`,
     );
+    const collections =
+      await this.collectionService.collectionsByOrgAndConWithCopies(
+        Number(orgId),
+        Number(conId),
+        this.ctx,
+      );
     this.logger.log(
       `Retrieved ${collections?.length} collections for orgId=${orgId}`,
     );
@@ -149,8 +155,9 @@ export class LegacyController {
                   : new Date().getTime()) - currentCheckout.checkOut.getTime();
             }
 
-            const { days, hours, minutes, seconds } =
-              splitCheckoutLength(currentCheckoutLength);
+            const { days, hours, minutes, seconds } = splitCheckoutLength(
+              currentCheckoutLength,
+            );
 
             return {
               ID: cp.barcodeLabel,
@@ -251,7 +258,10 @@ export class LegacyController {
         game: {
           connectOrCreate: {
             where: {
-              name: copy.title,
+              organizationId_name: {
+                organizationId: Number(orgId),
+                name: copy.title,
+              },
             },
             create: {
               name: copy.title,
@@ -332,7 +342,7 @@ export class LegacyController {
           await this.userConventionPermissionsService.getPermissionsBySearch(
             {
               conventionId: Number(conId),
-              userId: user.id
+              userId: user.id,
             },
             this.ctx,
           );
@@ -491,8 +501,9 @@ export class LegacyController {
             c.checkOut.getTime();
         }
 
-        const { days, hours, minutes, seconds } =
-          splitCheckoutLength(currentCheckoutLength);
+        const { days, hours, minutes, seconds } = splitCheckoutLength(
+          currentCheckoutLength,
+        );
 
         return {
           Attendee: {
@@ -571,8 +582,9 @@ export class LegacyController {
             c.checkOut.getTime();
         }
 
-        const { days, hours, minutes, seconds } =
-          splitCheckoutLength(currentCheckoutLength);
+        const { days, hours, minutes, seconds } = splitCheckoutLength(
+          currentCheckoutLength,
+        );
 
         return {
           Attendee: {
@@ -666,7 +678,9 @@ export class LegacyController {
         `Copy not found with organizationId_barcode=${copyBarcodeStrippedZeroes} or organizationId_barcodeLabel=${copyBarcodeStrippedZeroes}`,
       );
 
-      this.logger.log(`Getting copy with barcode=${copyBarcode} without stripped zeroes.`);
+      this.logger.log(
+        `Getting copy with barcode=${copyBarcode} without stripped zeroes.`,
+      );
       copy = await this.copyService.copyWithCheckOutsGameAndCollection(
         {
           organizationId_barcode: {
@@ -678,7 +692,9 @@ export class LegacyController {
       );
 
       if (!copy) {
-        this.logger.log(`Getting copy using barcode label with barcode=${copyBarcode} without stripped zeroes.`);
+        this.logger.log(
+          `Getting copy using barcode label with barcode=${copyBarcode} without stripped zeroes.`,
+        );
         copy = await this.copyService.copyWithCheckOutsGameAndCollection(
           {
             organizationId_barcodeLabel: {
@@ -716,8 +732,9 @@ export class LegacyController {
       );
     }
 
-    const { days, hours, minutes, seconds } =
-      splitCheckoutLength(currentCheckoutLength);
+    const { days, hours, minutes, seconds } = splitCheckoutLength(
+      currentCheckoutLength,
+    );
 
     if (currentCheckout) {
       this.logger.log(`Current checkout exists, returning current checkout`);
@@ -836,8 +853,9 @@ export class LegacyController {
               : new Date().getTime()) - currentCheckout.checkOut?.getTime();
         }
 
-        const { days, hours, minutes, seconds } =
-          splitCheckoutLength(currentCheckoutLength);
+        const { days, hours, minutes, seconds } = splitCheckoutLength(
+          currentCheckoutLength,
+        );
 
         return {
           Collection: {
@@ -1160,8 +1178,9 @@ export class LegacyController {
       }
     }
 
-    const { days, hours, minutes, seconds } =
-      splitCheckoutLength(currentCheckoutLength);
+    const { days, hours, minutes, seconds } = splitCheckoutLength(
+      currentCheckoutLength,
+    );
 
     return {
       Errors: [],
@@ -1549,20 +1568,20 @@ export class LegacyController {
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @ApiOkResponse({ type: GameEntity })
   @Post('org/:orgId/con/:conId/gameList')
-  async addGame(
-    @Param('orgId') orgId: number,
-    @Body() game: LegacyGameDto,
-  ) {
+  async addGame(@Param('orgId') orgId: number, @Body() game: LegacyGameDto) {
     this.logger.log(`Adding game with title ${game.title}`);
 
-    return this.gameService.createGame({
-      name: game.title,
-      organization: {
-        connect: {
-          id: orgId,
-        }
-      }
-    }, this.ctx)
+    return this.gameService.createGame(
+      {
+        name: game.title,
+        organization: {
+          connect: {
+            id: orgId,
+          },
+        },
+      },
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, OrganizationWriteGuard)
@@ -1623,7 +1642,8 @@ export class LegacyController {
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @HttpCode(202)
   @ApiAcceptedResponse({
-    description: 'Import started in the background; progress is in the server logs.',
+    description:
+      'Import started in the background; progress is in the server logs.',
   })
   @Put('org/:orgId/con/:conId/attendees/import')
   async importAttendees(
@@ -1656,7 +1676,8 @@ export class LegacyController {
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @HttpCode(202)
   @ApiAcceptedResponse({
-    description: 'Sync started in the background; progress is in the server logs.',
+    description:
+      'Sync started in the background; progress is in the server logs.',
   })
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put('org/:orgId/con/:conId/attendees/sync/tabletopEvents')
@@ -1723,7 +1744,7 @@ export class LegacyController {
   @Get('org/:orgId/con/:conId/attendees/badgeNumber/:badgeNumber')
   async getAttendeeByBadgeNumber(
     @Param('conId') conId: number,
-    @Param('badgeNumber') badgeNumber: string
+    @Param('badgeNumber') badgeNumber: string,
   ) {
     return this.attendeeService.attendee(
       {
@@ -1732,7 +1753,7 @@ export class LegacyController {
           conventionId: Number(conId),
         },
       },
-      this.ctx
+      this.ctx,
     );
   }
 
@@ -1744,12 +1765,10 @@ export class LegacyController {
     @Param('conId') conId: number,
     @Body() body: LegacyBadgeTransferDto,
   ) {
-    this.logger.log(`Transferring badge ${body.fromBadgeNumber} to ${body.newBadgeFirstName} ${body.newBadgeLastName} for conId=${conId}`);
-    return this.attendeeService.transferBadge(
-      Number(conId),
-      body,
-      this.ctx
+    this.logger.log(
+      `Transferring badge ${body.fromBadgeNumber} to ${body.newBadgeFirstName} ${body.newBadgeLastName} for conId=${conId}`,
     );
+    return this.attendeeService.transferBadge(Number(conId), body, this.ctx);
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
@@ -1760,11 +1779,9 @@ export class LegacyController {
     @Param('conId') conId: number,
     @Body() body: LegacyBadgeReplacementDto,
   ) {
-    this.logger.log(`Replacing badge from ${body.fromBadgeNumber} to ${body.toBadgeNumber} for conId=${conId}`);
-    return this.attendeeService.replaceBadge(
-      Number(conId),
-      body,
-      this.ctx
+    this.logger.log(
+      `Replacing badge from ${body.fromBadgeNumber} to ${body.toBadgeNumber} for conId=${conId}`,
     );
+    return this.attendeeService.replaceBadge(Number(conId), body, this.ctx);
   }
 }

@@ -37,12 +37,17 @@ export class CreateCopyGameRelationDto {
 // The collection, organization, and dateAdded are set by the controller from
 // the route, so they are not part of the client-supplied body.
 export class CreateCopyDto {
-  @ApiProperty({ type: CreateCopyGameRelationDto, description: 'The game this copy is an instance of.' })
+  @ApiProperty({
+    type: CreateCopyGameRelationDto,
+    description: 'The game this copy is an instance of.',
+  })
   @ValidateNested()
   @Type(() => CreateCopyGameRelationDto)
   game: CreateCopyGameRelationDto;
 
-  @ApiProperty({ description: "Human-readable label printed on the copy's barcode sticker." })
+  @ApiProperty({
+    description: "Human-readable label printed on the copy's barcode sticker.",
+  })
   @IsString()
   barcodeLabel: string;
 
@@ -55,7 +60,9 @@ export class CreateCopyDto {
   @IsString()
   comments?: string;
 
-  @ApiPropertyOptional({ description: 'Whether this copy is available to be won as a prize.' })
+  @ApiPropertyOptional({
+    description: 'Whether this copy is available to be won as a prize.',
+  })
   @IsOptional()
   @IsBoolean()
   winnable?: boolean;

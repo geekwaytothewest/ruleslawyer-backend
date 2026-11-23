@@ -220,7 +220,10 @@ describe('AttendeeService', () => {
     it('should return attendees including pronouns and badge types', async () => {
       mockCtx.prisma.attendee.findMany.mockResolvedValue([{ id: 1 }] as any);
 
-      const attendees = await service.attendeesWithPronounsAndBadgeTypes(1, ctx);
+      const attendees = await service.attendeesWithPronounsAndBadgeTypes(
+        1,
+        ctx,
+      );
 
       expect(attendees.length).toBe(1);
       expect(mockCtx.prisma.attendee.findMany).toHaveBeenCalledWith(
@@ -534,7 +537,9 @@ describe('AttendeeService', () => {
           { fromBadgeNumber: '1', toBadgeNumber: '2' },
           ctx,
         ),
-      ).rejects.toThrow('Badge replacement can only be done to unassigned badges.');
+      ).rejects.toThrow(
+        'Badge replacement can only be done to unassigned badges.',
+      );
     });
   });
 

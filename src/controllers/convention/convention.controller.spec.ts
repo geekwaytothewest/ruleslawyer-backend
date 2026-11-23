@@ -219,7 +219,10 @@ describe('ConventionController', () => {
       mockCtx.prisma.convention.findUnique.mockResolvedValueOnce(convention);
 
       const startSpy = jest
-        .spyOn(controller['conventionService'], 'startSyncTabletopEventsAttendees')
+        .spyOn(
+          controller['conventionService'],
+          'startSyncTabletopEventsAttendees',
+        )
         .mockReturnValue({ status: 'started', message: 'go' });
 
       const userData = {
@@ -396,9 +399,7 @@ describe('ConventionController', () => {
         }),
       });
 
-      const req = execCtx
-        .switchToHttp()
-        .getRequest() as fastify.FastifyRequest;
+      const req = execCtx.switchToHttp().getRequest() as fastify.FastifyRequest;
 
       await expect(controller.importAttendeesCSV(req, 1)).rejects.toBe(
         'missing file',
@@ -416,9 +417,7 @@ describe('ConventionController', () => {
         }),
       });
 
-      const req = execCtx
-        .switchToHttp()
-        .getRequest() as fastify.FastifyRequest;
+      const req = execCtx.switchToHttp().getRequest() as fastify.FastifyRequest;
 
       const startSpy = jest
         .spyOn(controller['conventionService'], 'startImportAttendeesCSV')

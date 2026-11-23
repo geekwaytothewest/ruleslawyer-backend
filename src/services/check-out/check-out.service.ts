@@ -126,7 +126,7 @@ export class CheckOutService {
           attendee: {
             include: {
               convention: true,
-            }
+            },
           },
         },
         where: {
@@ -135,7 +135,7 @@ export class CheckOutService {
           },
           attendee: {
             conventionId: conId,
-          }
+          },
         },
       });
     } catch (ex) {
@@ -318,9 +318,9 @@ export class CheckOutService {
           copy: {
             include: {
               game: true,
-            }
-          }
-        }
+            },
+          },
+        },
       });
 
       if (!checkOut?.checkIn) {
@@ -345,7 +345,9 @@ export class CheckOutService {
       }
 
       if (players.length > (checkOut.copy?.game.maxPlayers ?? 4) + 1) {
-        this.logger.error(`Attempt to submit play with more players than maxPlayers + 1`)
+        this.logger.error(
+          `Attempt to submit play with more players than maxPlayers + 1`,
+        );
         return Promise.reject('too many players');
       }
 

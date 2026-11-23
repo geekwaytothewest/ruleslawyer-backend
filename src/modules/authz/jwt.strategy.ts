@@ -52,8 +52,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'gwJwt') {
       // for an empty table rather than `id === 1` — autoincrement ids can skip 1
       // after rolled-back inserts, deletes, or a restore, which would otherwise
       // leave the system with no super admin (or unable to ever re-bootstrap).
-      const isFirstUser =
-        (await this.userService.getUserCount(this.ctx)) === 0;
+      const isFirstUser = (await this.userService.getUserCount(this.ctx)) === 0;
 
       user = await this.userService.createUser(
         {

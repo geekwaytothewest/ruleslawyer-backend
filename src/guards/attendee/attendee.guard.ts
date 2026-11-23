@@ -22,13 +22,13 @@ export class AttendeeGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let id = context.getArgByIndex(0).params?.id;
+    const id = context.getArgByIndex(0).params?.id;
 
     const attendee = await this.attendeeService.attendee(
       {
         id: Number(id),
       },
-      this.ctx
+      this.ctx,
     );
 
     if (!attendee) {

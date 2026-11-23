@@ -23,7 +23,7 @@ export class ConventionCreatePermissionsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let conventionId = context.getArgByIndex(0).body?.conventionId;
+    const conventionId = context.getArgByIndex(0).body?.conventionId;
 
     if (!user) {
       return false;
@@ -48,7 +48,7 @@ export class ConventionCreatePermissionsGuard implements CanActivate {
       return false;
     }
 
-    let orgId = con?.organizationId;
+    const orgId = con?.organizationId;
 
     const orgWithUsers = Prisma.validator<Prisma.OrganizationDefaultArgs>()({
       include: { users: true },
@@ -68,11 +68,7 @@ export class ConventionCreatePermissionsGuard implements CanActivate {
       return true;
     }
 
-    if (
-      org?.users?.filter(
-        (u) => u.userId === user.id && (u.admin),
-      ).length > 0
-    ) {
+    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
       return true;
     }
 
