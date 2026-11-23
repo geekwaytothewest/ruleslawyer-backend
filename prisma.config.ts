@@ -5,9 +5,15 @@
 // Prisma 7 also stopped auto-loading .env, so we load it explicitly here for
 // local/CI runs of the CLI. In deployed environments DATABASE_URL is already
 // present in the process environment and dotenv is a no-op.
-import 'dotenv/config';
+//
+// dotenv-expand resolves ${VAR} references (e.g. ${POSTGRES_HOST} inside
+// DATABASE_URL), which Prisma's old built-in loader did implicitly.
+import dotenv from 'dotenv';
+import { expand } from 'dotenv-expand';
 import path from 'node:path';
 import { defineConfig, env } from 'prisma/config';
+
+expand(dotenv.config({ quiet: true }));
 
 export default defineConfig({
   schema: path.join('prisma', 'schema.prisma'),

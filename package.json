@@ -81,6 +81,7 @@
     "@typescript-eslint/parser": "^8.60.1",
     "axios-mock-adapter": "^2.1.0",
     "cd": "^0.3.3",
+    "dotenv-expand": "^1000.0.0",
     "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
