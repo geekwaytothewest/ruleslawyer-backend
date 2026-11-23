@@ -202,11 +202,18 @@ export class GameController {
                     conventions: {
                       some: {
                         convention: {
-                          users: {
-                            some: {
-                              userId: user.id,
+                          AND: [
+                            {
+                              users: {
+                                some: {
+                                  userId: user.id,
+                                },
+                              },
                             },
-                          },
+                            orgId && !Number.isNaN(Number(orgId))
+                              ? { organizationId: Number(orgId) }
+                              : { id: { in: [] } },
+                          ],
                         },
                       },
                     },

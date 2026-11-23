@@ -377,10 +377,16 @@ export class OrganizationController {
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
   @ApiOkResponse({ type: GameEntity, isArray: true })
   @Get(':id/games/search/:gameName')
-  async searchGames(@Param('gameName') gameName: string) {
+  async searchGames(
+    @Param('id') id: number,
+    @Param('gameName') gameName: string,
+  ) {
     return this.gameService.search(
       {
-        where: { name: { contains: gameName, mode: 'insensitive' } },
+        where: {
+          organizationId: Number(id),
+          name: { contains: gameName, mode: 'insensitive' },
+        },
         orderBy: { name: 'asc' },
       },
       this.ctx,
@@ -402,11 +408,17 @@ export class OrganizationController {
     },
   })
   @Get(':id/games/autocomplete/:gameName')
-  async autocompleteGames(@Param('gameName') gameName: string) {
+  async autocompleteGames(
+    @Param('id') id: number,
+    @Param('gameName') gameName: string,
+  ) {
     return this.gameService.search(
       {
         select: { name: true, id: true },
-        where: { name: { contains: gameName, mode: 'insensitive' } },
+        where: {
+          organizationId: Number(id),
+          name: { contains: gameName, mode: 'insensitive' },
+        },
         orderBy: { name: 'asc' },
         take: 10,
       },
