@@ -251,7 +251,10 @@ export class LegacyController {
         game: {
           connectOrCreate: {
             where: {
-              name: copy.title,
+              organizationId_name: {
+                organizationId: Number(orgId),
+                name: copy.title,
+              },
             },
             create: {
               name: copy.title,

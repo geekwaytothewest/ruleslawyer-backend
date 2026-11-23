@@ -445,7 +445,10 @@ export class CollectionService {
                         maxPlayers: Number(r[2]),
                       },
                       where: {
-                        name: r[0],
+                        organizationId_name: {
+                          organizationId: Number(orgId),
+                          name: r[0],
+                        },
                       },
                     },
                   },

@@ -13,8 +13,6 @@ expand(dotenv.config());
 import path from 'node:path';
 import { defineConfig, env } from 'prisma/config';
 
-expand(dotenv.config({ quiet: true }));
-
 export default defineConfig({
   schema: path.join('prisma', 'schema.prisma'),
   datasource: {
