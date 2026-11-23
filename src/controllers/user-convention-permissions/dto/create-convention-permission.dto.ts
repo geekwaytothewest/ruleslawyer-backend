@@ -20,5 +20,9 @@ export class CreateConventionPermissionDto {
 
   @ApiProperty()
   @IsBoolean()
+  kiosk: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
   attendee: boolean;
 }

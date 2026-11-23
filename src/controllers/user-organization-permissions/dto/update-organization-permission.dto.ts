@@ -7,6 +7,7 @@ export class UpdateOrganizationPermissionDto extends PartialType(
   PickType(CreateOrganizationPermissionDto, [
     'admin',
     'geekGuide',
+    'kiosk',
     'readOnly',
   ] as const),
 ) {}

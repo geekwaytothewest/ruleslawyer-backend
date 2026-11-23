@@ -6,12 +6,12 @@ import {
 import { Convention, Prisma } from '@prisma/client';
 import { AttendeeService } from '../attendee/attendee.service';
 import { TabletopeventsService } from '../tabletopevents/tabletopevents.service';
-import * as crypto from 'crypto';
 import { Context } from '../prisma/context';
 import { CheckOutService } from '../check-out/check-out.service';
 import { stringify } from 'csv-stringify';
 import { RuleslawyerLogger } from '../../utils/ruleslawyer.logger';
 import { parse } from 'csv-parse';
+import { generateRegistrationCode } from '../../utils/registration-code';
 
 // Convention type fields safe to embed in convention responses: every scalar
 // except the logo/logoSquare Bytes blobs, which would bloat every list payload.
@@ -212,7 +212,7 @@ export class ConventionService {
                 badgeFirstName: b[0],
                 badgeLastName: b[1],
                 legalName: b[0] + ' ' + b[1],
-                registrationCode: crypto.randomUUID(),
+                registrationCode: generateRegistrationCode(),
                 badgeNumber: badgeNumber,
                 barcode: '*' + badgeNumber + '*',
                 tteBadgeNumber: null,
@@ -406,7 +406,7 @@ export class ConventionService {
                 },
               },
             },
-            registrationCode: crypto.randomUUID(),
+            registrationCode: generateRegistrationCode(),
             email: b.email,
             badgeNumber: badgeNumber,
             barcode: '*' + badgeNumber + '*',
@@ -470,6 +470,7 @@ export class ConventionService {
             Barcode: a.barcode,
             Pronouns: a.pronouns?.pronouns,
             Merch: a.merch,
+            RegistrationCode: a.registrationCode
           };
         }),
         { header: true },
@@ -606,6 +607,7 @@ export class ConventionService {
     permissions: {
       admin: boolean;
       geekGuide: boolean;
+      kiosk: boolean;
       attendee: boolean;
     },
     ctx: Context,
@@ -629,6 +631,7 @@ export class ConventionService {
           conventionId: Number(conventionId),
           admin: permissions.admin,
           geekGuide: permissions.geekGuide,
+          kiosk: permissions.kiosk,
           attendee: permissions.attendee,
         },
       });
