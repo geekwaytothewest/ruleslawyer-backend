@@ -467,6 +467,7 @@ export class ConventionService {
             Pronouns: a.pronouns?.pronouns,
             Merch: a.merch,
             RegistrationCode: a.registrationCode,
+            QRCodeURL: 'https://library.geekway.com/qr/' + a.registrationCode,
           };
         }),
         { header: true },

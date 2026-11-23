@@ -902,14 +902,30 @@ describe('ConventionService', () => {
           email: 'test@geekway.com',
           checkedIn: false,
           printed: false,
-          registrationCode: 'fakecode',
+          registrationCode: 'fakecode2',
           merch: null,
           eligibleForPrizes: true,
           lostBadge: false,
         },
       ]);
 
-      expect(service.exportBadgeFile(1, ctx)).resolves.toBeTruthy();
+      const file = await service.exportBadgeFile(1, ctx);
+      const chunks: Buffer[] = [];
+      for await (const chunk of file.getStream()) {
+        chunks.push(Buffer.from(chunk));
+      }
+      const lines = Buffer.concat(chunks).toString().trim().split('\n');
+
+      expect(lines[0]).toBe(
+        'Badge Name,Badge Type,Badge Number,Barcode,Pronouns,Merch,RegistrationCode,QRCodeURL',
+      );
+      expect(lines).toHaveLength(3);
+      expect(lines[1]).toMatch(
+        /,fakecode,https:\/\/library\.geekway\.com\/qr\/fakecode$/,
+      );
+      expect(lines[2]).toMatch(
+        /,fakecode2,https:\/\/library\.geekway\.com\/qr\/fakecode2$/,
+      );
     });
   });
 
