@@ -117,7 +117,7 @@ describe('TabletopeventsService', () => {
                 badge_number: 1,
                 email: 'fake@email.com',
                 custom_fields: {
-                  YourPronouns: 'she/her',
+                  Pronoun: 'she/her',
                 },
               },
             ],
@@ -143,7 +143,7 @@ describe('TabletopeventsService', () => {
                 badge_number: 1,
                 email: 'fake@email.com',
                 custom_fields: {
-                  YourPronouns: 'she/her',
+                  Pronoun: 'she/her',
                 },
               },
             ],

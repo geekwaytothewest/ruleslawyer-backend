@@ -365,7 +365,7 @@ describe('ConventionService', () => {
           email: 'test@geekway.com',
           badge_number: 1,
           custom_fields: {
-            YourPronouns: 'she/her',
+            Pronoun: 'she/her',
           },
         },
       ]);
@@ -431,7 +431,7 @@ describe('ConventionService', () => {
           email: 'test@geekway.com',
           badge_number: 1,
           custom_fields: {
-            YourPronouns: 'she/her',
+            Pronoun: 'she/her',
             LegalName: 'Test Attendee',
           },
         },
@@ -494,7 +494,7 @@ describe('ConventionService', () => {
           badgetype_id: 1,
           email: 'a@geekway.com',
           badge_number: 1,
-          custom_fields: { YourPronouns: 'she/her' },
+          custom_fields: { Pronoun: 'she/her' },
         },
         {
           id: 'badge-b',
@@ -502,7 +502,7 @@ describe('ConventionService', () => {
           badgetype_id: 1,
           email: 'b@geekway.com',
           badge_number: 2,
-          custom_fields: { YourPronouns: 'they/them' },
+          custom_fields: { Pronoun: 'they/them' },
         },
       ]);
 
@@ -529,7 +529,7 @@ describe('ConventionService', () => {
       expect(attendeeA.merch).toBe('product A1, product A2');
       expect(attendeeB.merch).toBe('product B1');
 
-      // Pronouns come from the TTE YourPronouns custom field.
+      // Pronouns come from the TTE Pronoun custom field.
       expect(attendeeA.pronouns.connectOrCreate.create.pronouns).toBe(
         'she/her',
       );
@@ -579,7 +579,7 @@ describe('ConventionService', () => {
           badgetype_id: 1,
           email: 'a@geekway.com',
           badge_number: 1,
-          custom_fields: { YourPronouns: 'she/her' },
+          custom_fields: { Pronoun: 'she/her' },
         },
         {
           id: 'badge-b',
@@ -587,7 +587,7 @@ describe('ConventionService', () => {
           badgetype_id: 1,
           email: 'b@geekway.com',
           badge_number: 2,
-          custom_fields: { YourPronouns: 'they/them' },
+          custom_fields: { Pronoun: 'they/them' },
         },
       ]);
 
@@ -636,7 +636,7 @@ describe('ConventionService', () => {
           badgetype_id: 1,
           email: 'solo@geekway.com',
           badge_number: 1,
-          custom_fields: { YourPronouns: 'she/her' },
+          custom_fields: { Pronoun: 'she/her' },
         });
       const getBadgesSpy = jest.spyOn(service['tteService'], 'getBadges');
       jest
@@ -705,7 +705,7 @@ describe('ConventionService', () => {
         ),
       ).resolves.toBe(100);
 
-      // No YourPronouns custom field -> falls back to the default.
+      // No Pronoun custom field -> falls back to the default.
       const first = syncSpy.mock.calls[0][0] as any;
       expect(first.pronouns.connectOrCreate.create.pronouns).toBe(
         'Prefer Not To Say',
