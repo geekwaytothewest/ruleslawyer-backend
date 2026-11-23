@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -169,8 +170,26 @@ export class OrganizationController {
     @Param('colId') colId: number,
     @Body() copyData: CreateCopyDto,
   ) {
+    const { game, ...rest } = copyData;
+    let gameRelation: Prisma.GameCreateNestedOneWithoutCopiesInput;
+    if (game.connect && !game.create) {
+      gameRelation = { connect: { id: game.connect.id } };
+    } else if (game.create && !game.connect) {
+      gameRelation = {
+        create: {
+          name: game.create.name,
+          organization: { connect: { id: Number(id) } },
+        },
+      };
+    } else {
+      throw new BadRequestException(
+        'game must contain exactly one of connect or create',
+      );
+    }
+
     const data: Prisma.CopyCreateInput = {
-      ...copyData,
+      ...rest,
+      game: gameRelation,
       collection: {
         connect: {
           id: Number(colId),

@@ -46,12 +46,30 @@ function validateDumpUrl(url: string): void {
 }
 
 const ALLOWED_IMAGE_HOSTS = new Set([
-  'images.bggnn.com',
-  'cdn.bggnn.com',
-  'cf.bggcdn.com',
+  // The xmlapi2 <image>/<thumbnail> elements point at Geekdo's CDN.
+  'cf.geekdo-images.com',
+  'cf.geekdo-static.com',
+  'geekdo-images.com',
+  'images.geekdo.com',
   'boardgamegeek.com',
   'www.boardgamegeek.com',
 ]);
+
+/**
+ * Raised when an image URL fails the SSRF allowlist. Distinct from a failed
+ * fetch (which getImage reports as null) because it means our allowlist is
+ * wrong or BGG moved CDNs, not that one game's art is missing — callers catch
+ * this specifically so a bulk run can tally it instead of dying on it.
+ */
+export class InvalidImageUrlError extends Error {
+  constructor(
+    message: string,
+    readonly host: string | null,
+  ) {
+    super(message);
+    this.name = 'InvalidImageUrlError';
+  }
+}
 
 /**
  * Validates an image URL to prevent SSRF attacks.
@@ -62,17 +80,24 @@ function validateImageUrl(url: string): void {
   try {
     parsed = new URL(url);
   } catch {
-    throw new Error('Invalid image URL: unable to parse URL');
+    throw new InvalidImageUrlError(
+      'Invalid image URL: unable to parse URL',
+      null,
+    );
   }
 
   if (parsed.protocol !== 'https:') {
-    throw new Error('Invalid image URL: only HTTPS URLs are allowed');
+    throw new InvalidImageUrlError(
+      'Invalid image URL: only HTTPS URLs are allowed',
+      parsed.hostname,
+    );
   }
 
   if (!ALLOWED_IMAGE_HOSTS.has(parsed.hostname)) {
-    throw new Error(
+    throw new InvalidImageUrlError(
       `Invalid image URL: host "${parsed.hostname}" is not permitted. ` +
         'Only BGG CDN hosts are accepted.',
+      parsed.hostname,
     );
   }
 }
