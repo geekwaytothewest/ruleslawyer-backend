@@ -7,7 +7,9 @@ export class PaginatedAttendeesDto {
   @ApiProperty({ type: AttendeeEntity, isArray: true })
   data: AttendeeEntity[];
 
-  @ApiProperty({ description: 'Total attendees matching the query (across all pages).' })
+  @ApiProperty({
+    description: 'Total attendees matching the query (across all pages).',
+  })
   total: number;
 
   @ApiProperty({ description: '1-based page number returned.' })

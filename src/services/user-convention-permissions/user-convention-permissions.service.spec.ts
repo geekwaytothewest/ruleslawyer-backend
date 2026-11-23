@@ -203,9 +203,9 @@ describe('UserConventionPermissionsService', () => {
         new Error('bad data'),
       );
 
-      await expect(
-        service.createPermission({} as any, ctx),
-      ).rejects.toThrow('bad data');
+      await expect(service.createPermission({} as any, ctx)).rejects.toThrow(
+        'bad data',
+      );
     });
   });
 
@@ -245,8 +245,16 @@ describe('UserConventionPermissionsService', () => {
     it('prefers the most recently started among several active conventions', async () => {
       const now = Date.now();
       mockPerms([
-        con({ id: 1, startDate: new Date(now - 10 * DAY), endDate: new Date(now + DAY) }),
-        con({ id: 2, startDate: new Date(now - 2 * DAY), endDate: new Date(now + DAY) }),
+        con({
+          id: 1,
+          startDate: new Date(now - 10 * DAY),
+          endDate: new Date(now + DAY),
+        }),
+        con({
+          id: 2,
+          startDate: new Date(now - 2 * DAY),
+          endDate: new Date(now + DAY),
+        }),
       ]);
 
       const result = await service.resolveConventions(2, ctx);
@@ -257,8 +265,16 @@ describe('UserConventionPermissionsService', () => {
     it('falls back to the soonest upcoming convention when none are active', async () => {
       const now = Date.now();
       mockPerms([
-        con({ id: 3, startDate: new Date(now + 2 * DAY), endDate: new Date(now + 5 * DAY) }),
-        con({ id: 4, startDate: new Date(now + 10 * DAY), endDate: new Date(now + 15 * DAY) }),
+        con({
+          id: 3,
+          startDate: new Date(now + 2 * DAY),
+          endDate: new Date(now + 5 * DAY),
+        }),
+        con({
+          id: 4,
+          startDate: new Date(now + 10 * DAY),
+          endDate: new Date(now + 15 * DAY),
+        }),
       ]);
 
       const result = await service.resolveConventions(2, ctx);
@@ -269,7 +285,11 @@ describe('UserConventionPermissionsService', () => {
     it('returns no current convention when all are ended or cancelled', async () => {
       const now = Date.now();
       mockPerms([
-        con({ id: 5, startDate: new Date(now - 10 * DAY), endDate: new Date(now - DAY) }),
+        con({
+          id: 5,
+          startDate: new Date(now - 10 * DAY),
+          endDate: new Date(now - DAY),
+        }),
         con({ id: 6, cancelled: true }),
       ]);
 
@@ -283,8 +303,16 @@ describe('UserConventionPermissionsService', () => {
     it('picks the most recently started active convention regardless of input order', async () => {
       const now = Date.now();
       mockPerms([
-        con({ id: 2, startDate: new Date(now - 2 * DAY), endDate: new Date(now + DAY) }),
-        con({ id: 1, startDate: new Date(now - 10 * DAY), endDate: new Date(now + DAY) }),
+        con({
+          id: 2,
+          startDate: new Date(now - 2 * DAY),
+          endDate: new Date(now + DAY),
+        }),
+        con({
+          id: 1,
+          startDate: new Date(now - 10 * DAY),
+          endDate: new Date(now + DAY),
+        }),
       ]);
 
       const result = await service.resolveConventions(2, ctx);
@@ -295,8 +323,16 @@ describe('UserConventionPermissionsService', () => {
     it('picks the soonest upcoming convention regardless of input order', async () => {
       const now = Date.now();
       mockPerms([
-        con({ id: 4, startDate: new Date(now + 10 * DAY), endDate: new Date(now + 15 * DAY) }),
-        con({ id: 3, startDate: new Date(now + 2 * DAY), endDate: new Date(now + 5 * DAY) }),
+        con({
+          id: 4,
+          startDate: new Date(now + 10 * DAY),
+          endDate: new Date(now + 15 * DAY),
+        }),
+        con({
+          id: 3,
+          startDate: new Date(now + 2 * DAY),
+          endDate: new Date(now + 5 * DAY),
+        }),
       ]);
 
       const result = await service.resolveConventions(2, ctx);

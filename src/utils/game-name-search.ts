@@ -14,9 +14,7 @@ import { Prisma } from '@prisma/client';
  * The `contains`/`startsWith` clauses use ILIKE and match the raw filter
  * literally, so any punctuation the user typed is still honored there.
  */
-export function gameNameSearchClauses(
-  filter: string,
-): Prisma.GameWhereInput[] {
+export function gameNameSearchClauses(filter: string): Prisma.GameWhereInput[] {
   const clauses: Prisma.GameWhereInput[] = [
     { name: { contains: filter, mode: 'insensitive' } },
   ];

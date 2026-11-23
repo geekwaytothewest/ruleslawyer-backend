@@ -34,10 +34,11 @@ export class ConventionPermissionsSelfUpdateGuard implements CanActivate {
       return true;
     }
 
-    const conventionPermission = await this.userConventionPermissionsService.getPermission(
-      Number(conventionPermissionId),
-      this.ctx,
-    );
+    const conventionPermission =
+      await this.userConventionPermissionsService.getPermission(
+        Number(conventionPermissionId),
+        this.ctx,
+      );
 
     if (!conventionPermission) {
       return false;

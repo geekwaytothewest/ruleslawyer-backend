@@ -55,7 +55,9 @@ export class ConventionReadGuard implements CanActivate {
 
     if (
       con?.users?.filter(
-        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.attendee || u.kiosk),
+        (u) =>
+          u.userId === user.id &&
+          (u.admin || u.geekGuide || u.attendee || u.kiosk),
       ).length > 0
     ) {
       return true;
@@ -79,7 +81,11 @@ export class ConventionReadGuard implements CanActivate {
       return true;
     }
 
-    if (org?.users?.filter((u) => u.userId === user.id && (u.admin || u.geekGuide || u.kiosk)).length > 0) {
+    if (
+      org?.users?.filter(
+        (u) => u.userId === user.id && (u.admin || u.geekGuide || u.kiosk),
+      ).length > 0
+    ) {
       return true;
     }
 

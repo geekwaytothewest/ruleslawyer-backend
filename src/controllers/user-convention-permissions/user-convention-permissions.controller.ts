@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserConventionPermissions } from '@prisma/client';
 import { UserConventionPermissionsEntity } from '../../common/entities/user-convention-permissions.entity';
@@ -55,7 +67,10 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
-  @ApiOkResponse({ type: UserConventionPermissionsWithConventionEntity, isArray: true })
+  @ApiOkResponse({
+    type: UserConventionPermissionsWithConventionEntity,
+    isArray: true,
+  })
   @Get(':id')
   async getUserConventionPermissions(
     @Param('id') id: string,
@@ -67,7 +82,10 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, ConventionReadGuard)
-  @ApiOkResponse({ type: UserConventionPermissionsWithUserEntity, isArray: true })
+  @ApiOkResponse({
+    type: UserConventionPermissionsWithUserEntity,
+    isArray: true,
+  })
   @Get('convention/:id')
   async getConventionUsers(@Param('id') id: string) {
     const permissions =
@@ -86,7 +104,10 @@ export class UserConventionPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
-  @ApiOkResponse({ type: Number, description: 'Number of convention permissions for the user.' })
+  @ApiOkResponse({
+    type: Number,
+    description: 'Number of convention permissions for the user.',
+  })
   @Get(':id/count')
   async getUserConventionCount(@Param('id') id: string): Promise<number> {
     return await this.userConventionPermissionsService.userConventionCount(
@@ -123,7 +144,11 @@ export class UserConventionPermissionsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionPermissionsGuard, ConventionPermissionsSelfUpdateGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ConventionPermissionsGuard,
+    ConventionPermissionsSelfUpdateGuard,
+  )
   @ApiOkResponse({ type: UserConventionPermissionsEntity })
   @Delete(':id')
   async deleteConventionPermission(@Param('id') id: string) {
@@ -133,7 +158,11 @@ export class UserConventionPermissionsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, ConventionPermissionsGuard, ConventionPermissionsSelfUpdateGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ConventionPermissionsGuard,
+    ConventionPermissionsSelfUpdateGuard,
+  )
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @ApiOkResponse({ type: UserConventionPermissionsEntity })
   @Put(':id')
@@ -148,24 +177,21 @@ export class UserConventionPermissionsController {
     );
   }
 
-    @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
-    @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-    @ApiOkResponse({ type: UserConventionPermissionsEntity })
-    @Post('convention/:id/addUser')
-    async addUser(
-      @Param('id') id: string,
-      @Body() body: AddUserToConventionDto,
-    ) {
-      return await this.conventionService.addUserByEmail(
-        Number(id),
-        body.email,
-        {
-          admin: body.admin,
-          geekGuide: body.geekGuide,
-          kiosk: body.kiosk,
-          attendee: body.attendee,
-        },
-        this.ctx,
-      );
-    }
+  @UseGuards(JwtAuthGuard, OrganizationAdminGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOkResponse({ type: UserConventionPermissionsEntity })
+  @Post('convention/:id/addUser')
+  async addUser(@Param('id') id: string, @Body() body: AddUserToConventionDto) {
+    return await this.conventionService.addUserByEmail(
+      Number(id),
+      body.email,
+      {
+        admin: body.admin,
+        geekGuide: body.geekGuide,
+        kiosk: body.kiosk,
+        attendee: body.attendee,
+      },
+      this.ctx,
+    );
+  }
 }

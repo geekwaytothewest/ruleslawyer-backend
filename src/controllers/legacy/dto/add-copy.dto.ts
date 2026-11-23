@@ -6,7 +6,9 @@ export class LegacyAddCopyDto {
   @IsInt()
   libraryId: number;
 
-  @ApiProperty({ description: 'Game title; the game is created if it does not exist.' })
+  @ApiProperty({
+    description: 'Game title; the game is created if it does not exist.',
+  })
   @IsString()
   title: string;
 

@@ -11,7 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
   HttpCode,
-  Req
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -215,6 +215,11 @@ export class CollectionController {
 
     // Long-running: launch in the background and return 202 immediately so the
     // client (and any proxy) isn't holding a request open for minutes.
-    return this.collectionService.uploadCopies(collection.organizationId, id, buffer, this.ctx);
+    return this.collectionService.uploadCopies(
+      collection.organizationId,
+      id,
+      buffer,
+      this.ctx,
+    );
   }
 }

@@ -6,7 +6,9 @@ export class UpdateCollectionDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'Whether copies in this collection can be won as prizes.' })
+  @ApiProperty({
+    description: 'Whether copies in this collection can be won as prizes.',
+  })
   @IsBoolean()
   allowWinning: boolean;
 }

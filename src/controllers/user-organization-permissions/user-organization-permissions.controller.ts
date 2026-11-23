@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Delete,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { UserOrganizationPermissions } from '@prisma/client';
 import { UserOrganizationPermissionsEntity } from '../../common/entities/user-organization-permissions.entity';
@@ -50,7 +61,10 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, OrganizationReadGuard)
-  @ApiOkResponse({ type: UserOrganizationPermissionsWithUserEntity, isArray: true })
+  @ApiOkResponse({
+    type: UserOrganizationPermissionsWithUserEntity,
+    isArray: true,
+  })
   @Get('organization/:id')
   async getOrganizationUsers(@Param('id') id: string) {
     const orgId = Number(id);
@@ -99,7 +113,10 @@ export class UserOrganizationPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
-  @ApiOkResponse({ type: Number, description: 'Number of organization permissions for the user.' })
+  @ApiOkResponse({
+    type: Number,
+    description: 'Number of organization permissions for the user.',
+  })
   @Get(':id/count')
   async getUserConventionCount(@Param('id') id: string): Promise<number> {
     return await this.userOrganizationPermissionsService.userOrganizationCount(
@@ -108,7 +125,11 @@ export class UserOrganizationPermissionsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationPermissionsGuard,
+    OrganizationPermissionsSelfUpdateGuard,
+  )
   @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
   @Delete(':id')
   async deleteOrganizationPermission(@Param('id') id: string) {
@@ -118,7 +139,11 @@ export class UserOrganizationPermissionsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, OrganizationPermissionsGuard, OrganizationPermissionsSelfUpdateGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationPermissionsGuard,
+    OrganizationPermissionsSelfUpdateGuard,
+  )
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @ApiOkResponse({ type: UserOrganizationPermissionsEntity })
   @Put(':id')

@@ -23,7 +23,10 @@ describe('User param decorator', () => {
     const factory = getFactory();
     const authedUser = { id: 1, email: 'a@b.com' };
 
-    const result = factory(undefined, ctxWithFirstArg({ user: { user: authedUser } }));
+    const result = factory(
+      undefined,
+      ctxWithFirstArg({ user: { user: authedUser } }),
+    );
 
     expect(result).toBe(authedUser);
   });

@@ -1,9 +1,7 @@
 import { UserConventionPermissions } from '@prisma/client';
 
 // Scalar response shape for UserConventionPermissions. See user.entity.ts.
-export class UserConventionPermissionsEntity
-  implements UserConventionPermissions
-{
+export class UserConventionPermissionsEntity implements UserConventionPermissions {
   id: number;
   userId: number;
   conventionId: number;

@@ -9,7 +9,6 @@ import { RuleslawyerLogger } from './utils/ruleslawyer.logger';
 import Fastify from 'fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-
 async function bootstrap() {
   // When we build the Fastify instance ourselves (to attach the /api/status
   // log-silencing hook below) and hand it to FastifyAdapter, NestJS does NOT

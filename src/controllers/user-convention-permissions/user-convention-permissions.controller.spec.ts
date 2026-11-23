@@ -41,9 +41,7 @@ describe('UserConventionPermissionsController', () => {
       expect(result).toHaveLength(2);
       expect(
         mockCtx.prisma.userConventionPermissions.findMany,
-      ).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { userId: 5 } }),
-      );
+      ).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 5 } }));
     });
   });
 

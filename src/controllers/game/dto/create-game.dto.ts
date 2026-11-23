@@ -31,7 +31,9 @@ export class CreateGameDto {
   @Type(() => OrganizationRelationDto)
   organization: OrganizationRelationDto;
 
-  @ApiPropertyOptional({ description: 'BoardGameGeek game id used for metadata sync.' })
+  @ApiPropertyOptional({
+    description: 'BoardGameGeek game id used for metadata sync.',
+  })
   @IsOptional()
   @IsInt()
   bggId?: number;
@@ -89,12 +91,16 @@ export class CreateGameDto {
   @IsInt()
   maxPlayers?: number;
 
-  @ApiPropertyOptional({ description: 'Minimum expected play time in minutes.' })
+  @ApiPropertyOptional({
+    description: 'Minimum expected play time in minutes.',
+  })
   @IsOptional()
   @IsInt()
   minTime?: number;
 
-  @ApiPropertyOptional({ description: 'Maximum expected play time in minutes.' })
+  @ApiPropertyOptional({
+    description: 'Maximum expected play time in minutes.',
+  })
   @IsOptional()
   @IsInt()
   maxTime?: number;

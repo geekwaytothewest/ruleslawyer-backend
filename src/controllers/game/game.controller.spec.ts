@@ -246,9 +246,7 @@ describe('GameController', () => {
 
   describe('getCopyCount', () => {
     it('should return the copy count for the game', async () => {
-      const spy = jest
-        .spyOn(gameService, 'gameCopyCount')
-        .mockResolvedValue(7);
+      const spy = jest.spyOn(gameService, 'gameCopyCount').mockResolvedValue(7);
 
       const result = await controller.getCopyCount(1);
 

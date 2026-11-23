@@ -26,17 +26,26 @@ describe('RuleslawyerLogger', () => {
 
   it('appends the traceId on warn', () => {
     logger.warn('careful');
-    expect(underlying.warn).toHaveBeenCalledWith('careful; traceId=trace-1', []);
+    expect(underlying.warn).toHaveBeenCalledWith(
+      'careful; traceId=trace-1',
+      [],
+    );
   });
 
   it('appends the traceId on debug', () => {
     logger.debug!('details');
-    expect(underlying.debug).toHaveBeenCalledWith('details; traceId=trace-1', []);
+    expect(underlying.debug).toHaveBeenCalledWith(
+      'details; traceId=trace-1',
+      [],
+    );
   });
 
   it('appends the traceId on verbose', () => {
     logger.verbose!('noisy');
-    expect(underlying.verbose).toHaveBeenCalledWith('noisy; traceId=trace-1', []);
+    expect(underlying.verbose).toHaveBeenCalledWith(
+      'noisy; traceId=trace-1',
+      [],
+    );
   });
 
   it('appends the traceId on fatal', () => {

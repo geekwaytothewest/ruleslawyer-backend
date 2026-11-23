@@ -34,10 +34,11 @@ export class OrganizationPermissionsSelfUpdateGuard implements CanActivate {
       return true;
     }
 
-    const organizationPermission = await this.userOrganizationPermissionsService.getPermission(
-      Number(organizationPermissionId),
-      this.ctx,
-    );
+    const organizationPermission =
+      await this.userOrganizationPermissionsService.getPermission(
+        Number(organizationPermissionId),
+        this.ctx,
+      );
 
     if (!organizationPermission) {
       return false;

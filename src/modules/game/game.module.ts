@@ -10,7 +10,13 @@ import { HttpModule } from 'nestjs-http-promise';
 
 @Module({
   controllers: [GameController],
-  providers: [PrismaService, GameService, OrganizationService, GameGuard, BoardGameGeekService],
+  providers: [
+    PrismaService,
+    GameService,
+    OrganizationService,
+    GameGuard,
+    BoardGameGeekService,
+  ],
   exports: [GameService],
   imports: [CopyModule, HttpModule],
 })

@@ -110,8 +110,15 @@ export class ConventionController {
     @Param('id') id: number,
     @Query('limit') limit: string,
     @Query('filter') filter: string,
-    @Query('page') page: string,) {
-      return this.conventionService.getAttendees(Number(id), Number(limit), filter, Number(page), this.ctx);
+    @Query('page') page: string,
+  ) {
+    return this.conventionService.getAttendees(
+      Number(id),
+      Number(limit),
+      filter,
+      Number(page),
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
@@ -132,7 +139,8 @@ export class ConventionController {
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @HttpCode(202)
   @ApiAcceptedResponse({
-    description: 'Import started in the background; progress is in the server logs.',
+    description:
+      'Import started in the background; progress is in the server logs.',
   })
   @Post(':id/importAttendeesCSV')
   async importAttendeesCSV(
@@ -154,7 +162,8 @@ export class ConventionController {
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
   @HttpCode(202)
   @ApiAcceptedResponse({
-    description: 'Import started in the background; progress is in the server logs.',
+    description:
+      'Import started in the background; progress is in the server logs.',
   })
   @Post(':id/syncTabletopEventsAttendees')
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -164,7 +173,11 @@ export class ConventionController {
   ) {
     // Long-running: launch in the background and return 202 immediately so the
     // client (and any proxy) isn't holding a request open for minutes.
-    return this.conventionService.startSyncTabletopEventsAttendees(userData, id, this.ctx);
+    return this.conventionService.startSyncTabletopEventsAttendees(
+      userData,
+      id,
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, ConventionAdminGuard)
@@ -225,35 +238,50 @@ export class ConventionController {
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @ApiOkResponse({ type: AttendeeEntity })
   @Put(':id/transferBadge')
-  async transferBadge(@Param('id') id: string, @Body() data: {
-    fromBadgeNumber: string,
-    newBadgeFirstName: string,
-    newBadgeLastName: string,
-    newBadgePronouns: string,
-    newBadgeEmail: string,
-    newBadgeLegalName: string,
-    newBadgePronounsId: number
-    newBadgeName: string,
-  }) {
-    return this.attendeeService.transferBadge(Number(id), {
-      fromBadgeNumber: data.fromBadgeNumber,
-      newBadgeFirstName: data.newBadgeFirstName,
-      newBadgeLastName: data.newBadgeLastName,
-      newBadgePronouns: data.newBadgePronouns,
-      newBadgeEmail: data.newBadgeEmail,
-      newBadgeName: data.newBadgeName,
-      newBadgeLegalName: data.newBadgeLegalName,
-      newBadgePronounsId: data.newBadgePronounsId,
-    }, this.ctx);
+  async transferBadge(
+    @Param('id') id: string,
+    @Body()
+    data: {
+      fromBadgeNumber: string;
+      newBadgeFirstName: string;
+      newBadgeLastName: string;
+      newBadgePronouns: string;
+      newBadgeEmail: string;
+      newBadgeLegalName: string;
+      newBadgePronounsId: number;
+      newBadgeName: string;
+    },
+  ) {
+    return this.attendeeService.transferBadge(
+      Number(id),
+      {
+        fromBadgeNumber: data.fromBadgeNumber,
+        newBadgeFirstName: data.newBadgeFirstName,
+        newBadgeLastName: data.newBadgeLastName,
+        newBadgePronouns: data.newBadgePronouns,
+        newBadgeEmail: data.newBadgeEmail,
+        newBadgeName: data.newBadgeName,
+        newBadgeLegalName: data.newBadgeLegalName,
+        newBadgePronounsId: data.newBadgePronounsId,
+      },
+      this.ctx,
+    );
   }
 
   @UseGuards(JwtAuthGuard, ConventionWriteGuard)
   @ApiOkResponse({ type: AttendeeEntity })
   @Put(':id/replaceBadge')
-  async replaceBadge(@Param('id') id: string, @Body() data: { toBadgeNumber: string, fromBadgeNumber: string }) {
-    return this.attendeeService.replaceBadge(Number(id), {
-      toBadgeNumber: data.toBadgeNumber,
-      fromBadgeNumber: data.fromBadgeNumber
-    }, this.ctx);
+  async replaceBadge(
+    @Param('id') id: string,
+    @Body() data: { toBadgeNumber: string; fromBadgeNumber: string },
+  ) {
+    return this.attendeeService.replaceBadge(
+      Number(id),
+      {
+        toBadgeNumber: data.toBadgeNumber,
+        fromBadgeNumber: data.fromBadgeNumber,
+      },
+      this.ctx,
+    );
   }
 }

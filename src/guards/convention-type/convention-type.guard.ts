@@ -22,7 +22,7 @@ export class ConventionTypeGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const user = context.getArgByIndex(0).user?.user;
-    let conTypeId = context.getArgByIndex(0).params?.id;
+    const conTypeId = context.getArgByIndex(0).params?.id;
 
     if (!user) {
       return false;
@@ -61,7 +61,7 @@ export class ConventionTypeGuard implements CanActivate {
       return true;
     }
 
-    if (org?.users?.filter((u) => u.userId === user.id && (u.admin)).length > 0) {
+    if (org?.users?.filter((u) => u.userId === user.id && u.admin).length > 0) {
       return true;
     }
 

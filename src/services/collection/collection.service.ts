@@ -154,16 +154,22 @@ export class CollectionService {
     });
   }
 
-  async collectionsByOrgAndConWithCopies(orgId: number, conId: number, ctx: Context) {
-    this.logger.log(`Getting collections for orgId=${orgId} and conId=${conId}`);
+  async collectionsByOrgAndConWithCopies(
+    orgId: number,
+    conId: number,
+    ctx: Context,
+  ) {
+    this.logger.log(
+      `Getting collections for orgId=${orgId} and conId=${conId}`,
+    );
     return await ctx.prisma.collection.findMany({
       where: {
         organizationId: orgId,
         conventions: {
           some: {
             conventionId: conId,
-          }
-        }
+          },
+        },
       },
       include: {
         copies: {
@@ -476,7 +482,7 @@ export class CollectionService {
             }
 
             //Check for an update to maxPlayers for the game
-            let gameToUpdate = await ctx.prisma.game.findUnique({
+            const gameToUpdate = await ctx.prisma.game.findUnique({
               where: {
                 id: newCopy?.gameId,
               },
@@ -533,9 +539,7 @@ export class CollectionService {
         },
       });
     } catch (ex) {
-      this.logger.error(
-        `Failed to archive collection with id=${id}, ex=${ex}`,
-      );
+      this.logger.error(`Failed to archive collection with id=${id}, ex=${ex}`);
       return Promise.reject(ex);
     }
   }

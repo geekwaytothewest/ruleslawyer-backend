@@ -163,16 +163,20 @@ export class AttendeeService {
     }
   }
 
-  async transferBadge(conventionId: number, badgeTransferData: {
-    fromBadgeNumber: string;
-    newBadgeFirstName: string;
-    newBadgeLastName: string;
-    newBadgePronouns: string;
-    newBadgeEmail: string;
-    newBadgeName: string;
-    newBadgeLegalName: string;
-    newBadgePronounsId: number | null;
-  }, ctx: Context) {
+  async transferBadge(
+    conventionId: number,
+    badgeTransferData: {
+      fromBadgeNumber: string;
+      newBadgeFirstName: string;
+      newBadgeLastName: string;
+      newBadgePronouns: string;
+      newBadgeEmail: string;
+      newBadgeName: string;
+      newBadgeLegalName: string;
+      newBadgePronounsId: number | null;
+    },
+    ctx: Context,
+  ) {
     try {
       this.logger.log(
         `Updating badge transfer for conventionId=${conventionId}, badgeTransferData=${JSON.stringify(
@@ -198,7 +202,7 @@ export class AttendeeService {
       if (badgeTransferData.newBadgePronounsId) {
         pronounData = {
           connect: {
-            id: badgeTransferData.newBadgePronounsId
+            id: badgeTransferData.newBadgePronounsId,
           },
         };
       }
@@ -220,7 +224,7 @@ export class AttendeeService {
           user: {
             disconnect: true,
           },
-        }
+        },
       });
     } catch (ex) {
       this.logger.error(
@@ -238,7 +242,7 @@ export class AttendeeService {
       fromBadgeNumber: string;
       toBadgeNumber: string;
     },
-    ctx: Context
+    ctx: Context,
   ) {
     try {
       this.logger.log(
@@ -267,15 +271,24 @@ export class AttendeeService {
         });
 
         if (!oldBadge) {
-          throw new Error(`Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`);
+          throw new Error(
+            `Attendee with badge number ${badgeReplacementData.fromBadgeNumber} not found for convention ${conventionId}`,
+          );
         }
 
         if (!newBadge) {
-          throw new Error(`Attendee with badge number ${badgeReplacementData.toBadgeNumber} not found for convention ${conventionId}`);
+          throw new Error(
+            `Attendee with badge number ${badgeReplacementData.toBadgeNumber} not found for convention ${conventionId}`,
+          );
         }
 
-        if (!newBadge.badgeName.startsWith('Attendee Blank') && !newBadge.badgeName.startsWith('Blank Vendor')) {
-          throw new Error(`Badge replacement can only be done to unassigned badges.`);
+        if (
+          !newBadge.badgeName.startsWith('Attendee Blank') &&
+          !newBadge.badgeName.startsWith('Blank Vendor')
+        ) {
+          throw new Error(
+            `Badge replacement can only be done to unassigned badges.`,
+          );
         }
 
         await prisma.attendee.update({
@@ -294,7 +307,7 @@ export class AttendeeService {
             // person isn't split across two records.
             userId: null,
             email: null,
-          }
+          },
         });
 
         await prisma.attendee.update({
@@ -316,7 +329,7 @@ export class AttendeeService {
             pronouns: oldBadge.pronounsId
               ? { connect: { id: oldBadge.pronounsId } }
               : { disconnect: true },
-          }
+          },
         });
 
         await prisma.checkOut.updateMany({
@@ -325,7 +338,7 @@ export class AttendeeService {
           },
           data: {
             attendeeId: newBadge?.id,
-          }
+          },
         });
 
         await prisma.copy.updateMany({
@@ -334,7 +347,7 @@ export class AttendeeService {
           },
           data: {
             winnerId: newBadge.id,
-          }
+          },
         });
 
         await prisma.player.updateMany({
@@ -343,7 +356,7 @@ export class AttendeeService {
           },
           data: {
             attendeeId: newBadge.id,
-          }
+          },
         });
       });
     } catch (ex) {
@@ -365,9 +378,7 @@ export class AttendeeService {
         },
       });
     } catch (ex) {
-      this.logger.error(
-        `Failed to get pronouns, ex=${ex}`,
-      );
+      this.logger.error(`Failed to get pronouns, ex=${ex}`);
       return Promise.reject(ex);
     }
   }

@@ -24,6 +24,9 @@ export class CollectionWithRelationsEntity extends CollectionEntity {
   @ApiPropertyOptional({ type: () => OrganizationEntity })
   organization?: OrganizationEntity;
 
-  @ApiPropertyOptional({ type: () => ConventionCollectionsEntity, isArray: true })
+  @ApiPropertyOptional({
+    type: () => ConventionCollectionsEntity,
+    isArray: true,
+  })
   conventions?: ConventionCollectionsEntity[];
 }

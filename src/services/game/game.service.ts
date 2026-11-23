@@ -14,9 +14,7 @@ import {
 
 @Injectable()
 export class GameService {
-  constructor(
-    private readonly boardGameGeekService: BoardGameGeekService,
-  ) {}
+  constructor(private readonly boardGameGeekService: BoardGameGeekService) {}
 
   sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -73,8 +71,8 @@ export class GameService {
                       },
                       {
                         archived: false,
-                      }
-                    ]
+                      },
+                    ],
                   },
                 },
               ],
@@ -179,7 +177,9 @@ export class GameService {
   }
 
   async bggUpdate(id, gameData, ctx, deferImage = false) {
-    const game = await ctx.prisma.game.findUnique({ where: { id: Number(id) } });
+    const game = await ctx.prisma.game.findUnique({
+      where: { id: Number(id) },
+    });
 
     if (!game) {
       this.logger.warn(`Game with id=${id} not found for BGG update.`);
@@ -192,9 +192,16 @@ export class GameService {
       // so the parsed key is `item`, not `version`. The parser forces `item` to
       // an array (see XMLParser isArray config), but normalize defensively.
       const versions = gameData.versions?.item;
-      const versionsArray = Array.isArray(versions) ? versions : versions ? [versions] : [];
+      const versionsArray = Array.isArray(versions)
+        ? versions
+        : versions
+          ? [versions]
+          : [];
 
-      gameData.thumbnail = versionsArray.find((v: any) => parseInt(v['@_id']) === game.bggVersionId)?.thumbnail || gameData.thumbnail;
+      gameData.thumbnail =
+        versionsArray.find(
+          (v: any) => parseInt(v['@_id']) === game.bggVersionId,
+        )?.thumbnail || gameData.thumbnail;
     }
 
     // When deferImage is true, the (slow) thumbnail download is skipped and
@@ -207,7 +214,9 @@ export class GameService {
 
     if (!deferImage && gameData?.thumbnail) {
       try {
-        imageResponse = await this.boardGameGeekService.getImage(gameData.thumbnail);
+        imageResponse = await this.boardGameGeekService.getImage(
+          gameData.thumbnail,
+        );
       } catch (error: any) {
         if (!(error instanceof InvalidImageUrlError)) {
           throw error;
@@ -224,36 +233,84 @@ export class GameService {
     }
 
     return ctx.prisma.game.update({
-        where: { id: Number(id) },
-        data: {
-          bggId: gameData?.['@_id'] ? parseInt(gameData['@_id']) : null,
-          minPlayers: gameData?.minplayers?.['@_value'] ? parseInt(gameData.minplayers['@_value']) : null,
-          maxPlayers: gameData?.maxplayers?.['@_value'] ? parseInt(gameData.maxplayers['@_value']) : null,
-          minTime: gameData?.minplaytime?.['@_value'] ? parseInt(gameData.minplaytime['@_value']) : null,
-          maxTime: gameData?.maxplaytime?.['@_value'] ? parseInt(gameData.maxplaytime['@_value']) : null,
-          longDescription: gameData?.description ?? null,
-          publisher: gameData?.link?.filter((link: { '@_type': string; '@_value': string }) => link['@_type'] === 'boardgamepublisher').map((link: { '@_type': string; '@_value': string }) => link['@_value']).join(', ') || null,
-          designer: gameData?.link?.filter((link: { '@_type': string; '@_value': string }) => link['@_type'] === 'boardgamedesigner').map((link: { '@_type': string; '@_value': string }) => link['@_value']).join(', ') || null,
-          artist: gameData?.link?.filter((link: { '@_type': string; '@_value': string }) => link['@_type'] === 'boardgameartist').map((link: { '@_type': string; '@_value': string }) => link['@_value']).join(', ') || null,
-          minAge: gameData?.minage?.['@_value'] ? parseInt(gameData.minage['@_value']) : null,
-          weight: gameData?.statistics?.ratings?.averageweight?.['@_value'] ? parseFloat(gameData.statistics.ratings.averageweight['@_value']) : null,
-          coverArt: deferImage ? undefined : (imageResponse as Prisma.Bytes | null),
-          bggRank: (() => {
-            const ranks = gameData?.statistics?.ratings?.ranks?.rank;
-            if (!ranks) return undefined;
+      where: { id: Number(id) },
+      data: {
+        bggId: gameData?.['@_id'] ? parseInt(gameData['@_id']) : null,
+        minPlayers: gameData?.minplayers?.['@_value']
+          ? parseInt(gameData.minplayers['@_value'])
+          : null,
+        maxPlayers: gameData?.maxplayers?.['@_value']
+          ? parseInt(gameData.maxplayers['@_value'])
+          : null,
+        minTime: gameData?.minplaytime?.['@_value']
+          ? parseInt(gameData.minplaytime['@_value'])
+          : null,
+        maxTime: gameData?.maxplaytime?.['@_value']
+          ? parseInt(gameData.maxplaytime['@_value'])
+          : null,
+        longDescription: gameData?.description ?? null,
+        publisher:
+          gameData?.link
+            ?.filter(
+              (link: { '@_type': string; '@_value': string }) =>
+                link['@_type'] === 'boardgamepublisher',
+            )
+            .map(
+              (link: { '@_type': string; '@_value': string }) =>
+                link['@_value'],
+            )
+            .join(', ') || null,
+        designer:
+          gameData?.link
+            ?.filter(
+              (link: { '@_type': string; '@_value': string }) =>
+                link['@_type'] === 'boardgamedesigner',
+            )
+            .map(
+              (link: { '@_type': string; '@_value': string }) =>
+                link['@_value'],
+            )
+            .join(', ') || null,
+        artist:
+          gameData?.link
+            ?.filter(
+              (link: { '@_type': string; '@_value': string }) =>
+                link['@_type'] === 'boardgameartist',
+            )
+            .map(
+              (link: { '@_type': string; '@_value': string }) =>
+                link['@_value'],
+            )
+            .join(', ') || null,
+        minAge: gameData?.minage?.['@_value']
+          ? parseInt(gameData.minage['@_value'])
+          : null,
+        weight: gameData?.statistics?.ratings?.averageweight?.['@_value']
+          ? parseFloat(gameData.statistics.ratings.averageweight['@_value'])
+          : null,
+        coverArt: deferImage
+          ? undefined
+          : (imageResponse as Prisma.Bytes | null),
+        bggRank: (() => {
+          const ranks = gameData?.statistics?.ratings?.ranks?.rank;
+          if (!ranks) return undefined;
 
-            // Fastxml-parser can return a single object or an array. Force an array format.
-            const ranksArray = Array.isArray(ranks) ? ranks : [ranks];
-            const boardgameRank = ranksArray.find((r: any) => r['@_name'] === 'boardgame')?.['@_value'];
+          // Fastxml-parser can return a single object or an array. Force an array format.
+          const ranksArray = Array.isArray(ranks) ? ranks : [ranks];
+          const boardgameRank = ranksArray.find(
+            (r: any) => r['@_name'] === 'boardgame',
+          )?.['@_value'];
 
-            return boardgameRank && boardgameRank !== 'Not Ranked' ? parseInt(boardgameRank) : undefined;
-          })(),
-          bggRating:  gameData?.statistics?.ratings?.average?.['@_value']
-            ? parseFloat(gameData.statistics.ratings.average['@_value'])
-            : undefined,
-          lastBGGSync: new Date(),
-        },
-      });
+          return boardgameRank && boardgameRank !== 'Not Ranked'
+            ? parseInt(boardgameRank)
+            : undefined;
+        })(),
+        bggRating: gameData?.statistics?.ratings?.average?.['@_value']
+          ? parseFloat(gameData.statistics.ratings.average['@_value'])
+          : undefined,
+        lastBGGSync: new Date(),
+      },
+    });
   }
 
   /**
@@ -325,7 +382,9 @@ export class GameService {
         return null;
       }
 
-      const gameData = await this.boardGameGeekService.getBoardGameByBGGId(game) as any;
+      const gameData = (await this.boardGameGeekService.getBoardGameByBGGId(
+        game,
+      )) as any;
 
       return this.bggUpdate(id, gameData, ctx);
     } catch (error: any) {
@@ -338,11 +397,11 @@ export class GameService {
 
   async syncBGGGame(id: number, ctx: Context) {
     try {
-      this.logger.log(
-        `Syncing game with id=${id} from BoardGameGeek API...`,
-      );
+      this.logger.log(`Syncing game with id=${id} from BoardGameGeek API...`);
 
-      const game = await ctx.prisma.game.findUnique({ where: { id: Number(id) } });
+      const game = await ctx.prisma.game.findUnique({
+        where: { id: Number(id) },
+      });
 
       if (!game?.bggId) {
         this.logger.warn(
@@ -355,7 +414,9 @@ export class GameService {
         `Syncing game with name=${game.name} from BoardGameGeek API...`,
       );
 
-      const gameData = await this.boardGameGeekService.getBoardGameByBGGId(game.bggId) as any;
+      const gameData = (await this.boardGameGeekService.getBoardGameByBGGId(
+        game.bggId,
+      )) as any;
 
       return this.bggUpdate(id, gameData, ctx);
     } catch (error: any) {
@@ -489,9 +550,7 @@ export class GameService {
     const rejectedHosts = new Map<string, number>();
 
     try {
-      this.logger.log(
-        `Syncing and connecting games with BoardGameGeek API...`,
-      );
+      this.logger.log(`Syncing and connecting games with BoardGameGeek API...`);
 
       // Start each run from the baseline pace; the throttle adapts upward if
       // BGG starts returning 429s during this run.
@@ -521,50 +580,74 @@ export class GameService {
         select: { id: true, bggId: true, bggVersionId: true },
       });
 
-      const batches = gamesWithBGGId.reduce((resultArray: any[], item, index) => {
-        const chunkIndex = Math.floor(index / 20);
+      const batches = gamesWithBGGId.reduce(
+        (resultArray: any[], item, index) => {
+          const chunkIndex = Math.floor(index / 20);
 
-        if (!resultArray[chunkIndex]) {
-          resultArray[chunkIndex] = [];
-        }
+          if (!resultArray[chunkIndex]) {
+            resultArray[chunkIndex] = [];
+          }
 
-        resultArray[chunkIndex].push(item);
-        return resultArray;
-      }, []);
+          resultArray[chunkIndex].push(item);
+          return resultArray;
+        },
+        [],
+      );
 
       for (const batch of batches) {
         // Adaptive pace: baseline 2s, raised automatically if BGG 429s mid-run.
         await this.sleep(this.boardGameGeekService.throttleDelayMs);
 
-        const gameDataBatch = await this.boardGameGeekService.getBoardGameBatchByBGGIds(batch.map((game) => game.bggId)) as any[];
+        const gameDataBatch =
+          (await this.boardGameGeekService.getBoardGameBatchByBGGIds(
+            batch.map((game) => game.bggId),
+          )) as any[];
 
         // Persist the batch's games in parallel; each is an independent DB write.
         await Promise.all(
-          batch.map(async (game: { id: number; bggId: number, bggVersionId?: number }) => {
-            const gameData = gameDataBatch.find((data) => parseInt(data?.['@_id']) === game.bggId);
-
-            if (gameData) {
-              await this.bggUpdate(game.id, gameData, ctx, true);
-
-              //Override the thumbnail with the version's thumbnail if bggVersionId is set and the version has a thumbnail.
-              if (game.bggVersionId) {
-                // BGG nests versions as <item type="boardgameversion"> inside
-                // <versions>, so the parsed key is `item`, not `version`.
-                const versions = gameData.versions?.item;
-                const versionsArray = Array.isArray(versions) ? versions : versions ? [versions] : [];
-
-                gameData.thumbnail = versionsArray.find((v: any) => parseInt(v['@_id']) === game.bggVersionId)?.thumbnail || gameData.thumbnail;
-              }
-
-              if (gameData?.thumbnail) {
-                imageQueue.push({ id: game.id, thumbnail: gameData.thumbnail });
-              }
-            } else {
-              this.logger.warn(
-                `No boardgame found with bggId=${game.bggId} from BoardGameGeek API for game with id=${game.id}. Skipping sync.`,
+          batch.map(
+            async (game: {
+              id: number;
+              bggId: number;
+              bggVersionId?: number;
+            }) => {
+              const gameData = gameDataBatch.find(
+                (data) => parseInt(data?.['@_id']) === game.bggId,
               );
-            }
-          }),
+
+              if (gameData) {
+                await this.bggUpdate(game.id, gameData, ctx, true);
+
+                //Override the thumbnail with the version's thumbnail if bggVersionId is set and the version has a thumbnail.
+                if (game.bggVersionId) {
+                  // BGG nests versions as <item type="boardgameversion"> inside
+                  // <versions>, so the parsed key is `item`, not `version`.
+                  const versions = gameData.versions?.item;
+                  const versionsArray = Array.isArray(versions)
+                    ? versions
+                    : versions
+                      ? [versions]
+                      : [];
+
+                  gameData.thumbnail =
+                    versionsArray.find(
+                      (v: any) => parseInt(v['@_id']) === game.bggVersionId,
+                    )?.thumbnail || gameData.thumbnail;
+                }
+
+                if (gameData?.thumbnail) {
+                  imageQueue.push({
+                    id: game.id,
+                    thumbnail: gameData.thumbnail,
+                  });
+                }
+              } else {
+                this.logger.warn(
+                  `No boardgame found with bggId=${game.bggId} from BoardGameGeek API for game with id=${game.id}. Skipping sync.`,
+                );
+              }
+            },
+          ),
         );
       }
 

@@ -10,7 +10,10 @@ import { CollectionWithRelationsEntity } from './collection-with-relations.entit
 // checkOuts->attendee and collection->organization/conventions), so the
 // relations are optional and use the deepest variant available.
 export class CopyWithRelationsEntity extends CopyEntity {
-  @ApiPropertyOptional({ type: () => CheckOutWithAttendeeEntity, isArray: true })
+  @ApiPropertyOptional({
+    type: () => CheckOutWithAttendeeEntity,
+    isArray: true,
+  })
   checkOuts?: CheckOutWithAttendeeEntity[];
 
   @ApiPropertyOptional({ type: () => GameEntity })

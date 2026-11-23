@@ -70,7 +70,7 @@ const routes = [
   {
     path: '/api/attendee',
     module: AttendeeModule,
-  }
+  },
 ];
 
 @Module({

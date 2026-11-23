@@ -110,10 +110,7 @@ export class GameController {
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: GameWithCopiesEntity, isArray: true })
   @Get()
-  async getGames(
-    @User() user: any,
-    @Query('orgId') orgId: string,
-  ) {
+  async getGames(@User() user: any, @Query('orgId') orgId: string) {
     return this.gameService.search(
       {
         include: {
@@ -122,8 +119,8 @@ export class GameController {
               checkOuts: {
                 orderBy: {
                   checkOut: 'desc',
-                }
-              }
+                },
+              },
             },
             where: {
               OR: [
@@ -152,18 +149,18 @@ export class GameController {
                   collection: {
                     conventions: {
                       some: {
-                      convention: {
-                        AND: [
-                          {
-                            users: {
-                              some: { userId: user.id },
+                        convention: {
+                          AND: [
+                            {
+                              users: {
+                                some: { userId: user.id },
+                              },
                             },
-                          },
-                          orgId && !Number.isNaN(Number(orgId))
-                            ? { organizationId: Number(orgId) }
-                            : { id: { in: [] } },
-                        ],
-                      },
+                            orgId && !Number.isNaN(Number(orgId))
+                              ? { organizationId: Number(orgId) }
+                              : { id: { in: [] } },
+                          ],
+                        },
                       },
                     },
                   },
@@ -190,8 +187,8 @@ export class GameController {
                 ],
                 AND: [
                   orgId && !Number.isNaN(Number(orgId))
-                  ? { id: Number(orgId) }
-                  : { id: { in: [] } },
+                    ? { id: Number(orgId) }
+                    : { id: { in: [] } },
                 ],
               },
             },
@@ -278,7 +275,7 @@ export class GameController {
           where: {
             collection: {
               archived: false,
-            }
+            },
           },
         },
       },
@@ -330,8 +327,8 @@ export class GameController {
                     },
                     {
                       archived: false,
-                    }
-                  ]
+                    },
+                  ],
                 },
               },
             },
@@ -406,7 +403,7 @@ export class GameController {
   async getCopies(
     @Param('id') id: number,
     @Query('orgId') orgId: string,
-    @User() user: any
+    @User() user: any,
   ) {
     return this.copyService.searchCopies(
       {
@@ -480,9 +477,7 @@ export class GameController {
     );
 
     if (!game) {
-      this.logger.warn(
-        `Game with id=${id} not found.`,
-      );
+      this.logger.warn(`Game with id=${id} not found.`);
       return null;
     }
 
@@ -492,7 +487,8 @@ export class GameController {
   @UseGuards(JwtAuthGuard, OrganizationBggGuard, OrganizationWriteGuard)
   @HttpCode(202)
   @ApiAcceptedResponse({
-    description: 'Sync started in the background; progress is in the server logs.',
+    description:
+      'Sync started in the background; progress is in the server logs.',
   })
   @Put(':orgId/syncAndConnectGamesWithBGG')
   async syncAndConnectGamesWithBGG(
@@ -501,7 +497,11 @@ export class GameController {
   ) {
     // Long-running: launch in the background and return 202 immediately so the
     // client (and any proxy) isn't holding a request open for minutes.
-    return this.gameService.startSyncAndConnect(Number(orgId), this.ctx, dumpUrl);
+    return this.gameService.startSyncAndConnect(
+      Number(orgId),
+      this.ctx,
+      dumpUrl,
+    );
   }
 
   @UseGuards(JwtAuthGuard, OrganizationBggGuard, GameGuard)
@@ -521,9 +521,7 @@ export class GameController {
     );
 
     if (!game) {
-      this.logger.warn(
-        `Game with id=${id} not found.`,
-      );
+      this.logger.warn(`Game with id=${id} not found.`);
 
       throw new NotFoundException('Game not found.');
     }

@@ -118,7 +118,7 @@ export class UserOrganizationPermissionsService {
   }
 
   async getPermission(
-    id: Number,
+    id: number,
     ctx: Context,
   ): Promise<UserOrganizationPermissions | null> {
     try {
@@ -133,7 +133,7 @@ export class UserOrganizationPermissionsService {
   }
 
   async deletePermission(
-    id: Number,
+    id: number,
     ctx: Context,
   ): Promise<UserOrganizationPermissions | null> {
     try {
@@ -148,7 +148,7 @@ export class UserOrganizationPermissionsService {
   }
 
   async updatePermission(
-    id: Number,
+    id: number,
     data: Prisma.UserOrganizationPermissionsUpdateInput,
     ctx: Context,
   ): Promise<UserOrganizationPermissions> {

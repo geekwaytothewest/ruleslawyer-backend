@@ -172,7 +172,13 @@ describe('GameService', () => {
 
   describe('backfillBggIdsFromRankDump', () => {
     const gameRow = (over: Partial<any>) =>
-      ({ id: 1, name: 'Test', yearPublished: null, bggId: null, ...over } as any);
+      ({
+        id: 1,
+        name: 'Test',
+        yearPublished: null,
+        bggId: null,
+        ...over,
+      }) as any;
 
     it('does nothing and skips the dump when no games need a bggId', async () => {
       mockCtx.prisma.game.findMany.mockResolvedValue([]);
@@ -185,7 +191,9 @@ describe('GameService', () => {
     });
 
     it('matches a single candidate by normalized name and writes its bggId', async () => {
-      mockCtx.prisma.game.findMany.mockResolvedValue([gameRow({ id: 1, name: 'CATAN' })]);
+      mockCtx.prisma.game.findMany.mockResolvedValue([
+        gameRow({ id: 1, name: 'CATAN' }),
+      ]);
       bgg.getRankDumpIndex.mockResolvedValue(
         new Map([['catan', [{ id: 13, year: 1995, rank: 512, rating: 7.2 }]]]),
       );
@@ -314,7 +322,10 @@ describe('GameService', () => {
     });
 
     it('downloads the matching version thumbnail when bggVersionId is set', async () => {
-      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 600 } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        bggVersionId: 600,
+      } as any);
       bgg.getImage.mockResolvedValue(Buffer.from('v'));
 
       await service.bggUpdate(1, versionedData(), ctx);
@@ -324,7 +335,10 @@ describe('GameService', () => {
     });
 
     it('handles a single version object (not wrapped in an array)', async () => {
-      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 700 } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        bggVersionId: 700,
+      } as any);
       bgg.getImage.mockResolvedValue(Buffer.from('v'));
 
       await service.bggUpdate(
@@ -332,7 +346,9 @@ describe('GameService', () => {
         {
           '@_id': '13',
           thumbnail: 'http://img/default.jpg',
-          versions: { item: { '@_id': '700', thumbnail: 'http://img/v700.jpg' } },
+          versions: {
+            item: { '@_id': '700', thumbnail: 'http://img/v700.jpg' },
+          },
         },
         ctx,
       );
@@ -341,7 +357,10 @@ describe('GameService', () => {
     });
 
     it('falls back to the default thumbnail when the version id is not found', async () => {
-      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 999 } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        bggVersionId: 999,
+      } as any);
       bgg.getImage.mockResolvedValue(Buffer.from('d'));
 
       await service.bggUpdate(1, versionedData(), ctx);
@@ -350,7 +369,10 @@ describe('GameService', () => {
     });
 
     it('does not apply the override when deferImage is true', async () => {
-      mockCtx.prisma.game.findUnique.mockResolvedValue({ id: 1, bggVersionId: 600 } as any);
+      mockCtx.prisma.game.findUnique.mockResolvedValue({
+        id: 1,
+        bggVersionId: 600,
+      } as any);
 
       await service.bggUpdate(1, versionedData(), ctx, true);
 
@@ -405,7 +427,11 @@ describe('GameService', () => {
 
       const queue: { id: number; thumbnail: string }[] = [];
       let done = false;
-      const worker = (service as any).drainCoverArtQueue(queue, () => done, ctx);
+      const worker = (service as any).drainCoverArtQueue(
+        queue,
+        () => done,
+        ctx,
+      );
 
       // Producer appends a job after the worker is already polling, then signals
       // completion — the worker must pick it up before exiting.
@@ -450,9 +476,7 @@ describe('GameService', () => {
 
     it('still writes the covers whose URLs are fine', async () => {
       bgg.getImage
-        .mockRejectedValueOnce(
-          new InvalidImageUrlError('nope', 'evil.com'),
-        )
+        .mockRejectedValueOnce(new InvalidImageUrlError('nope', 'evil.com'))
         .mockResolvedValueOnce(Buffer.from('x'));
 
       const queue = [
@@ -593,16 +617,22 @@ describe('GameService', () => {
 
     const withRanks = (rank: any, average?: { '@_value': string }) => ({
       '@_id': '1',
-      statistics: { ratings: { ...(average ? { average } : {}), ranks: { rank } } },
+      statistics: {
+        ratings: { ...(average ? { average } : {}), ranks: { rank } },
+      },
     });
 
     beforeEach(() => bgg.getImage.mockResolvedValue(Buffer.from('img')));
 
     it('pulls the boardgame rank out of a ranks array', async () => {
-      await service.bggUpdate(1, withRanks([
-        { '@_name': 'strategygames', '@_value': '3' },
-        { '@_name': 'boardgame', '@_value': '42' },
-      ]), ctx);
+      await service.bggUpdate(
+        1,
+        withRanks([
+          { '@_name': 'strategygames', '@_value': '3' },
+          { '@_name': 'boardgame', '@_value': '42' },
+        ]),
+        ctx,
+      );
 
       expect(dataFrom().bggRank).toBe(42);
     });
@@ -640,7 +670,10 @@ describe('GameService', () => {
     it('parses bggRating from statistics.ratings.average', async () => {
       await service.bggUpdate(
         1,
-        withRanks({ '@_name': 'boardgame', '@_value': '5' }, { '@_value': '8.21' }),
+        withRanks(
+          { '@_name': 'boardgame', '@_value': '5' },
+          { '@_value': '8.21' },
+        ),
         ctx,
       );
 
@@ -807,7 +840,9 @@ describe('GameService', () => {
 
       service.startSyncAndConnect(1, ctx);
 
-      expect(() => service.startSyncAndConnect(1, ctx)).toThrow(ConflictException);
+      expect(() => service.startSyncAndConnect(1, ctx)).toThrow(
+        ConflictException,
+      );
     });
 
     it('logs and clears the in-flight flag when the background sync fails', async () => {

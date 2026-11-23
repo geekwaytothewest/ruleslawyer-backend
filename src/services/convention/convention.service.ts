@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  StreamableFile,
-} from '@nestjs/common';
+import { ConflictException, Injectable, StreamableFile } from '@nestjs/common';
 import { Convention, Prisma } from '@prisma/client';
 import { AttendeeService } from '../attendee/attendee.service';
 import { TabletopeventsService } from '../tabletopevents/tabletopevents.service';
@@ -331,9 +327,7 @@ export class ConventionService {
         // import this is one convention-wide paginated sweep (~30-90 requests)
         // instead of one request per badge (~3000). The single-badge path
         // still fetches just that badge's products.
-        this.logger.log(
-          `Getting sold products for ${tteBadges.length} badges`,
-        );
+        this.logger.log(`Getting sold products for ${tteBadges.length} badges`);
         const soldProductsByBadge = new Map<string, any[]>();
         if (tteBadges.length === 1) {
           soldProductsByBadge.set(
@@ -360,7 +354,9 @@ export class ConventionService {
           count++;
 
           if (count % 100 === 0) {
-            this.logger.log(`Status Update: Built attendees for badge ${count} of ${tteBadges.length}`);
+            this.logger.log(
+              `Status Update: Built attendees for badge ${count} of ${tteBadges.length}`,
+            );
           }
 
           const badgeNumber =
@@ -470,7 +466,7 @@ export class ConventionService {
             Barcode: a.barcode,
             Pronouns: a.pronouns?.pronouns,
             Merch: a.merch,
-            RegistrationCode: a.registrationCode
+            RegistrationCode: a.registrationCode,
           };
         }),
         { header: true },
@@ -640,9 +636,15 @@ export class ConventionService {
     }
   }
 
-  async getAttendees(conventionId: number, limit: number, filter: string, page: number, ctx: Context) {
+  async getAttendees(
+    conventionId: number,
+    limit: number,
+    filter: string,
+    page: number,
+    ctx: Context,
+  ) {
     try {
-      let query: Prisma.AttendeeFindManyArgs = {
+      const query: Prisma.AttendeeFindManyArgs = {
         where: {
           conventionId: conventionId,
         },
@@ -679,8 +681,8 @@ export class ConventionService {
       const clauses: Prisma.AttendeeWhereInput[] = [
         { badgeName: { contains: filter, mode: 'insensitive' } },
         { badgeLastName: { contains: filter, mode: 'insensitive' } },
-        { badgeFirstName: {contains: filter, mode: 'insensitive' }},
-        { legalName: {contains: filter, mode: 'insensitive' }},
+        { badgeFirstName: { contains: filter, mode: 'insensitive' } },
+        { legalName: { contains: filter, mode: 'insensitive' } },
       ];
 
       const search = (filter ?? '')
@@ -703,7 +705,7 @@ export class ConventionService {
           AND: [
             query.where!,
             {
-              OR: clauses
+              OR: clauses,
             },
           ],
         };

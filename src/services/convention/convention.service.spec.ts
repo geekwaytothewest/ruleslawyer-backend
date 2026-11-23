@@ -107,8 +107,7 @@ describe('ConventionService', () => {
       );
 
       expect(convention?.id).toBe(1);
-      const args = mockCtx.prisma.convention.findUnique.mock
-        .calls[0][0] as any;
+      const args = mockCtx.prisma.convention.findUnique.mock.calls[0][0] as any;
       expect(args.include.type).toEqual(expectedTypeInclude);
     });
   });
@@ -733,10 +732,18 @@ describe('ConventionService', () => {
         .spyOn(service, 'syncTabletopEventsAttendees')
         .mockReturnValue(new Promise(() => {}) as any);
 
-      service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+      service.startSyncTabletopEventsAttendees(
+        { userName: '', password: '', apiKey: '' },
+        1,
+        ctx,
+      );
 
       expect(() =>
-        service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx),
+        service.startSyncTabletopEventsAttendees(
+          { userName: '', password: '', apiKey: '' },
+          1,
+          ctx,
+        ),
       ).toThrow(ConflictException);
     });
   });
@@ -761,7 +768,11 @@ describe('ConventionService', () => {
       const csvSpy = jest.spyOn(service, 'importAttendeesCSV');
 
       // A TTE import is already in flight...
-      service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+      service.startSyncTabletopEventsAttendees(
+        { userName: '', password: '', apiKey: '' },
+        1,
+        ctx,
+      );
 
       // ...so a CSV import is refused and never launched.
       expect(() =>
@@ -1036,9 +1047,7 @@ describe('ConventionService', () => {
     };
 
     it('createConvention rejects when the create throws', async () => {
-      mockCtx.prisma.convention.create.mockRejectedValue(
-        new Error('db error'),
-      );
+      mockCtx.prisma.convention.create.mockRejectedValue(new Error('db error'));
       await expect(
         service.createConvention(
           { organization: { connect: { id: 1 } } } as any,
@@ -1056,16 +1065,16 @@ describe('ConventionService', () => {
 
     it('conventionWithUsers rejects when the query throws', async () => {
       mockCtx.prisma.convention.findUnique.mockImplementation(boom as any);
-      await expect(
-        service.conventionWithUsers({ id: 1 }, ctx),
-      ).rejects.toThrow('db error');
+      await expect(service.conventionWithUsers({ id: 1 }, ctx)).rejects.toThrow(
+        'db error',
+      );
     });
 
     it('updateConvention rejects when the update throws', async () => {
       mockCtx.prisma.convention.update.mockImplementation(boom as any);
-      await expect(
-        service.updateConvention(1, {}, ctx),
-      ).rejects.toThrow('db error');
+      await expect(service.updateConvention(1, {}, ctx)).rejects.toThrow(
+        'db error',
+      );
     });
 
     it('conventionsByOrg rejects when the query throws', async () => {
@@ -1129,7 +1138,11 @@ describe('ConventionService', () => {
         .mockRejectedValue('background boom');
       const errorSpy = jest.spyOn(service['logger'], 'error');
 
-      service.startSyncTabletopEventsAttendees({ userName: '', password: '', apiKey: '' }, 1, ctx);
+      service.startSyncTabletopEventsAttendees(
+        { userName: '', password: '', apiKey: '' },
+        1,
+        ctx,
+      );
 
       // Let the fire-and-forget promise settle.
       await new Promise((r) => setImmediate(r));
@@ -1295,7 +1308,9 @@ describe('ConventionService', () => {
       // A whitespace-only filter is still truthy, so the ILIKE clauses apply,
       // but no `search` lexeme survives tokenizing.
       const call = mockCtx.prisma.attendee.findMany.mock.calls[0][0] as {
-        where: { AND: [unknown, { OR: { badgeName?: { search?: string } }[] }] };
+        where: {
+          AND: [unknown, { OR: { badgeName?: { search?: string } }[] }];
+        };
       };
       const hasSearch = call.where.AND[1].OR.some(
         (c) => c.badgeName != null && 'search' in c.badgeName,
@@ -1306,7 +1321,13 @@ describe('ConventionService', () => {
     it('tolerates a missing filter without scoping the name search', async () => {
       mockPage([], 0);
 
-      const result = await service.getAttendees(5, 50, undefined as never, 1, ctx);
+      const result = await service.getAttendees(
+        5,
+        50,
+        undefined as never,
+        1,
+        ctx,
+      );
 
       expect(result.total).toBe(0);
       expect(mockCtx.prisma.attendee.count).toHaveBeenCalledWith({

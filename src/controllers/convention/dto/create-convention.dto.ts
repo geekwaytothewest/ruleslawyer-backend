@@ -15,12 +15,18 @@ export class CreateConventionDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ type: ConnectRelationDto, description: 'Owning organization.' })
+  @ApiProperty({
+    type: ConnectRelationDto,
+    description: 'Owning organization.',
+  })
   @ValidateNested()
   @Type(() => ConnectRelationDto)
   organization: ConnectRelationDto;
 
-  @ApiProperty({ type: ConnectRelationDto, description: 'Convention type/branding.' })
+  @ApiProperty({
+    type: ConnectRelationDto,
+    description: 'Convention type/branding.',
+  })
   @ValidateNested()
   @Type(() => ConnectRelationDto)
   type: ConnectRelationDto;
@@ -48,7 +54,10 @@ export class CreateConventionDto {
   @IsString()
   registrationUrl?: string;
 
-  @ApiPropertyOptional({ description: 'Free-form annual identifier (e.g. the year or edition label).' })
+  @ApiPropertyOptional({
+    description:
+      'Free-form annual identifier (e.g. the year or edition label).',
+  })
   @IsOptional()
   @IsString()
   annual?: string;
@@ -63,7 +72,9 @@ export class CreateConventionDto {
   @IsBoolean()
   cancelled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Convention id in the external Tabletop.Events system.' })
+  @ApiPropertyOptional({
+    description: 'Convention id in the external Tabletop.Events system.',
+  })
   @IsOptional()
   @IsString()
   tteConventionId?: string;

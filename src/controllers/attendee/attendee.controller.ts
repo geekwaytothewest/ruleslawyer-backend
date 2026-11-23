@@ -36,7 +36,9 @@ export class AttendeeController {
   @UseGuards(JwtAuthGuard, AttendeeGuard)
   @ApiOkResponse({ type: UserEntity })
   @Get(':id')
-  async getAttendeeById(@Param('id') id: string): Promise<AttendeeModel | null> {
+  async getAttendeeById(
+    @Param('id') id: string,
+  ): Promise<AttendeeModel | null> {
     return this.attendeeService.attendee(
       {
         id: Number(id),

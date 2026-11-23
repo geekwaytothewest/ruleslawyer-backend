@@ -8,11 +8,15 @@ export class SubmitPrizeEntryPlayerDto {
   @IsInt()
   attendeeId: number;
 
-  @ApiProperty({ description: 'Whether the player wants to be entered to win this copy.' })
+  @ApiProperty({
+    description: 'Whether the player wants to be entered to win this copy.',
+  })
   @IsBoolean()
   wantToWin: boolean;
 
-  @ApiPropertyOptional({ description: "The player's 1-5 rating of the game from the session." })
+  @ApiPropertyOptional({
+    description: "The player's 1-5 rating of the game from the session.",
+  })
   @IsOptional()
   @IsInt()
   @Min(1)

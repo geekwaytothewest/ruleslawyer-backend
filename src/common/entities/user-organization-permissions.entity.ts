@@ -1,9 +1,7 @@
 import { UserOrganizationPermissions } from '@prisma/client';
 
 // Scalar response shape for UserOrganizationPermissions. See user.entity.ts.
-export class UserOrganizationPermissionsEntity
-  implements UserOrganizationPermissions
-{
+export class UserOrganizationPermissionsEntity implements UserOrganizationPermissions {
   id: number;
   userId: number;
   organizationId: number;

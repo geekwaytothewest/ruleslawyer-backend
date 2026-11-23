@@ -11,7 +11,10 @@ import {
 import { ConnectRelationDto } from '../../../common/dto/connect-relation.dto';
 
 export class CreateAttendeeDto {
-  @ApiProperty({ type: ConnectRelationDto, description: 'Convention this attendee belongs to.' })
+  @ApiProperty({
+    type: ConnectRelationDto,
+    description: 'Convention this attendee belongs to.',
+  })
   @ValidateNested()
   @Type(() => ConnectRelationDto)
   convention: ConnectRelationDto;
@@ -32,11 +35,17 @@ export class CreateAttendeeDto {
   @IsString()
   legalName: string;
 
-  @ApiProperty({ description: 'Convention-local badge number (unique within the convention).' })
+  @ApiProperty({
+    description:
+      'Convention-local badge number (unique within the convention).',
+  })
   @IsString()
   badgeNumber: string;
 
-  @ApiProperty({ description: 'Scannable barcode encoded on the badge (unique within the convention).' })
+  @ApiProperty({
+    description:
+      'Scannable barcode encoded on the badge (unique within the convention).',
+  })
   @IsString()
   barcode: string;
 
@@ -58,7 +67,9 @@ export class CreateAttendeeDto {
   @Type(() => ConnectRelationDto)
   pronouns?: ConnectRelationDto;
 
-  @ApiPropertyOptional({ description: 'Badge number from the external Tabletop.Events system.' })
+  @ApiPropertyOptional({
+    description: 'Badge number from the external Tabletop.Events system.',
+  })
   @IsOptional()
   @IsInt()
   tteBadgeNumber?: number;
@@ -73,12 +84,16 @@ export class CreateAttendeeDto {
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional({ description: 'Whether the attendee has checked in / arrived.' })
+  @ApiPropertyOptional({
+    description: 'Whether the attendee has checked in / arrived.',
+  })
   @IsOptional()
   @IsBoolean()
   checkedIn?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether the physical badge has been printed.' })
+  @ApiPropertyOptional({
+    description: 'Whether the physical badge has been printed.',
+  })
   @IsOptional()
   @IsBoolean()
   printed?: boolean;
@@ -93,7 +108,9 @@ export class CreateAttendeeDto {
   @IsString()
   merch?: string;
 
-  @ApiPropertyOptional({ description: 'Whether the attendee is eligible to win prize drawings.' })
+  @ApiPropertyOptional({
+    description: 'Whether the attendee is eligible to win prize drawings.',
+  })
   @IsOptional()
   @IsBoolean()
   eligibleForPrizes?: boolean;
