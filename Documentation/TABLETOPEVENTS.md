@@ -105,7 +105,7 @@ import into roughly 30–90 requests. The per-badge path
 | `legalName`      | `custom_fields.LegalName`, falling back to `name`                                        |
 | `email`          | TTE `email`                                                                              |
 | `badgeType`      | Resolved from `badgetype_id` against the fetched badge types; `connectOrCreate` by name  |
-| `pronouns`       | `custom_fields.PreferredPronouns`, defaulting to `Prefer Not To Say`; `connectOrCreate`  |
+| `pronouns`       | `custom_fields.YourPronouns`, defaulting to `Prefer Not To Say`; `connectOrCreate`       |
 | `merch`          | Sold-product variant names joined with `, `; `Patron` appended when the badge type name contains "Patron" |
 | `registrationCode` | A freshly generated UUID                                                               |
 
