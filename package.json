@@ -53,6 +53,7 @@
     "cloc": "^2.6.0-cloc",
     "csv": "^6.5.1",
     "dotenv": "^17.4.2",
+    "dotenv-expand": "^13.0.0",
     "fast-xml-parser": "^5.8.0",
     "jwks-rsa": "^4.0.1",
     "nestjs-cls": "^6.2.1",

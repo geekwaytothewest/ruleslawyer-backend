@@ -607,6 +607,7 @@ export class ConventionService {
     permissions: {
       admin: boolean;
       geekGuide: boolean;
+      kiosk: boolean;
       attendee: boolean;
     },
     ctx: Context,
@@ -630,6 +631,7 @@ export class ConventionService {
           conventionId: Number(conventionId),
           admin: permissions.admin,
           geekGuide: permissions.geekGuide,
+          kiosk: permissions.kiosk,
           attendee: permissions.attendee,
         },
       });

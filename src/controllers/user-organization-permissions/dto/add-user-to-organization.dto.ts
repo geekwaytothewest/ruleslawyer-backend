@@ -16,5 +16,9 @@ export class AddUserToOrganizationDto {
 
   @ApiProperty()
   @IsBoolean()
+  kiosk: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
   readOnly: boolean;
 }
